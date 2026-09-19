@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SAT 2389 · 背单词</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Faustina:ital,wght@0,400..700;1,400..600&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="sheet-marks" aria-hidden="true"></div>
+
+<header class="topbar">
+  <button class="brand" id="goHome" type="button">
+    <span class="brand-mark">SAT</span>
+    <span class="brand-num">2389</span>
+  </button>
+  <div class="topbar-search">
+    <input id="search" type="search" placeholder="搜索单词或中文释义" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+  </div>
+  <div class="topbar-tools">
+    <button id="accentBtn" class="tool tool-accent" type="button" title="切换英式／美式发音">美音</button>
+    <button id="openStar" class="tool" type="button" title="生词本">生词本 <span class="tool-count" id="starCount">0</span></button>
+    <button id="openSet" class="tool" type="button" title="设置">设置</button>
+    <button id="themeBtn" class="tool tool-icon" type="button" title="切换深浅色" aria-label="切换深浅色">◐</button>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<div class="modal" id="setModal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="设置">
+    <h2>设置</h2>
+
+    <p class="sec">发音</p>
+    <label class="field">
+      <span>口音</span>
+      <select id="setAccent"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option></select>
+    </label>
+    <label class="field">
+      <span>语速 <b id="rateVal">1.0</b></span>
+      <input id="setRate" type="range" min="0.5" max="1.3" step="0.05" value="0.95">
+    </label>
+    <label class="field">
+      <span>音量 <b id="volVal">100%</b></span>
+      <input id="setVol" type="range" min="0" max="1" step="0.05" value="1">
+    </label>
+    <label class="field">
+      <span>声音</span>
+      <select id="setVoice"></select>
+      <small class="hint">已隐藏 Albert、Bubbles 等系统玩笑音色；带「高清」的是神经网络音色，最接近真人。
+        例句会按标点断成气口来读，音高逐句下沉，句尾放慢。</small>
+    </label>
+    <div class="field">
+      <button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button>
+    </div>
+    <label class="field-row">
+      <input id="setAuto" type="checkbox" checked>
+      <span>翻开卡片时自动朗读</span>
+    </label>
+
+    <p class="sec">卡片</p>
+    <label class="field-row">
+      <input id="setHint" type="checkbox" checked>
+      <span>没显示释义前，先给一句例句当提示</span>
+    </label>
+    <label class="field-row">
+      <input id="setHideZh" type="checkbox">
+      <span>浏览列表时先隐藏中文释义</span>
+    </label>
+    <label class="field-row">
+      <input id="setHideEx" type="checkbox">
+      <span>例句的中文翻译先蒙起来（点一下看）</span>
+    </label>
+    <label class="field">
+      <span>卡片中文字号</span>
+      <select id="setZhSize">
+        <option value="s">小</option>
+        <option value="m">中 · 默认</option>
+        <option value="l">大</option>
+        <option value="xl">特大</option>
+      </select>
+      <small class="hint">学习、复习、测验、拼写的卡片上，中文释义和译文的字号。</small>
+    </label>
+
+    <p class="sec">测验 · 拼写</p>
+    <label class="field">
+      <span>每轮题数</span>
+      <select id="setQn">
+        <option value="10">10 题 · 快速一轮</option>
+        <option value="20">20 题 · 默认</option>
+        <option value="30">30 题</option>
+        <option value="50">50 题</option>
+        <option value="100">100 题</option>
+        <option value="200">200 题</option>
+        <option value="0">全部 · 不设上限</option>
+      </select>
+      <small class="hint">一轮做完，结算页会告诉你题库里还剩几个没抽到，可以接着考剩下的，
+        不会把刚做完的又抽一遍。选「全部」就一次考完这批词，没有上限。拼写检测每轮也按这个数。</small>
+    </label>
+
+    <p class="sec">AI 例句</p>
+    <label class="field">
+      <span>生成的例句长度</span>
+      <select id="setExLen">
+        <option value="short">短 · 10–15 词</option>
+        <option value="mid">中 · 16–24 词（和内置例句一致）</option>
+        <option value="long">长 · 25–35 词</option>
+      </select>
+    </label>
+    <div class="provrow">
+      <button class="chip" data-prov="anthropic" type="button">Anthropic</button>
+      <button class="chip" data-prov="deepseek" type="button">DeepSeek</button>
+    </div>
+    <div id="provAnthropic">
+      <label class="field">
+        <span>Anthropic API Key</span>
+        <input id="aiField" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <small class="hint" id="aiHint">只存在这台设备的浏览器里，直接发给 api.anthropic.com，不经过任何中间服务器。
+          按量计费，走你自己的账号。留空就用不了「生成例句」。</small>
+      </label>
+      <label class="field">
+        <span>模型</span>
+        <select id="setModel">
+          <option value="claude-opus-5">Claude Opus 5 · 最好</option>
+          <option value="claude-sonnet-5">Claude Sonnet 5 · 均衡</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 · 最省</option>
+        </select>
+      </label>
+    </div>
+    <div id="provDeepseek" hidden>
+      <label class="field">
+        <span>DeepSeek API Key</span>
+        <input id="dsField" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false">
+        <small class="hint">在 platform.deepseek.com 申请。同样只存在这台设备的浏览器里，
+          直接发给 api.deepseek.com，不经过任何中间服务器。</small>
+      </label>
+      <label class="field">
+        <span>模型</span>
+        <select id="setDsModel">
+          <option value="deepseek-chat">deepseek-chat · 快，够用</option>
+          <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
+        </select>
+      </label>
+    </div>
+
+    <p class="sec">词表</p>
+    <div class="field">
+      <button class="btn btn-ghost" id="openImp2" type="button">导入 Excel / PDF / HTML 词表</button>
+    </div>
+    <div class="field">
+      <button class="btn btn-ghost" id="openAdd2" type="button">手动添加单词或词组</button>
+    </div>
+    <div class="field exp-row">
+      <button class="btn btn-ghost" id="expShaky" type="button">复制待复习的词</button>
+      <button class="btn btn-ghost" id="expStar" type="button">复制生词本</button>
+      <small class="hint">Tab 分隔的纯文本，能直接粘回上面「导入词表」的文本框，也能存到别处。
+        复习页里也有「导出这批词」，导的是当前这一轮。</small>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="resetProg" type="button">清空学习进度</button>
+      <button class="btn" id="closeSet" type="button">完成</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="impModal" hidden>
+  <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-label="导入词表">
+    <h2>导入词表</h2>
+    <p class="imp-lede">支持 <b>.numbers</b>、<b>.xlsx / .xls / .csv</b>、<b>.pdf</b>、<b>.html</b> 和纯文本。
+      表格请让单词和中文释义各占一列（音标那列会自动认出来）；文档和 PDF 按行读，
+      形如「abate /əˈbeɪt/ v.减弱」都能认。<b>词组也认</b>：「prone to 容易…的」这样写就行。
+      同一个词出现两次而释义不同，会并成一条，不会丢。
+      <b>Excel 有好几张表</b>（比如一张表一个 List）会拆成好几个单元，不会全挤在一起。</p>
+    <div class="imp-drop" id="impDrop">
+      <button class="btn" id="impPick" type="button">选择文件</button>
+      <input id="impFile" type="file" accept=".numbers,.xlsx,.xlsm,.xls,.csv,.tsv,.pdf,.html,.htm,.txt" hidden>
+      <p class="imp-stat" id="impStat">把文件拖到这里，或点上面的按钮选一个。</p>
+    </div>
+    <div class="imp-paste">
+      <p class="imp-or">或者直接把内容粘进来 —— 单词和意思会自动分开</p>
+      <textarea id="impText" rows="6" spellcheck="false" placeholder="abate /əˈbeɪt/ v.减弱&#10;prone to 容易…的&#10;come to terms with — 接受，妥协"></textarea>
+      <p class="imp-tip">Numbers 表格也可以在里面全选、拷贝，直接粘到这儿 —— 比读文件更准。</p>
+      <button class="btn btn-ghost" id="impParse" type="button">认一认</button>
+    </div>
+    <div id="impFields" hidden>
+      <label class="field">
+        <span>单元名称</span>
+        <input id="impName" type="text" placeholder="导入的词表">
+        <small class="hint" id="impNameHint"></small>
+      </label>
+    </div>
+    <div class="imp-prev" id="impPrev"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="closeImp" type="button">取消</button>
+      <button class="btn" id="impGo" type="button" disabled>导入</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="addModal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="手动添加">
+    <h2 id="addTitle">手动添加</h2>
+    <p class="imp-lede" id="addWhere"></p>
+    <label class="field">
+      <span>单词或词组</span>
+      <input id="addW" type="text" autocomplete="off" spellcheck="false" placeholder="prone to">
+    </label>
+    <label class="field">
+      <span>音标（可以留空）</span>
+      <input id="addP" type="text" autocomplete="off" spellcheck="false" placeholder="prəʊn tuː">
+    </label>
+    <label class="field">
+      <span>中文释义</span>
+      <input id="addZ" type="text" autocomplete="off" placeholder="容易…的，有…倾向的">
+    </label>
+    <p class="add-note" id="addNote"></p>
+    <div class="add-list" id="addList"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="closeAdd" type="button">完成</button>
+      <button class="btn" id="addGo" type="button">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="exModal" hidden>
+  <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-label="加一句例句">
+    <h2 id="exTitle">加一句例句</h2>
+    <div class="provrow">
+      <button class="chip" data-exmode="write" type="button">自己写</button>
+      <button class="chip" data-exmode="grab" type="button">从一段话里取</button>
+    </div>
+
+    <div id="exWrite">
+      <label class="field">
+        <span>英文例句</span>
+        <textarea id="exEn" rows="3" spellcheck="false" placeholder="把这个词用进一句话里"></textarea>
+      </label>
+      <label class="field">
+        <span>中文翻译（可留空）</span>
+        <textarea id="exZh" rows="2" placeholder="对应这个词的那一小段用 **两个星号** 夹起来，卡片上会标红"></textarea>
+      </label>
+    </div>
+
+    <div id="exGrab" hidden>
+      <label class="field">
+        <span>把读到的一整段话粘进来</span>
+        <textarea id="exPara" rows="7" spellcheck="false" placeholder="粘一段原文，我来挑出含这个词的句子，顺便认一认这段话里还有哪些你词库里的词"></textarea>
+      </label>
+      <button class="btn btn-ghost" id="exScan" type="button">挑句子</button>
+      <div id="exFound"></div>
+    </div>
+
+    <p class="add-note" id="exNote"></p>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="closeEx" type="button">关掉</button>
+      <span class="ex-acts">
+        <button class="btn btn-ghost" id="exTr" type="button" hidden>翻译这句</button>
+        <button class="btn" id="exGo" type="button">加上</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script src="data/units.js"></script>
+<script src="data/words.js"></script>
+<script src="data/extra.js"></script>
+<script src="data/toefl.js"></script>
+<script src="data/rich.js"></script>
+<script src="pure.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
