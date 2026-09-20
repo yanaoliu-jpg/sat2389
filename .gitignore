@@ -1,3 +1,4 @@
 .DS_Store
 *.bak10
 *.bak11
+.env
