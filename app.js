@@ -6,7 +6,8 @@ var WORDS = (window.SAT_WORDS || []).slice();
 var UNITS = (window.SAT_UNITS || []).slice();
 var RICH  = window.SAT_RICH  || {};
 /* 雅思词自己的例句（第十九次优化），按词条编号 i 取。条目里带着 w，rich() 要编号和单词都对得上才用：
-   自己导入的词编号也是从 10000 往上排的，不能让它们撞上雅思的 10001–10639 就拿到雅思的例句。 */
+   第二十次优化以前自己导入的词编号是从 10000 往上排的，会撞上雅思的 10001–10639。现在新词从
+   CUSTOM_ID_FLOOR 起排、老数据加载时也已经换过号，这道核对留着当保险。 */
 var IELTS_RICH = window.IELTS_RICH || {};
 WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适用 —— 雅思词原来借 SAT 例句时显示的词根不能丢
   var o = IELTS_RICH[w.i], s = RICH[w.w];
@@ -45,13 +46,29 @@ if (store.hv !== 3) {
   for (var hk in store.prog) if (store.prog[hk] === 1) reb[hk] = 1;
   store.hist = reb; store.hv = 3;
 }
+/* 自建词编号迁移（第二十次优化）：老版本自建词的编号从 10000 排起，后来内置的雅思词占了 10001–10639，
+   撞号的两个词共用着同一份进度／星标／颜色。一次性把撞号的自建词换到 CUSTOM_ID_FLOOR 之上的新编号，
+   那份共用的记录跟着自建词走、雅思词回到未学（为什么这样挑，见 pure.js 的 renumberCollidingCustom）。
+   要放在 mountCustom() 之前：它把 store.custom 里的词原样拷进 WORDS。 */
+var idMoved = 0;
+if (store.iv !== 1) {
+  try {
+    var fx = renumberCollidingCustom(store, window.SAT_WORDS || []);
+    if (fx.moved) {
+      store.custom = fx.custom; store.prog = fx.prog; store.hist = fx.hist;
+      store.sel = fx.sel; store.star = fx.star; store.col = fx.col;
+      idMoved = fx.moved;
+    }
+    store.iv = 1;
+  } catch (e) {}                         // 迁移出岔子也不能挡着应用起不来：保持原样，下次再试
+}
 var save = (function () {
   var t = null;
   return function () { clearTimeout(t); t = setTimeout(function () {
     try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {}
   }, 200); };
 })();
-if (dropRel) save();
+if (dropRel || idMoved) save();
 
 /* ---------- imported units ---------- */
 function mountCustom() {
@@ -2344,8 +2361,7 @@ function doImport() {
   var name = (document.getElementById('impName').value || impName || '导入').trim();
   var u = 101;
   store.custom.forEach(function (c) { if (c.u >= u) u = c.u + 1; });
-  var nextI = 10000;
-  WORDS.forEach(function (w) { if (w.i >= nextI) nextI = w.i + 1; });
+  var nextI = nextCustomId(WORDS);
   var firstU = -1;
   impGroups.forEach(function (g) {
     if (!g.rows.length) return;
@@ -2561,9 +2577,7 @@ function addWord() {
   if (dup && dup.u === addTarget) { paintAdd('这个单元里已经有「' + wv + '」了。', 1); return; }
   var c = addTarget === MANUAL_U ? manualUnit(true) : customUnit(addTarget);
   if (!c) { paintAdd('这个单元不在了。', 1); return; }
-  var base = 10000;
-  WORDS.forEach(function (w) { if (w.i >= base) base = w.i + 1; });
-  c.words.push({ i: base, u: c.u, w: wv, p: pv, z: zv });
+  c.words.push({ i: nextCustomId(WORDS), u: c.u, w: wv, p: pv, z: zv });
   save(); mountCustom(); dropOrder();
   document.getElementById('addW').value = '';
   document.getElementById('addP').value = '';

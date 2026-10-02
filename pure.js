@@ -1,6 +1,7 @@
 'use strict';
 /* 从 app.js 拆出来的纯逻辑（第十五次优化 1）：解析词表行、拼表格、去重合并、
-   词形变化、挖空定位、拼写差异对齐。这几个都不碰 document/window/localStorage，
+   词形变化、挖空定位、拼写差异对齐（第二十次优化又加了自建词的编号分配和老数据换号）。
+   这几个都不碰 document/window/localStorage，
    只认输入输出，所以能被 node --test 直接 require 进去测——整个 app.js 拿去
    require 的话，顶层那些 document.getElementById(...) 会立刻炸，因为 Node
    里没有 document。浏览器里还是老样子：<script> 在 app.js 前面引入这个文件，
@@ -180,11 +181,64 @@ function lcsMark(a, b) {
   return { a: A, b: B };
 }
 
+/* ===== 自建词的编号（第二十次优化）=====
+   自己导入／手动加的词，编号都从 CUSTOM_ID_FLOOR 往上排。内置词表占的编号 ——
+   SAT 1–2538、托福 5001–9249、雅思 10001–10639 —— 都远在它下面；以后再加内置词表，
+   编号也别用到它（test/customid.test.js 会卡这一条）。
+   原来的下限是 10000，雅思词一来就撞了号：进度、星标、颜色都是按编号存的，
+   撞号的两个词于是共用了同一份记录。 */
+var CUSTOM_ID_FLOOR = 100000;
+
+/* 下一个能给自建词用的编号：不低于下限，也比 words 里现有的任何编号都大。
+   导入和手动添加都从这里取，编号规则只在这一处改。 */
+function nextCustomId(words) {
+  var n = CUSTOM_ID_FLOOR;
+  words.forEach(function (w) { if (w.i >= n) n = w.i + 1; });
+  return n;
+}
+
+/* 一次性修老数据：2026-09-26 之前存下来的自建词，编号可能落在雅思词的 10001–10639 里，
+   跟雅思词共用着同一份进度。把撞号的自建词换到下限之上的新编号，那份共用的记录整份
+   跟着自建词走，雅思词那边回到「未学」—— 这个编号是自建词先占着的，雅思词是后来才到。
+   两个词从 9-26 起一直往同一个键里写，那份记录早已拆不开，只能挑一边留。
+   st 是 store 里的 { custom, prog, hist, sel, star, col }，builtinWords 是内置词表。
+   不改传进来的东西，返回 { moved: 换了几个词, custom, prog, hist, sel, star, col }；
+   对结果再跑一遍，moved 是 0、什么都不变。 */
+function renumberCollidingCustom(st, builtinWords) {
+  function copy(o) { var c = {}; for (var k in o) c[k] = o[k]; return c; }
+  var taken = {}, all = builtinWords.slice();
+  builtinWords.forEach(function (w) { taken[w.i] = 1; });
+  st.custom.forEach(function (c) { all = all.concat(c.words); });
+  var next = nextCustomId(all), moved = {}, n = 0;
+  var out = {
+    custom: st.custom.map(function (c) {
+      var nc = copy(c);
+      nc.words = c.words.map(function (w) {
+        if (!taken[w.i]) return w;
+        var nw = copy(w);
+        nw.i = next++; n++;
+        moved[w.i] = nw.i;
+        return nw;
+      });
+      return nc;
+    })
+  };
+  out.moved = n;
+  ['prog', 'hist', 'sel', 'star', 'col'].forEach(function (t) {    // 全是按词条编号存的
+    var tab = copy(st[t]);
+    for (var old in moved) if (old in tab) { tab[moved[old]] = tab[old]; delete tab[old]; }
+    out[t] = tab;
+  });
+  return out;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
     lcsMark: lcsMark, blankAt: blankAt,
     wordPat: wordPat, inflectRe: inflectRe, wordRe: wordRe,
-    phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell
+    phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell,
+    CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
+    renumberCollidingCustom: renumberCollidingCustom
   };
 }
