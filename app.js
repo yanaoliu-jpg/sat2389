@@ -5,6 +5,13 @@
 var WORDS = (window.SAT_WORDS || []).slice();
 var UNITS = (window.SAT_UNITS || []).slice();
 var RICH  = window.SAT_RICH  || {};
+/* 雅思词自己的例句（第十九次优化），按词条编号 i 取。条目里带着 w，rich() 要编号和单词都对得上才用：
+   自己导入的词编号也是从 10000 往上排的，不能让它们撞上雅思的 10001–10639 就拿到雅思的例句。 */
+var IELTS_RICH = window.IELTS_RICH || {};
+WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适用 —— 雅思词原来借 SAT 例句时显示的词根不能丢
+  var o = IELTS_RICH[w.i], s = RICH[w.w];
+  if (o && o.w === w.w && s && s.r && !o.r) o.r = s.r;
+});
 
 /* ---------- storage ---------- */
 var LS = 'sat2389.v1';
@@ -253,7 +260,10 @@ function tally(list) {
   });
   return t;
 }
-function rich(w) { return RICH[w.w] || null; }
+function rich(w) {
+  var o = IELTS_RICH[w.i];
+  return (o && o.w === w.w) ? o : (RICH[w.w] || null);
+}
 function gen(w) { return store.gen[w.w] || []; }
 
 /* ---------- 颜色分组（第十次优化 3） ----------

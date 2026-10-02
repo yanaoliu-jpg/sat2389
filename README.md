@@ -6,7 +6,11 @@
 
 托福这 4249 个词现在张张都带内置例句（第十七次优化）：跟 SAT 词表重复的 804 个词直接复用 SAT 那句（`RICH` 按单词字符串取值，天然共享，见 `data/rich.js`），剩下 3445 个没有的由 `data/toefl_rich.js` 补上——写法和例句风格照抄 `aiPrompt()`/`AI_SCHEMA`（见下面「AI 例句」），只是离线一次性造好存进数据文件，不占用你自己的 API Key。
 
-又加了一份雅思核心词汇（第十八次优化）：`雅思核心词汇.xlsx`，原表只有一张按话题分类排列的总表、共 639 词，不像托福那样一 Sheet 一个 List，所以按原表顺序每 70 词切一个单元，共 10 个单元（u 2001–2010，最后一个只有 9 词）。i 从 10001 开始编号，跟托福那 4249 条（i 5001–9249）分开。这一批**暂时没有例句**——原表自带的「例句/常用搭配/话题分类」几列这一轮没收，先只建词表，例句留到以后单独一轮再照抄托福的路子补上。
+又加了一份雅思核心词汇（第十八次优化）：`雅思核心词汇.xlsx`，原表只有一张按话题分类排列的总表、共 639 词，不像托福那样一 Sheet 一个 List，所以按原表顺序切单元。第十八次优化时是每 70 词一个、共 10 个单元；**第十九次优化改成每 90 词一个单元，共 8 个（u 2001–2008，639 = 7×90 + 9，最后一个只有 9 词）**。i 从 10001 开始编号，跟托福那 4249 条（i 5001–9249）分开；i 只跟原表顺序有关、跟每个单元多少词无关，所以改单元大小不会让已有的认识 / 不认识 / 星标 / 颜色记录挪位置——它们都是按 i 存的。
+
+雅思这 639 个词条现在张张都带例句（第十九次优化）：用原表自带的「例句」列（每词一句，偏短的雅思风格，平均 7 个词），中文翻译由 `src/ielts_zh/L01–L08.tsv` 补上（一个 List 一个文件，每行 `编号§单词§例句§译文`，译文里恰好一处 `**…**` 标出对应词义，格式同 SAT / 托福）。存进 `data/ielts_rich.js`（`window.IELTS_RICH`），**按词条编号 i 取、不按单词取**：雅思词有一半在 SAT / 托福里也有，借那边的例句会词义对不上（比如 `academic` 在 SAT 里那句用的是「空谈」义、`conflict` 那句用的是动词），所以雅思词优先用自己的，SAT / 托福那边的例句一个字没动。查找在 `app.js` 的 `rich()`：先查 `IELTS_RICH[w.i]`（条目里的 `w` 要跟词条对得上才用——自己导入的词编号也是从 10000 往上排的，不能撞上雅思的 10001–10639 就拿到雅思的例句），查不到再回头用共享的 `RICH`；原来借 SAT 例句时显示的词根（59 个词有）会并过来，不丢。
+
+有 9 句例句改写过、1 个词条改了拼写：应用要在例句里找到这个词（卡片高亮靠 `wordPat`、例句填空题靠 `blankAt`），原句里是 `rose` / `grew` / `fell` / `levelled off` / `remained stable` 这种过去式，或词藏在更长的单词里（`Overconsumption` 里的 consumption、`Arachnophobia` 里的 phobia），或写成 `Inner-city` / `the right`（词条是 `rights`），高亮和填空都认不出，所以改写成带原词形的说法；另外原表里 `cultural shock` 是笔误（例句里写的是 culture shock），改成了 `culture shock`。这些都登记在 `src/build_ielts.py` 的 `EDITED` / `WORD_FIXES` 里，TSV 里的例句跟原表对不上又没登记的话，构建会报错、一个文件都不写。`test/ielts.test.js` 用应用自己的 `wordPat` / `blankAt` 把 639 条逐个验一遍。
 
 ## 打开方式
 
@@ -440,15 +444,17 @@ sat2300-web/
 ├── pure.js             纯逻辑：解析词表、去重合并、词形变化、挖空、拼写差异（第十五次优化 1）
 ├── app.js              其余全部交互逻辑
 ├── test/
-│   └── pure.test.js    对 pure.js 的 node --test 用例（第十五次优化 1）
+│   ├── pure.test.js    对 pure.js 的 node --test 用例（第十五次优化 1）
+│   └── ielts.test.js   雅思词表的数据回归：每 90 词一个单元、639 条例句、例句里找得到词（第十九次优化）
 ├── data/
 │   ├── units.js        36 个原书单元的范围
 │   ├── words.js        2389 个原书词条：单词 / IPA / 中文释义 / 单元号
 │   ├── extra.js        Unit 37 错词本的 149 个词（追加到上面两个数组）
 │   ├── toefl.js         新东方《绿宝书》托福词汇：48 个单元、4249 个词（同样追加进去，u 1001-1048）
-│   ├── ielts.js         雅思核心词汇：10 个单元、639 个词（第十八次优化，u 2001-2010，暂无例句）
+│   ├── ielts.js         雅思核心词汇：8 个单元、639 个词（第十八次优化建的，第十九次优化改成每 90 词一个单元，u 2001-2008）
 │   ├── rich.js          例句 / 翻译 / 词根 / 订正释义（由 src 生成）
-│   └── toefl_rich.js    托福词里 SAT 没有的 3445 个词的例句 / 翻译（第十七次优化，合并进 rich.js 那个 SAT_RICH）
+│   ├── toefl_rich.js    托福词里 SAT 没有的 3445 个词的例句 / 翻译（第十七次优化，合并进 rich.js 那个 SAT_RICH）
+│   └── ielts_rich.js    雅思 639 个词条自己的例句 / 翻译（第十九次优化，按词条编号 i 存，单独的 IELTS_RICH，不并进 SAT_RICH）
 └── src/
     ├── ex3/u01–u37.tsv    现在的正本，每行：单词§例句§翻译§词根(可空)
     ├── rich/u01–u37.tsv   旧的例句一，现在只用来提供订正释义和兜底例句
@@ -462,7 +468,8 @@ sat2300-web/
     ├── strip_archaic.py   一次性脚本：把词根里的古语出处删掉（第四次优化 1，已跑过）
     ├── build_rich.py      合并 ex3/ 与 rich/ 成 data/rich.js，并统计覆盖率
     ├── build_toefl.py     从 ../新东方托福【绿宝书】-托福词汇.xlsx 生成 data/toefl.js
-    ├── build_ielts.py     从 ../雅思核心词汇.xlsx 生成 data/ielts.js（第十八次优化）
+    ├── ielts_zh/L01–L08.tsv  雅思例句的正本，一个 List 一个文件，每行：编号§单词§例句§译文（第十九次优化）
+    ├── build_ielts.py     从 ../雅思核心词汇.xlsx + ielts_zh/*.tsv 生成 data/ielts.js 和 data/ielts_rich.js（第十八、十九次优化）
     ├── build_single.py    打包成单文件 HTML
     └── devserver.py       本地预览服务器
 ```
@@ -479,6 +486,14 @@ python3 sat2300-web/src/build_single.py sat2300-web/SAT2389-单文件版.html   
 ```
 
 近义词仍留在 `src/rich/*.tsv` 的第四列里（现在不显示），想用改 `build_rich.py` 和 `app.js` 的 `cardHtml` 即可。
+
+雅思的例句和译文单独放（第十九次优化）：改 `src/ielts_zh/L*.tsv`，然后：
+
+```bash
+python3 sat2300-web/src/build_ielts.py                                   # 重建 data/ielts.js 和 data/ielts_rich.js（校验不过会报错、不写文件）
+cd sat2300-web && node --test                                            # 用应用自己的函数再验一遍
+python3 sat2300-web/src/build_single.py sat2300-web/SAT2389-单文件版.html   # 重新打包单文件
+```
 
 ## 自动化测试（第十五次优化 1）
 
@@ -498,3 +513,8 @@ cd sat2300-web && node --test
 
 不需要装任何东西，Node 自带的 `node:test` 跑起来。改了 `pure.js` 或者上面这几个函数的行为，
 先跑一遍这个再手动到浏览器里过一遍。
+
+第十九次优化又加了 `test/ielts.test.js`，钉住雅思词表的数据：词条编号从 10001 连续、每 90 词一个单元（最后一个装余数）、
+639 个词条都有自己的例句和恰好一处加粗的译文，以及「例句里找得到这个词」——这一条直接调 `pure.js` 里的
+`wordPat` / `blankAt`（卡片高亮和填空题用的就是它们），不在测试里另写一套规则：当初拿 Python 重写了一遍，
+就漏掉了 `consumption`（藏在 Overconsumption 里）和 `phobia`（藏在 Arachnophobia 里）两句。
