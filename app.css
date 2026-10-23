@@ -104,6 +104,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .stat b{display:block;font-size:1.65rem;font-weight:500;line-height:1.1;font-variant-numeric:tabular-nums}
 .stat span{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
 .stat-known b{color:var(--seal)}
+.shelf{margin:10px 0 16px}
 .unit-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
 .unit-card{
   position:relative;text-align:left;background:var(--card);border:1px solid var(--rule);

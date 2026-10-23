@@ -18,7 +18,7 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
-                exlen: 'mid', zhSize: 'm',
+                exlen: 'mid', zhSize: 'm', shuf: false,
                 prov: 'anthropic', key: '', model: 'claude-opus-5',
                 dskey: '', dsmodel: 'deepseek-chat' };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], set: {}, theme: '' };
@@ -251,7 +251,25 @@ function cls(i) {
   var l = lvl(i), c = l === 3 ? 'k' : l === 2 ? 'f' : l === 1 ? 'x' : '';
   return c + (l === 3 && everShaky(i) ? ' h' : '');
 }
-function unitWords(u) { return WORDS.filter(function (w) { return w.u === u; }); }
+/* 乱序版单元（u 3001 起，第二十一次优化）不自带词条，ids 按顺序指向原书词条 ——
+   进度、星标、颜色都按 i 存，所以跟原书单元共用，不会多出一份 */
+function unitWords(u) {
+  var ids = unitMeta(u).ids;
+  if (!ids) return WORDS.filter(function (w) { return w.u === u; });
+  var at = {};
+  WORDS.forEach(function (w) { at[w.i] = w; });
+  return ids.map(function (i) { return at[i]; }).filter(Boolean);
+}
+/* 首页眼下那一套的词：原版是全部词条，乱序版是乱序单元里的词（PDF 有几个词印了两遍，去重）。
+   首页的已掌握 / 待复习 / 整理错词 / 测验错词都按它算 */
+function homePool() {
+  if (!store.set.shuf) return WORDS;
+  var seen = {}, out = [];
+  UNITS.forEach(function (x) {
+    if (x.ids) unitWords(x.u).forEach(function (w) { if (!seen[w.i]) { seen[w.i] = 1; out.push(w); } });
+  });
+  return out;
+}
 function unitMeta(u) { return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' }; }
 function unitLabel(u) {                                  // unit 37 is the 错词本, not a book page
   var m = unitMeta(u);
@@ -322,10 +340,13 @@ function ordered(u) {
   var m = store.set.sort || 'book', f = curFilter(u);
   if (ordCache.u === u && ordCache.m === m && ordCache.f === f) return ordCache.list;
   var ws = unitWords(u);
+  /* 同一档里谁先谁后：原有单元照编号；乱序单元照它写死的乱序 —— 退回编号就又成了字母顺序 */
+  var seq = {}, shuffled = !!unitMeta(u).ids;
+  ws.forEach(function (w, k) { seq[w.i] = shuffled ? k : w.i; });
   if (f) ws = ws.filter(function (w) { return colOf(w.i) === f; });   // 只看这一个颜色
   if (m === 'weak') {
     ws = ws.slice().sort(function (a, b) {
-      return (WEIGHT[lvl(a.i)] - WEIGHT[lvl(b.i)]) || (a.i - b.i);
+      return (WEIGHT[lvl(a.i)] - WEIGHT[lvl(b.i)]) || (seq[a.i] - seq[b.i]);
     });
   } else if (m === 'once') {
     /* 「认识（曾错过）」排最前 —— 自以为会、却栽过跟头的那一批最值得再看一眼。
@@ -333,10 +354,10 @@ function ordered(u) {
     ws = ws.slice().sort(function (a, b) {
       var wa = lvl(a.i) === 3 && everShaky(a.i) ? 0 : 1;
       var wb = lvl(b.i) === 3 && everShaky(b.i) ? 0 : 1;
-      return (wa - wb) || (a.i - b.i);
+      return (wa - wb) || (seq[a.i] - seq[b.i]);
     });
   } else if (m === 'fresh') {
-    ws = ws.slice().sort(function (a, b) { return (lvl(a.i) ? 1 : 0) - (lvl(b.i) ? 1 : 0) || a.i - b.i; });
+    ws = ws.slice().sort(function (a, b) { return (lvl(a.i) ? 1 : 0) - (lvl(b.i) ? 1 : 0) || seq[a.i] - seq[b.i]; });
   } else if (m === 'az') {
     ws = ws.slice().sort(function (a, b) { return a.w < b.w ? -1 : a.w > b.w ? 1 : 0; });
   } else if (m === 'rand') {
@@ -524,12 +545,16 @@ document.getElementById('goHome').onclick = function () {
 
 /* ================= HOME ================= */
 function renderHome() {
-  var all = tally(WORDS);
+  var pool = homePool(), all = tally(pool);
   var mine = { units: 0, words: 0 };
   UNITS.forEach(function (x) { if (x.imported) { mine.units++; mine.words += x.n; } });
   var toefl = { units: 0, words: 0 };            // u 1001-1048：新东方《绿宝书》托福词汇（第十二次优化 2）
   UNITS.forEach(function (x) { if (x.u >= 1001 && x.u <= 1048) { toefl.units++; toefl.words += x.n; } });
-  var cards = UNITS.map(function (u) {
+  /* 首页一次只摆一套单元（第二十一次优化）：原版是原书、错词本、托福、雅思和自己导入的那些；
+     乱序版是带 ids 的单元。标题下面的开关切换，记在 store.set.shuf */
+  var shuf = !!store.set.shuf;
+  var shown = UNITS.filter(function (x) { return shuf ? !!x.ids : !x.ids; });
+  var cards = shown.map(function (u) {
     var ws = unitWords(u.u);
     var kn = ws.filter(function (w) { return lvl(w.i) === 3; }).length;
     var bub = ws.map(function (w) { return '<i class="bubble ' + cls(w.i) + '"></i>'; }).join('');
@@ -545,30 +570,39 @@ function renderHome() {
   }).join('');
   view.innerHTML =
     '<div class="home-head"><div>' +
-      '<p class="eyebrow">' + UNITS.length + ' 个单元 · ' + WORDS.length + ' 个词条</p>' +
+      '<p class="eyebrow">' + (shuf ? '乱序版 · ' : '') + shown.length + ' 个单元 · ' + pool.length + ' 个词条</p>' +
       '<h1>我的词库。</h1>' +
-      '<p class="lede">底子是《SAT词汇2300打印版》的 2389 个词条（原书每页 68 词就是一个单元），' +
-        '外加一个「错词本」单元；另外收了新东方《绿宝书》托福词汇全本，' +
-        toefl.units + ' 个 List、' + toefl.words + ' 个词条，一 List 一个单元' +
-        (mine.units ? '；再往后是你自己攒的 ' + mine.units + ' 个单元、' + mine.words + ' 个词条 —— 导入的词表、手动加的词、背过和复习过的都收在这里'
-                    : '。往后凡是你背过、复习过的词，导进来或手动加进来，都会排在后面') +
-        '。每张词卡有音标、发音、例句，难词还附了词根。</p>' +
+      '<div class="tabs shelf" role="tablist" aria-label="首页摆哪一套单元">' +
+        '<button role="tab" data-shelf="0" type="button" aria-selected="' + !shuf + '">原版</button>' +
+        '<button role="tab" data-shelf="1" type="button" aria-selected="' + shuf + '">乱序版</button>' +
+      '</div>' +
+      (shuf
+        ? '<p class="lede">照《2300 高密度便携版》分单元：那份 PDF 竖着的每一列是一个单元，从 a 到 z 都有；' +
+            '单元里的词打乱过一次、顺序固定，想每次换个顺序就在单元里点「随机」。' +
+            '学习进度跟原版共用 —— 在这里标了认识，原版里同一个词也算认识。</p>'
+        : '<p class="lede">底子是《SAT词汇2300打印版》的 2389 个词条（原书每页 68 词就是一个单元），' +
+            '外加一个「错词本」单元；另外收了新东方《绿宝书》托福词汇全本，' +
+            toefl.units + ' 个 List、' + toefl.words + ' 个词条，一 List 一个单元' +
+            (mine.units ? '；再往后是你自己攒的 ' + mine.units + ' 个单元、' + mine.words + ' 个词条 —— 导入的词表、手动加的词、背过和复习过的都收在这里'
+                        : '。往后凡是你背过、复习过的词，导进来或手动加进来，都会排在后面') +
+            '。每张词卡有音标、发音、例句，难词还附了词根。</p>') +
     '</div><div class="stat-row">' +
       '<div class="stat stat-known"><b>' + all.known + '</b><span>已掌握</span></div>' +
       '<button class="stat stat-shaky" id="allShaky" type="button"' + (all.shaky ? '' : ' disabled') +
         '><b>' + all.shaky + '</b><span>待复习</span></button>' +
-      '<div class="stat"><b>' + WORDS.length + '</b><span>总词条</span></div>' +
+      '<div class="stat"><b>' + pool.length + '</b><span>总词条</span></div>' +
     '</div></div>' +
     '<div class="sweeps">' +
       (all.shaky ? '<button class="btn" id="sweepAll" type="button">整理错词 · ' + all.shaky + ' 个重过一遍</button>' : '') +
       (all.shaky ? '<button class="btn btn-ghost" id="quizAll" type="button">测验错词 · ' + qCount(all.shaky) + ' 题</button>' : '') +
       (all.once ? '<button class="btn btn-ghost" id="sweepOnce" type="button">曾错过的词 · ' + all.once + ' 个</button>' : '') +
       (selCount() ? '<button class="btn btn-ghost" id="quizSel" type="button">测验选中的词 · ' + selCount() + ' 个</button>' : '') +
-      '<button class="btn btn-ghost" id="openImp" type="button">导入词表</button>' +
-      '<button class="btn btn-ghost" id="openAdd" type="button">手动添加</button>' +
-      (store.custom.length >= 2
-        ? '<button class="btn btn-ghost' + (merging ? ' on' : '') + '" id="mergeOn" type="button">' +
-          (merging ? '✓ 挑要合并的单元' : '合并单元') + '</button>' : '') +
+      (shuf ? '' :                                  // 导入、手动加、合并都落在原版那一套里
+        '<button class="btn btn-ghost" id="openImp" type="button">导入词表</button>' +
+        '<button class="btn btn-ghost" id="openAdd" type="button">手动添加</button>' +
+        (store.custom.length >= 2
+          ? '<button class="btn btn-ghost' + (merging ? ' on' : '') + '" id="mergeOn" type="button">' +
+            (merging ? '✓ 挑要合并的单元' : '合并单元') + '</button>' : '')) +
     '</div>' +
     '<div class="unit-grid' + (merging ? ' merging' : '') + '">' + cards + '</div>' +
     '<div id="mergeSlot">' + mergeBarHtml() + '</div>';
@@ -588,6 +622,15 @@ function renderHome() {
       dropOrder(); go({ name: 'unit', u: uu, tab: 'browse' });
     };
   });
+  Array.prototype.forEach.call(view.querySelectorAll('[data-shelf]'), function (b) {
+    b.onclick = function () {
+      var want = b.dataset.shelf === '1';
+      if (want === shuf) return;
+      store.set.shuf = want; save();
+      merging = false; mergeSel = {}; mergeTitle = ''; mergeMsg = '';   // 合并只管原版里的单元，换一套就收起来
+      renderHome();
+    };
+  });
   var mo = document.getElementById('mergeOn');
   if (mo) mo.onclick = function () {
     merging = !merging;
@@ -595,7 +638,7 @@ function renderHome() {
     renderHome();
   };
   wireMerge();
-  function sweep() { startReview(WORDS.filter(shaky), '全部错词', { name: 'home' }); }
+  function sweep() { startReview(pool.filter(shaky), shuf ? '乱序版错词' : '全部错词', { name: 'home' }); }
   var sb = document.getElementById('sweepAll'); if (sb) sb.onclick = sweep;
   var as = document.getElementById('allShaky'); if (as && all.shaky) as.onclick = sweep;
   var qa = document.getElementById('quizAll');
@@ -604,14 +647,14 @@ function renderHome() {
   if (qs) qs.onclick = function () { quiz = null; go({ name: 'quiz', scope: 'sel' }); };
   var ob = document.getElementById('sweepOnce');
   if (ob) ob.onclick = function () {
-    startReview(WORDS.filter(function (w) { return lvl(w.i) === 3 && everShaky(w.i); }),
+    startReview(pool.filter(function (w) { return lvl(w.i) === 3 && everShaky(w.i); }),
       '曾错过的词', { name: 'home' });
   };
-  document.getElementById('openImp').onclick = openImport;
+  var oi = document.getElementById('openImp'); if (oi) oi.onclick = openImport;   // 乱序版里不摆这两个
   /* 得裹一层：openAdd(u, word) 第一个参数是单元号，直接当 onclick 会把
      MouseEvent 当成单元号传进去 —— addTarget 变成一个事件对象，
      点「添加」就只会说「这个单元不在了」。（第八次优化给 openAdd 加参数时漏掉的） */
-  document.getElementById('openAdd').onclick = function () { openAdd(); };
+  var oa = document.getElementById('openAdd'); if (oa) oa.onclick = function () { openAdd(); };
 }
 
 /* ================= UNIT ================= */
@@ -639,7 +682,7 @@ function wireHeader(u) {
   var b = document.getElementById('back'); if (b) b.onclick = function () { dropOrder(); go({ name: 'home' }); };
   var sw = document.getElementById('sweepUnit');
   if (sw) sw.onclick = function () {
-    startReview(unitWords(u).filter(shaky), 'UNIT ' + String(u).padStart(2, '0') + ' 错词',
+    startReview(unitWords(u).filter(shaky), unitShort(u) + ' 错词',
       { name: 'unit', u: u, tab: 'browse' });
   };
   var dr = document.getElementById('dropUnit');
@@ -857,7 +900,8 @@ function renderBrowse(u) {
   view.innerHTML = unitHeader(u, 'browse') +
     '<div class="sortbar"><span>排序</span>' +
       SORTS.map(function (s) {
-        return '<button class="chip' + (store.set.sort === s[0] ? ' on' : '') + '" data-sort="' + s[0] + '" type="button">' + s[1] + '</button>';
+        var name = s[0] === 'book' && unitMeta(u).ids ? '固定乱序' : s[1];   // 乱序单元的「原书顺序」就是那份写死的乱序
+        return '<button class="chip' + (store.set.sort === s[0] ? ' on' : '') + '" data-sort="' + s[0] + '" type="button">' + name + '</button>';
       }).join('') +
       '<span class="sortbar-gap"></span>' +
       (unitMeta(u).imported
@@ -1271,7 +1315,7 @@ var quiz = null;
 function quizPool(u, sel) {
   if (sel) return selWords();
   /* 单元里正筛着某个颜色，就只考这一批 —— ordered() 已经把筛选算进去了 */
-  return (u == null ? WORDS : ordered(u)).filter(shaky);
+  return (u == null ? homePool() : ordered(u)).filter(shaky);
 }
 
 /* ---- 干扰项按相似度挑（第五次优化 6） ----
@@ -1371,13 +1415,14 @@ function buildQuiz(key, pool, swept) {
 }
 function renderQuiz(u, sel) {
   var all = u == null;
-  var key = sel ? 'sel' : all ? 'all' : 'u' + u;
+  var shuf = all && !sel && !!store.set.shuf;       // 从乱序版首页点进来的，只考乱序版里的错词
+  var key = sel ? 'sel' : all ? (shuf ? 'all-shuf' : 'all') : 'u' + u;
   var pool = quizPool(all ? null : u, sel);
   var head = all
     ? '<button class="back" id="back" type="button">← 返回目录</button>' +
       '<div class="unit-head"><div><p class="eyebrow">' +
-        (sel ? '只考自己勾出来的那一批' : '只考「整理错词」里的词') + '</p><h1>' +
-        (sel ? '选中测验' : '错词测验') + '</h1></div></div>'
+        (sel ? '只考自己勾出来的那一批' : '只考' + (shuf ? '乱序版' : '') + '「整理错词」里的词') + '</p><h1>' +
+        (sel ? '选中测验' : shuf ? '乱序版错词测验' : '错词测验') + '</h1></div></div>'
     : unitHeader(u, 'quiz');
   function wire() {
     if (all) document.getElementById('back').onclick = function () { go({ name: 'home' }); };
