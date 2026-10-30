@@ -45,11 +45,15 @@ var dropRel = !!store.rel;               // 第四次优化 5：不再记「反�
 if (dropRel) delete store.rel;
 /* hist used to be set by ANY 模糊. It now means "真的错过": 不认识, or 掌握之后又掉下来。
    Old profiles can't tell the two apart, so rebuild once from the levels we can still see. */
-if (store.hv !== 3) {
+if (!(store.hv >= 3)) {
   var reb = {};
   for (var hk in store.prog) if (store.prog[hk] === 1) reb[hk] = 1;
   store.hist = reb; store.hv = 3;
 }
+/* 第二十三次优化：第一次就标「不认识」不再算错过，只有认识之后又掉回不认识才算。
+   旧记录分不清是哪一种，用户要的是黄圈别带着，所以一次性清空，往后按新规则重新记。 */
+var histReset = store.hv !== 4;
+if (histReset) { store.hist = {}; store.hv = 4; }
 /* 自建词编号迁移（第二十次优化）：老版本自建词的编号从 10000 排起，后来内置的雅思词占了 10001–10639，
    撞号的两个词共用着同一份进度／星标／颜色。一次性把撞号的自建词换到 CUSTOM_ID_FLOOR 之上的新编号，
    那份共用的记录跟着自建词走、雅思词回到未学（为什么这样挑，见 pure.js 的 renumberCollidingCustom）。
@@ -72,7 +76,7 @@ var save = (function () {
     try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {}
   }, 200); };
 })();
-if (dropRel || idMoved) save();
+if (dropRel || idMoved || histReset) save();
 
 /* ---------- imported units ---------- */
 function mountCustom() {
@@ -281,10 +285,12 @@ var SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wid
 
 /* ---------- progress helpers ---------- */
 function lvl(i) { return store.prog[i] || 0; }   // 0 未学 · 1 不认识 · 3 认识（2 原来是「模糊」，第二十二次优化取消）
-/* 记账规则：标「不认识」（包括测验答错）就算错过一次。 */
+/* 记账规则：认识之后又标回「不认识」（包括测验答错）才算错过一次；
+   第一次就标不认识只是还没学会，改成认识时不带「曾错过」（第二十三次优化）。 */
 function setLvl(i, v) {
+  var prev = lvl(i);
   if (v) store.prog[i] = v; else delete store.prog[i];
-  if (v === 1) store.hist[i] = (store.hist[i] || 0) + 1;
+  if (v === 1 && prev === 3) store.hist[i] = (store.hist[i] || 0) + 1;
   save();
 }
 function everShaky(i) { return !!store.hist[i]; }
