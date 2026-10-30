@@ -1277,7 +1277,7 @@ function renderStudy(u, n) {
     });
     scrollRail(ws);
   }
-  if (revealed && store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
+  if (store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }   // 一换到这个词就读，不等翻开（第二十四次优化）
   ydPrefetch(w, ws[n + 1]);
 }
 
@@ -1380,7 +1380,7 @@ function renderReview() {
   Array.prototype.forEach.call(view.querySelectorAll('.rate button'), function (b) {
     b.onclick = function () { rateReview(+b.dataset.lvl); };
   });
-  if (revealed && store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
+  if (store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }   // 一换到这个词就读，不等翻开（第二十四次优化）
   ydPrefetch(w, deck[1]);
 }
 function cycleReview(dir) {                 // look at another word without grading this one
