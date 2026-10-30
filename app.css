@@ -809,3 +809,34 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .rv-export-hint{font-family:var(--util);font-size:.7rem;color:var(--ink-3);line-height:1.5}
 .exp-row{display:flex;flex-wrap:wrap;gap:8px}
 .exp-row .btn{margin-bottom:2px}
+
+/* ============ 第二十六次优化：词卡放大 ============
+   学习页放宽到 1480，头部收紧，把位置让给词卡（答题卡也跟着上移，矮窗口少滚一截）。
+   字号放在 .wcard 上，整理错词用的是同一张卡，一起变大。窄屏不动。 */
+@media (min-width:901px){
+  html.studying main{max-width:1480px;padding-top:24px}
+  html.studying .back{margin-bottom:6px}
+  html.studying .eyebrow{margin-bottom:4px}
+  html.studying h1{font-size:clamp(1.5rem,2.4vw,2rem);margin-bottom:0}
+  html.studying .unit-head{margin-bottom:14px;gap:12px 18px}
+  .wcard{padding:clamp(28px,3.4vw,52px)}
+  .wcard .w-no{font-size:.82rem}
+  .wcard .w-head{margin:10px 0 8px}
+  .wcard .w-word{font-size:clamp(3rem,5vw,5rem)}
+  .wcard .w-word.phrase{font-size:clamp(2.2rem,3.6vw,3.4rem)}
+  .wcard .w-ipa{font-size:clamp(1.15rem,1.7vw,1.4rem)}
+  .wcard .speak{width:44px;height:44px;flex-basis:44px}
+  .wcard .speak svg{width:20px;height:20px}
+  .wcard .w-zh{font-size:calc(1.3rem * var(--zh-scale))}
+  .wcard .w-zh .pos{font-size:.86rem}
+  .wcard .blk-l{font-size:.8rem}
+  .wcard .root{font-size:1.15rem}
+  .wcard .ex-en{font-size:1.38rem}
+  .wcard .ex-gen .ex-en{font-size:1.3rem}
+  .wcard .ex-zh{font-size:calc(1.12rem * var(--zh-scale))}
+  .wcard .pending{font-size:1.05rem}
+  .wcard .cover button{font-size:.95rem;padding:12px 26px}
+  .rate button{font-size:1.05rem;padding:17px 8px}
+  .rate button small{font-size:.72rem}
+  .study-nav, .study-nav button{font-size:.88rem}
+}

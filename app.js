@@ -1321,7 +1321,12 @@ function renderStudy(u, n) {
   wireHeader(u);
   var railCtl = railMount(ws, n);
 
-  function goN(k) { route.rev = false; go({ name: 'unit', u: u, tab: 'study', n: Math.max(0, Math.min(k, ws.length - 1)) }); }
+  function goN(k, stay) {
+    var y = window.scrollY || window.pageYOffset || 0;
+    route.rev = false;
+    go({ name: 'unit', u: u, tab: 'study', n: Math.max(0, Math.min(k, ws.length - 1)) });
+    if (stay) scrollTo0(y);                 // 答题卡上点的词：整页也别动，点还留在鼠标底下（第二十六次优化）
+  }
   document.getElementById('prev').onclick = function () { goN(n - 1); };
   document.getElementById('next').onclick = function () { goN(n + 1); };
   var rv = document.getElementById('reveal');
@@ -1339,10 +1344,10 @@ function renderStudy(u, n) {
     };
   });
   if (railCtl) {
-    railWireJump(view.querySelector('.rail-grid'), goN);
+    railWireJump(view.querySelector('.rail-grid'), function (k) { goN(k, true); });
   } else {
     Array.prototype.forEach.call(view.querySelectorAll('.rail-b'), function (b) {
-      b.onclick = function () { railHold(b.parentNode); goN(+b.dataset.n); };
+      b.onclick = function () { railHold(b.parentNode); goN(+b.dataset.n, true); };
     });
     scrollRail(ws);
   }
@@ -2921,6 +2926,7 @@ function render() {
      它观察的节点跟着 view.innerHTML 一起没了，但观察者本身不会自动断——
      每次重渲染先断一次，不管这次去哪一页，保证同时只有一个在盯着。 */
   if (railRO) { railRO.disconnect(); railRO = null; }
+  document.documentElement.classList.toggle('studying', route.name === 'unit' && route.tab === 'study');
   if (route.name === 'home') renderHome();
   else if (route.name === 'review') renderReview();
   else if (route.name === 'quiz') renderQuiz(null, route.scope === 'sel');
