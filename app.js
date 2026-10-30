@@ -231,6 +231,16 @@ function ydPrefetch() {
     if (w && ydOk(w.w)) ydGet(w.w);
   }
 }
+/* 有道的录音有的响有的轻，前后能差 10 dB（第二十四次优化）。它不带跨域头，网页里拿不到采样，
+   所以响度是在本地量好的（src/measure_yd.py → data/ydgain.js）：偏响的按表压低，
+   偏轻的放不大（volume 最多 1），原样播。 */
+function ydGainOf(text) {
+  var g = window.YD_GAIN, type = store.set.accent === 'en-GB' ? '1' : '2';
+  if (!g || !g[type]) return 1;
+  var cut = g[type][String(text).trim()];
+  if (cut === undefined) cut = g['d' + type] || 0;
+  return Math.pow(10, -cut / 20);
+}
 function speakYd(text, mine, vol, rate, fallback) {
   var a = ydGet(text);
   var done = false;
@@ -240,7 +250,7 @@ function speakYd(text, mine, vol, rate, fallback) {
     fallback();
   }
   var t = setTimeout(fail, 2500);            // 网慢到这个份上，不如先用系统声音读出来
-  a.volume = vol;
+  a.volume = vol * ydGainOf(text);
   a.playbackRate = Math.max(0.5, Math.min(1.5, rate));
   try { a.currentTime = 0; } catch (e) {}
   a.onplaying = function () { done = true; clearTimeout(t); };
