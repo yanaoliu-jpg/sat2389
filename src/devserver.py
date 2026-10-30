@@ -12,7 +12,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8777
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", port), functools.partial(Handler, directory=ROOT)) as httpd:
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    with socketserver.ThreadingTCPServer(("", port), functools.partial(Handler, directory=ROOT)) as httpd:
         print(f"serving {ROOT} on http://localhost:{port}", flush=True)
         httpd.serve_forever()

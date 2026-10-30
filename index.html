@@ -6,6 +6,7 @@
 <title>SAT 2389 · 背单词</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.oxfordlearnersdictionaries.com">
 <link rel="preconnect" href="https://dict.youdao.com">
 <link href="https://fonts.googleapis.com/css2?family=Faustina:ital,wght@0,400..700;1,400..600&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
@@ -36,6 +37,29 @@
   <div class="modal-card" role="dialog" aria-modal="true" aria-label="设置">
     <h2>设置</h2>
 
+    <p class="sec">外观</p>
+    <div class="field">
+      <span>背景色调</span>
+      <div class="tone-row" id="toneSwatches"></div>
+    </div>
+    <label class="field">
+      <span>色相</span>
+      <input id="setHue" class="tone-hue" type="range" min="0" max="360" step="1" value="150">
+    </label>
+    <label class="field">
+      <span>浓淡</span>
+      <input id="setChroma" type="range" min="0" max="100" step="1" value="30">
+      <small class="hint">拖色相可以选任意颜色，浓淡拉到最左是不带颜色的灰。深色模式跟着一起变。</small>
+    </label>
+    <label class="field">
+      <span>首页进度样式</span>
+      <select id="setUprog">
+        <option value="mosaic">色块（每 10 个词一格）</option>
+        <option value="bar">进度条</option>
+        <option value="ribbon">条带（每个词一段）</option>
+      </select>
+    </label>
+
     <p class="sec">发音</p>
     <label class="field">
       <span>口音</span>
@@ -57,8 +81,9 @@
     </label>
     <label class="field">
       <span>单词发音</span>
-      <select id="setWsrc"><option value="yd">真人录音（有道，需联网）</option><option value="sys">系统声音</option></select>
-      <small class="hint">真人录音只管单词和短语，例句还是用上面选的声音读；没网或查不到这个词时自动换回系统声音。</small>
+      <select id="setWsrc"><option value="yd">真人录音（牛津词典，需联网）</option><option value="sys">系统声音</option></select>
+      <small class="hint">真人录音只管单词和短语，例句还是用上面选的声音读。牛津没收的词用有道，没网时用系统声音。</small>
+      <small class="hint" id="oxState"></small>
     </label>
     <div class="field">
       <button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button>
@@ -122,31 +147,10 @@
         <option value="long">长 · 25–35 词</option>
       </select>
     </label>
-    <div class="provrow">
-      <button class="chip" data-prov="anthropic" type="button">Anthropic</button>
-      <button class="chip" data-prov="deepseek" type="button">DeepSeek</button>
-    </div>
-    <div id="provAnthropic">
-      <label class="field">
-        <span>Anthropic API Key</span>
-        <input id="aiField" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-        <small class="hint" id="aiHint">只存在这台设备的浏览器里，直接发给 api.anthropic.com，不经过任何中间服务器。
-          按量计费，走你自己的账号。留空就用不了「生成例句」。</small>
-      </label>
-      <label class="field">
-        <span>模型</span>
-        <select id="setModel">
-          <option value="claude-opus-5">Claude Opus 5 · 最好</option>
-          <option value="claude-sonnet-5">Claude Sonnet 5 · 均衡</option>
-          <option value="claude-haiku-4-5">Claude Haiku 4.5 · 最省</option>
-        </select>
-      </label>
-    </div>
-    <div id="provDeepseek" hidden>
       <label class="field">
         <span>DeepSeek API Key</span>
         <input id="dsField" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false">
-        <small class="hint">在 platform.deepseek.com 申请。同样只存在这台设备的浏览器里，
+        <small class="hint">在 platform.deepseek.com 申请。只存在这台设备的浏览器里，
           直接发给 api.deepseek.com，不经过任何中间服务器。</small>
       </label>
       <label class="field">
@@ -156,7 +160,6 @@
           <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
         </select>
       </label>
-    </div>
 
     <p class="sec">词表</p>
     <div class="field">
@@ -170,6 +173,10 @@
       <button class="btn btn-ghost" id="expStar" type="button">复制生词本</button>
       <small class="hint">Tab 分隔的纯文本，能直接粘回上面「导入词表」的文本框，也能存到别处。
         复习页里也有「导出这批词」，导的是当前这一轮。</small>
+    </div>
+    <div class="field">
+      <button class="btn btn-ghost" id="expPron" type="button">复制还没进发音表的词</button>
+      <small class="hint">新词加进来就能听：网页会自己去牛津、朗文找录音。想再补上英美音标、多音词和统一音量，把这里复制的词交给 src/update_pron.py。</small>
     </div>
 
     <div class="modal-foot">
@@ -287,6 +294,7 @@
 <script src="data/toefl_rich.js"></script>
 <script src="data/ielts_rich.js"></script>
 <script src="data/ydgain.js"></script>
+<script src="data/pron.js"></script>
 <script src="pure.js"></script>
 <script src="app.js"></script>
 </body>

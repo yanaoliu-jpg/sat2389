@@ -29,6 +29,30 @@
   --miss:#8199b4; --miss-soft:#8199b433;
   --shadow:0 1px 0 #ffffff0a inset, 0 2px 6px #0006, 0 14px 30px -18px #000;
 }
+/* 背景色调（第二十八次优化，app.js applyTone）：--th 色相、--tc 浓淡 0–1，只换中性色，朱红等强调色不动 */
+:root[data-tone]{
+  --ground:oklch(.915 calc(.075*var(--tc)) var(--th)); --ground-2:oklch(.885 calc(.08*var(--tc)) var(--th));
+  --card:oklch(.985 calc(.012*var(--tc)) var(--th)); --card-2:oklch(.96 calc(.024*var(--tc)) var(--th));
+  --ink:oklch(.24 calc(.03*var(--tc)) var(--th)); --ink-2:oklch(.48 calc(.05*var(--tc)) var(--th));
+  --ink-3:oklch(.62 calc(.05*var(--tc)) var(--th)); --rule:oklch(.84 calc(.05*var(--tc)) var(--th));
+  --rule-2:oklch(.89 calc(.04*var(--tc)) var(--th));
+}
+@media (prefers-color-scheme: dark){
+  :root[data-tone]:not([data-theme="light"]){
+  --ground:oklch(.2 calc(.04*var(--tc)) var(--th)); --ground-2:oklch(.17 calc(.035*var(--tc)) var(--th));
+  --card:oklch(.25 calc(.04*var(--tc)) var(--th)); --card-2:oklch(.29 calc(.04*var(--tc)) var(--th));
+  --ink:oklch(.94 calc(.012*var(--tc)) var(--th)); --ink-2:oklch(.72 calc(.035*var(--tc)) var(--th));
+  --ink-3:oklch(.57 calc(.035*var(--tc)) var(--th)); --rule:oklch(.33 calc(.04*var(--tc)) var(--th));
+  --rule-2:oklch(.29 calc(.035*var(--tc)) var(--th));
+  }
+}
+:root[data-tone][data-theme="dark"]{
+  --ground:oklch(.2 calc(.04*var(--tc)) var(--th)); --ground-2:oklch(.17 calc(.035*var(--tc)) var(--th));
+  --card:oklch(.25 calc(.04*var(--tc)) var(--th)); --card-2:oklch(.29 calc(.04*var(--tc)) var(--th));
+  --ink:oklch(.94 calc(.012*var(--tc)) var(--th)); --ink-2:oklch(.72 calc(.035*var(--tc)) var(--th));
+  --ink-3:oklch(.57 calc(.035*var(--tc)) var(--th)); --rule:oklch(.33 calc(.04*var(--tc)) var(--th));
+  --rule-2:oklch(.29 calc(.035*var(--tc)) var(--th));
+}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
@@ -116,10 +140,18 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .unit-span{font-family:var(--display);font-size:1.02rem;line-height:1.35;margin:5px 0 12px;
   font-style:italic;color:var(--ink)}
 .unit-span i{font-style:normal;color:var(--ink-3);padding:0 4px}
-.bubbles{display:grid;grid-template-columns:repeat(17,1fr);gap:2.5px}
-.bubble{aspect-ratio:1/.62;border-radius:99px;background:var(--rule-2);border:1px solid var(--rule)}
-.bubble.k{background:var(--seal);border-color:var(--seal)}
-.bubble.f{background:var(--amber-soft);border-color:var(--amber)}
+.mosaic{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
+.mosaic i{aspect-ratio:1/.72;border-radius:3px;
+  background:color-mix(in srgb, var(--seal) calc(var(--k)*1%), color-mix(in srgb, var(--miss) calc(var(--x)*.4%), var(--rule-2)))}
+.u-big{font-family:var(--display);font-size:1.9rem;line-height:1;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.u-big span{font-family:var(--util);font-size:.78rem;color:var(--ink-3);margin-left:6px}
+.u-bar{display:flex;height:9px;border-radius:99px;overflow:hidden;background:var(--rule-2)}
+.u-bar .k{background:var(--seal)}
+.u-bar .x{background:color-mix(in srgb, var(--miss) 55%, var(--rule-2))}
+.u-rib{display:flex;height:34px;border-radius:5px;overflow:hidden;background:var(--rule-2)}
+.u-rib i{flex-basis:0;min-width:0}
+.u-rib .k{background:var(--seal)}
+.u-rib .x{background:color-mix(in srgb, var(--miss) 55%, var(--rule-2))}
 .unit-foot{display:flex;justify-content:space-between;align-items:baseline;margin-top:11px;
   font-family:var(--util);font-size:.74rem;color:var(--ink-3)}
 .unit-foot b{color:var(--seal);font-weight:500;font-variant-numeric:tabular-nums}
@@ -155,14 +187,14 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   .rail-grid{grid-template-columns:repeat(17,1fr);max-height:112px}
   .rail-big .rail-grid{max-height:86px}
 }
-.rail-b{aspect-ratio:1/.62;border-radius:99px;background:var(--rule-2);border:1px solid var(--rule);
+.rail-b{aspect-ratio:1/.62;border-radius:3px;background:var(--rule-2);border:0;
   cursor:pointer;padding:0;transition:transform .12s}
 .rail-b:hover{transform:scale(1.22)}
 .rail-b.k{background:var(--seal);border-color:var(--seal)}
 .rail-b.f{background:var(--amber-soft);border-color:var(--amber)}
 .rail-b.cur{outline:2px solid var(--ink);outline-offset:2px}
 .rail-legend{margin-top:14px;font-family:var(--util);font-size:.7rem;color:var(--ink-3);line-height:1.9}
-.rail-legend i{display:inline-block;width:16px;height:9px;border-radius:99px;border:1px solid var(--rule);
+.rail-legend i{display:inline-block;width:16px;height:9px;border-radius:3px;
   background:var(--rule-2);margin-right:7px;vertical-align:middle}
 .rail-legend .k i{background:var(--seal);border-color:var(--seal)}
 .rail-legend .f i{background:var(--amber-soft);border-color:var(--amber)}
@@ -218,6 +250,11 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   line-height:1;letter-spacing:-.02em;margin:0}
 .w-ipa{font-family:var(--ipa);font-size:clamp(.95rem,1.7vw,1.15rem);color:var(--ink-2)}
 .w-ipa .st{color:var(--seal)}
+.w-ipa:empty{display:none}
+.w-sound{display:inline-flex;align-items:baseline;gap:8px}
+.w-pos{font-family:var(--util);font-size:.78rem;color:var(--ink-3)}
+.w-src{font-family:var(--util);font-size:.68rem;color:var(--amber);border:1px solid var(--amber);
+  border-radius:99px;padding:1px 8px;align-self:center}
 .speak{
   display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;flex:0 0 38px;
   border-radius:99px;border:1px solid var(--rule);background:var(--card-2);cursor:pointer;color:var(--ink-2);
@@ -332,11 +369,20 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 
 /* accent toggle + settings hint */
 .tool-accent{font-family:var(--util);min-width:56px}
+.tone-row{display:flex;flex-wrap:wrap;gap:8px}
+.tone-sw{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);padding:0;cursor:pointer}
+.tone-sw.on{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink)}
+.field input.tone-hue{-webkit-appearance:none;appearance:none;height:12px;border-radius:99px;
+  background:linear-gradient(to right,oklch(.8 .1 0),oklch(.8 .1 60),oklch(.8 .1 120),oklch(.8 .1 180),oklch(.8 .1 240),oklch(.8 .1 300),oklch(.8 .1 360))}
+.tone-hue::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--card);border:2px solid var(--ink);cursor:pointer}
+.tone-hue::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--card);border:2px solid var(--ink);cursor:pointer}
+.hint:empty{display:none}
 .hint{display:block;margin-top:6px;font-size:.7rem;color:var(--ink-3);line-height:1.5}
 
 /* ---------- 不认识 state ---------- */
-.bubble.x, .rail-b.x{background:var(--miss-soft);border-color:var(--miss)}
-.rail-legend .x i{background:var(--miss-soft);border-color:var(--miss)}
+.rail-b.x{background:color-mix(in srgb, var(--miss) 55%, var(--rule-2))}
+.rail-legend .x i{background:color-mix(in srgb, var(--miss) 55%, var(--rule-2))}
 .row.x .dot{background:var(--miss)}
 .wcard.x::before{background:var(--miss)}
 
@@ -477,8 +523,6 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 }
 
 /* ---------- AI 例句：两家服务商 ---------- */
-.provrow{display:flex;gap:8px;margin-bottom:12px}
-.provrow .chip{flex:1;text-align:center}
 
 /* ============ 第五次优化 ============ */
 
@@ -548,6 +592,13 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .rv-s.warn b{color:var(--amber)}
 .rv-bar{height:6px;background:var(--rule-2);border-radius:99px;margin:0 0 14px}
 .rv-bar i{display:block;height:100%;background:var(--seal);border-radius:99px;transition:width .3s}
+.rv-dots{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 18px;max-height:124px;overflow-y:auto}
+.rv-d{width:13px;height:8px;border-radius:3px;background:var(--rule);border:0;padding:0;
+  cursor:pointer;transition:transform .1s}
+.rv-d:hover{transform:scale(1.5)}
+.rv-d.k{background:var(--seal)}
+.rv-d.f{background:var(--amber)}
+.rv-d.cur{outline:2px solid var(--ink);outline-offset:1px}
 .review-note{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;align-items:baseline}
 @media (max-width:760px){
   .rv-stats{gap:16px}
@@ -830,7 +881,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   .study-nav, .study-nav button{font-size:.88rem}
 }
 
-/* ============ 第二十七次优化：整理错词跟学习页同一个版面 ============
+/* ============ 第二十七次优化：整理错词的词卡跟学习页一样宽 ============
    html.studying 也管这一页，这里只收紧它自己的头部和进度条。 */
 .review-note kbd{font-family:var(--util);font-size:.66rem;border:1px solid var(--rule);border-radius:4px;
   padding:0 4px;margin:0 1px}

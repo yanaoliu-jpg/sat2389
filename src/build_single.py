@@ -20,6 +20,7 @@ body = re.sub(r'\s*<script src="[^"]+"></script>', "", body)
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+         '<link rel="preconnect" href="https://www.oxfordlearnersdictionaries.com">\n'
          '<link rel="preconnect" href="https://dict.youdao.com">\n'
          '<link href="https://fonts.googleapis.com/css2?family=Faustina:ital,wght@0,400..700;1,400..600'
          '&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">')
@@ -28,7 +29,7 @@ parts = ["<title>SAT 2389 背单词</title>", FONTS,
          "<style>\n" + read("app.css") + "</style>",
          body.strip(),
          "<script>\n" + "".join(read("data", f) for f in
-             ("units.js", "words.js", "extra.js", "shuffle.js", "toefl.js", "ielts.js", "rich.js", "toefl_rich.js", "ielts_rich.js", "ydgain.js")) + read("pure.js") + read("app.js") + "</script>"]
+             ("units.js", "words.js", "extra.js", "shuffle.js", "toefl.js", "ielts.js", "rich.js", "toefl_rich.js", "ielts_rich.js", "ydgain.js", "pron.js")) + read("pure.js") + read("app.js") + "</script>"]
 doc = "\n".join(parts)
 
 if not fragment:

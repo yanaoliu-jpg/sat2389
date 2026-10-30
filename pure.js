@@ -232,6 +232,67 @@ function renumberCollidingCustom(st, builtinWords) {
   return out;
 }
 
+/* 牛津发音表（第二十八次优化，data/pron.js，src/build_pron.py 生成）：
+   table = { d: [英音默认压几 dB, 美音默认压几 dB], w: { 词: [[词性, 英音录音, 英音音标, 美音录音, 美音音标, 英音压几 dB, 美音压几 dB], …] } }
+   录音写成尾号（"1" = 词__gb_1）省地址里重复的词，写不成尾号的才写文件名，目录能从文件名推出来；
+   ~ 开头是剑桥的录音、^ 开头是朗文的，后面是完整路径；@ 开头是放在 data/audio/ 里的维基词典录音。
+   美音音标留空 = 跟英音一样；两个 dB 省略 = 用默认。
+   返回这个口音下的读音列表：音标一样的条目并成一个，词性合写（abstract 的 a./n.）。 */
+var OX_MEDIA = 'https://www.oxfordlearnersdictionaries.com/media/english/';
+var CAM_MEDIA = 'https://dictionary.cambridge.org/us/media/english/';
+var LD_MEDIA = 'https://www.ldoceonline.com/media/english/';
+var OWN_MEDIA = 'https://yanaoliu-jpg.github.io/sat2389/data/audio/';
+function pronUrl(word, clip, gb) {
+  if (clip.charAt(0) === '~') return CAM_MEDIA + clip.slice(1) + '.mp3';   // 牛津没收的词用剑桥的录音
+  if (clip.charAt(0) === '^') return LD_MEDIA + clip.slice(1) + '.mp3';    // 再没有就用朗文的
+  if (clip.charAt(0) === '@') return OWN_MEDIA + clip.slice(1) + '.mp3';    // 维基词典的录音放在自己仓库里，写全地址，单文件版也能取到
+  var dir = gb ? 'uk_pron' : 'us_pron';
+  if (clip.indexOf('/') >= 0) return OX_MEDIA + dir + '/' + clip + '.mp3';
+  var stem = /^\d/.test(clip)
+    ? word.toLowerCase().replace(/[ -]/g, '_') + '__' + (gb ? 'gb' : 'us') + '_' + clip
+    : clip;
+  return OX_MEDIA + dir + '/' + stem.charAt(0) + '/' + stem.slice(0, 3) + '/' + stem.slice(0, 5) + '/' + stem + '.mp3';
+}
+function pronList(table, word, gb) {
+  if (!table || !Object.prototype.hasOwnProperty.call(table.w, word)) return [];
+  var out = [], at = {}, side = gb ? 0 : 1;
+  table.w[word].forEach(function (r) {
+    var ipa = gb ? r[2] : (r[4] || r[2]), clip = gb ? r[1] : r[3], other = false;
+    if (!clip) { clip = gb ? r[3] : r[1]; other = true; }     // 这个口音没录，先用另一个口音的真人录音
+    if (!clip) return;
+    if (at[ipa] !== undefined) {
+      var hit = out[at[ipa]];
+      if (r[0] && hit.pos.split('/').indexOf(r[0]) < 0) hit.pos += (hit.pos ? '/' : '') + r[0];
+      return;
+    }
+    var cut = r[5 + side];
+    if (cut === undefined || cut === null) cut = table.d[side];
+    at[ipa] = out.length;
+    out.push({ pos: r[0], ipa: ipa, url: pronUrl(word, clip, other ? !gb : gb), gain: Math.pow(10, -cut / 20) });
+  });
+  return out;
+}
+
+/* 短语（第二十八次优化）：词典没收的短语拆成单词，一个接一个放真人录音。返回每个词的录音，拼不了就返回 null：
+   含多音词的（land use 的 use）分不清读哪个；含 a / an / the 的，单念是强读，放在句子里听着不对。
+   这两种留给有道整句读。发音表里没有的词照牛津的地址规律算一个，取不到时 app.js 会退回有道。
+   HETERO 是不在发音表里、看不出有两个读音的常见词。 */
+var HETERO = /^(use|uses|close|live|lives|read|lead|wind|tear|bow|row|sow|object|present|record|produce|project|refuse|content|contest|desert|house|abuse|excuse|increase|decrease|permit|rebel|conduct|contrast|import|export|insult|progress|protest|subject|survey|suspect|minute|bass|dove|wound|does|invalid|perfect|entrance|attribute|contract|convict|digest|extract|frequent|impact|incline|torment|upset|separate|estimate|graduate|moderate|alternate|appropriate|associate|duplicate|transport|combat|compact|conflict|discount|escort|exploit|ferment|finance|perfume|recall|reject|research|segment|transfer)$/i;
+function phraseClips(table, text, gb) {
+  if (!table) return null;
+  var ws = String(text).trim().split(/\s+/), out = [];
+  if (ws.length < 2 || ws.length > 6) return null;
+  for (var i = 0; i < ws.length; i++) {
+    var w = ws[i];
+    if (!/^[A-Za-z][A-Za-z'-]*$/.test(w) || /^(a|an|the)$/i.test(w)) return null;
+    var l = pronList(table, w, gb);
+    if (!l.length) l = pronList(table, w.toLowerCase(), gb);
+    if (l.length > 1 || (!l.length && HETERO.test(w))) return null;
+    out.push(l[0] || { pos: '', ipa: '', url: pronUrl(w, '1', gb), gain: Math.pow(10, -table.d[gb ? 0 : 1] / 20) });
+  }
+  return out;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -239,6 +300,7 @@ if (typeof module !== 'undefined' && module.exports) {
     wordPat: wordPat, inflectRe: inflectRe, wordRe: wordRe,
     phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell,
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
-    renumberCollidingCustom: renumberCollidingCustom
+    renumberCollidingCustom: renumberCollidingCustom,
+    pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips
   };
 }

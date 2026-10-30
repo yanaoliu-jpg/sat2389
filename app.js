@@ -18,16 +18,17 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
-                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal',
-                prov: 'anthropic', key: '', model: 'claude-opus-5',
+                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: 'deepseek-chat' };
-var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], set: {}, theme: '' };
+var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
 for (var dk in DEF_SET) if (!(dk in store.set)) store.set[dk] = DEF_SET[dk];
 if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort; v3 had one AI provider
   store.set.v = 4;
   if (store.set.accent !== 'en-US' && store.set.accent !== 'en-GB') store.set.accent = 'en-US';
 }
+delete store.set.prov; delete store.set.key; delete store.set.model;   // 第二十八次优化只留 DeepSeek，旧的 Anthropic Key 不留在本地
+if (store.set.sort === 'once' || store.set.sort === 'fresh') store.set.sort = 'book';   // 第二十八次优化删了这两种排序
 if (!(store.pv >= 2)) {                  // levels used to be {1 模糊, 2 认识}; 不认识 stored nothing
   var moved = {};
   for (var pk in store.prog) moved[pk] = store.prog[pk] === 2 ? 3 : 2;
@@ -41,6 +42,7 @@ if (!store.sel) store.sel = {};
 if (!store.gen) store.gen = {};
 if (!store.custom) store.custom = [];
 if (!store.col) store.col = {};
+if (!store.pronx) store.pronx = {};
 var dropRel = !!store.rel;               // 第四次优化 5：不再记「反复」，顺手把旧字段清掉
 if (dropRel) delete store.rel;
 /* hist used to be set by ANY 模糊. It now means "真的错过": 不认识, or 掌握之后又掉下来。
@@ -97,6 +99,18 @@ function applyTheme() {
   if (store.theme) document.documentElement.setAttribute('data-theme', store.theme);
   else document.documentElement.removeAttribute('data-theme');
 }
+/* 背景色调（第二十八次优化）：hue 是色相（0–360），null 就是原来那套青灰；chroma 是浓淡（0–100）。
+   底色、卡片、线条、文字全由这两个数在 app.css 的 [data-tone] 里推出来，朱红不跟着变。 */
+var TONES = [['青灰', null, 30], ['雾蓝', 240, 35], ['海青', 200, 35], ['薄荷', 165, 40], ['苔绿', 125, 40],
+             ['米杏', 85, 35], ['蜜桃', 50, 35], ['玫瑰', 10, 30], ['藕紫', 320, 30], ['鸢尾', 285, 35], ['纸灰', 0, 0]];
+function applyTone() {
+  var r = document.documentElement, h = store.set.hue;
+  if (h === null || h === undefined) {
+    r.removeAttribute('data-tone'); r.style.removeProperty('--th'); r.style.removeProperty('--tc');
+  } else {
+    r.setAttribute('data-tone', ''); r.style.setProperty('--th', h); r.style.setProperty('--tc', store.set.chroma / 100);
+  }
+}
 function applyZh() {
   document.documentElement.setAttribute('data-zh', store.set.zhSize || 'm');
 }
@@ -105,6 +119,7 @@ function isDark() {
   return !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
 }
 applyTheme();
+applyTone();
 applyZh();
 document.getElementById('themeBtn').onclick = function () {
   store.theme = isDark() ? 'light' : 'dark'; applyTheme(); save();
@@ -199,9 +214,11 @@ function breathGroups(text) {
   });
   return merged.length ? merged : [raw];
 }
-/* 单词真人发音（第二十二次优化）：系统 TTS 读单词再怎么挑声音也是合成的，
-   有道词典的发音是录好的，国内直连。只管单词和短语 —— 整句它不给（返回 500），
-   例句照旧走系统声音。没网、查不到这个词、或者 claude.ai 上被拦了，都退回系统声音。
+/* 单词真人发音：牛津学习词典的录音优先（第二十八次优化）。有道很多词没有真人录音，返回的是机器合成，
+   比如 amateurish 的美音，听着不对也查不出来；牛津每条都是录的，而且音标、词性和录音出自同一条目，
+   多音词（desert 名词 / 动词）也分得开。data/pron.js 由 src/build_pron.py 生成，只存地址，录音从牛津直接取。
+   表里没有的词（三家词典都没收的，或者自己导入的）和连不上的时候退回有道，词卡上标「未核对读音」，
+   再不行才用系统声音；整句一直走系统声音。
    设置里「单词发音」可以改成一直用系统声音（store.set.wsrc：'yd' / 'sys'）。 */
 var ydAudio = null;
 function ydOk(text) {
@@ -210,67 +227,172 @@ function ydOk(text) {
     t.length <= 40 && t.split(/\s+/).length <= 4 && !/[.!?,;:]$/.test(t) && /[a-z]/i.test(t);
 }
 function stopYd() { if (ydAudio) { try { ydAudio.pause(); } catch (e) {} ydAudio = null; } }
-/* 有道的录音要等一秒多才回来，也不带缓存头（第二十四次优化）：进一个词时顺手把这个词和
-   下一个词的录音先取好，真要读的时候直接播，不再干等网络。留最近 12 个，回头再听也不用重取。 */
-var ydCache = {}, ydKeys = [];
-function ydGet(text) {
-  var type = store.set.accent === 'en-GB' ? 1 : 2, t = String(text).trim(), k = type + '|' + t;
-  var a = ydCache[k];
+function accentGb() { return store.set.accent === 'en-GB'; }
+function defGain() { return window.PRON ? Math.pow(10, -PRON.d[accentGb() ? 0 : 1] / 20) : 1; }
+function prons(text) {
+  var t = String(text).trim(), l = pronList(window.PRON, t, accentGb());
+  if (l.length) return l;
+  var x = Object.prototype.hasOwnProperty.call(store.pronx, t) ? store.pronx[t] : null;   // 新词：网页自己查到的录音
+  var url = x && (accentGb() ? x.g || x.u : x.u || x.g);
+  return url ? [{ pos: '', ipa: '', url: url, gain: defGain() }] : [];
+}
+function phraseOf(text) { return prons(text).length ? null : phraseClips(window.PRON, text, accentGb()); }
+function phraseIpa(c) {                     // 短语的每个词都有音标才拼得出来
+  return c && c.every(function (p) { return p.ipa; }) ? c.map(function (p) { return p.ipa; }).join(' ') : '';
+}
+function ipaOf(w) {
+  var l = prons(w.w), x = store.pronx[String(w.w).trim()];
+  return (l.length && l[0].ipa) || phraseIpa(phraseOf(w.w)) || w.p || (x && x.ipa) || '';
+}
+/* 新词的发音（第二十八次优化）：发音表是事先做好的，新词不在里面。第一次显示这个词时网页自己查一遍：
+   牛津的录音地址有规律（约 96% 能中），英美各试一个，都没有再试朗文的美音；<audio> 不受跨域限制，能播就是有。
+   查到的存进 store.pronx，下次不用再试。音标没法从词典网站取（它们不许网页跨域），只有词表里没写音标时
+   才去 dictionaryapi.dev 查一个。想要英美音标、多音词、统一音量，跑 src/update_pron.py 进发音表。 */
+var probing = {};
+function probeClip(url) {
+  return new Promise(function (ok) {
+    var a = new Audio(), t = setTimeout(function () { finish(null); }, 6000);
+    function finish(v) { clearTimeout(t); a.onloadedmetadata = a.onerror = null; a.src = ''; ok(v); }
+    a.preload = 'metadata';
+    a.onloadedmetadata = function () { finish(true); };
+    a.onerror = function () { finish(false); };
+    a.src = url;
+  });
+}
+function probeNew(w) {
+  var t = String(w.w).trim(), x = store.pronx[t];
+  if (!window.PRON || probing[t] || !ydOk(t) || oxOff() || pronList(PRON, t, false).length) return;
+  if (!/^[a-z][a-z'-]*$/i.test(t)) return;             // 短语在 phraseOf 里拆开，不单独找
+  if (x && (x.u || x.g || Date.now() - x.t < 86400000)) return;     // 没查到的隔一天再试，可能只是当时断网
+  probing[t] = 1;
+  var us = pronUrl(t, '1', false), gb = pronUrl(t, '1', true);
+  Promise.all([probeClip(us), probeClip(gb)]).then(function (r) {
+    if (r[0] || r[1]) return { u: r[0] ? us : '', g: r[1] ? gb : '' };
+    if (r[0] === null && r[1] === null) return null;                // 都超时：网络问题，不算没有
+    var ld = 'https://www.ldoceonline.com/media/english/ameProns/' + encodeURIComponent(t.toLowerCase()) + '.mp3';
+    return probeClip(ld).then(function (hit) { return { u: hit ? ld : '', g: '' }; });
+  }).then(function (got) {
+    delete probing[t];
+    if (!got) return;
+    got.t = Date.now();
+    store.pronx[t] = got;
+    save();
+    var tag = view.querySelector('.w-src[data-w="' + esc(t) + '"]');
+    if (tag && (got.u || got.g)) tag.remove();
+    if (!w.p && (got.u || got.g)) fetchIpa(w, got);
+  }, function () { delete probing[t]; });
+}
+function fetchIpa(w, got) {
+  fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w.w)).then(function (r) { return r.json(); })
+    .then(function (j) {
+      var ipa = j && j[0] && (j[0].phonetic || (j[0].phonetics || []).map(function (p) { return p.text; }).filter(Boolean)[0]);
+      if (!ipa) return;
+      got.ipa = String(ipa).replace(/^[\/\[]|[\/\]]$/g, '');
+      save();
+      var el = view.querySelector('.w-head .w-ipa'), hw = view.querySelector('.w-word');
+      if (el && hw && hw.textContent === w.w) el.innerHTML = '/' + ipaHtml(got.ipa) + '/';
+    }).catch(function () {});
+}
+function ydUrl(t) {
+  return 'https://dict.youdao.com/dictvoice?type=' + (accentGb() ? 1 : 2) + '&audio=' + encodeURIComponent(t);
+}
+/* 牛津接连失败三次就先歇五分钟，不让每个词都白等一次超时；设置里能看到现在用的是哪家 */
+var oxFails = 0, oxOffUntil = 0;
+function oxOff() { return Date.now() < oxOffUntil; }
+function oxResult(ok) {
+  if (ok) { oxFails = 0; oxOffUntil = 0; } else if (++oxFails >= 3) { oxFails = 0; oxOffUntil = Date.now() + 300000; }
+  paintOxState();
+}
+function paintOxState() {
+  var el = document.getElementById('oxState');
+  if (el) el.textContent = oxOff() ? '现在连不上牛津网站，单词暂时用有道的发音，有道部分词是机器合成的，可能读错。' : '';
+}
+/* 录音要等一会儿才回来（第二十四次优化）：进一个词时顺手把这个词和下一个词的录音先取好，
+   真要读的时候直接播，不再干等网络。留最近 12 个，回头再听也不用重取。 */
+var clipCache = {}, clipKeys = [];
+function clipGet(url) {
+  var a = clipCache[url];
   if (a && !a.error) return a;
   a = new Audio();
   a.preload = 'auto';
-  a.src = 'https://dict.youdao.com/dictvoice?type=' + type + '&audio=' + encodeURIComponent(t);
-  if (!ydCache[k]) ydKeys.push(k);
-  ydCache[k] = a;
-  while (ydKeys.length > 12) delete ydCache[ydKeys.shift()];
+  a.src = url;
+  if (!clipCache[url]) clipKeys.push(url);
+  clipCache[url] = a;
+  while (clipKeys.length > 12) delete clipCache[clipKeys.shift()];
   return a;
 }
 function ydPrefetch() {
   for (var i = 0; i < arguments.length; i++) {
     var w = arguments[i];
-    if (w && ydOk(w.w)) ydGet(w.w);
+    if (!w || !ydOk(w.w)) continue;
+    probeNew(w);
+    var l = prons(w.w), c = phraseOf(w.w);
+    if (l.length && !oxOff()) l.forEach(function (p) { clipGet(p.url); });
+    else if (c && !oxOff()) c.forEach(function (p) { clipGet(p.url); });
+    else clipGet(ydUrl(w.w));
   }
 }
 /* 有道的录音有的响有的轻，前后能差 10 dB（第二十四次优化）。它不带跨域头，网页里拿不到采样，
    所以响度是在本地量好的（src/measure_yd.py → data/ydgain.js）：偏响的按表压低，
-   偏轻的放不大（volume 最多 1），原样播。 */
+   偏轻的放不大（volume 最多 1），原样播。牛津的量法一样，压多少直接写在 data/pron.js 里。 */
 function ydGainOf(text) {
-  var g = window.YD_GAIN, type = store.set.accent === 'en-GB' ? '1' : '2';
+  var g = window.YD_GAIN, type = accentGb() ? '1' : '2';
   if (!g || !g[type]) return 1;
   var cut = g[type][String(text).trim()];
   if (cut === undefined) cut = g['d' + type] || 0;
   return Math.pow(10, -cut / 20);
 }
-function speakYd(text, mine, vol, rate, fallback) {
-  var a = ydGet(text);
+function speakClip(url, gain, mine, vol, rate, fallback, done2, wait) {
+  var a = clipGet(url);
   var done = false;
   function fail() {
     if (done || mine !== sayToken) return; done = true; clearTimeout(t);
     if (ydAudio === a) ydAudio = null;
+    if (done2) done2(false);
     fallback();
   }
-  var t = setTimeout(fail, 2500);            // 网慢到这个份上，不如先用系统声音读出来
-  a.volume = vol * ydGainOf(text);
+  var t = setTimeout(fail, wait || 2500);    // 网慢到这个份上，不如先换下一家读出来
+  a.volume = vol * gain;
   a.playbackRate = Math.max(0.5, Math.min(1.5, rate));
   try { a.currentTime = 0; } catch (e) {}
-  a.onplaying = function () { done = true; clearTimeout(t); };
+  a.onplaying = function () { done = true; clearTimeout(t); if (done2) done2(true); };
   a.onerror = fail;
   ydAudio = a;
   var p = a.play();
   if (p && p.catch) p.catch(fail);
 }
+function speakChain(c, n, mine, vol, rate, fallback) {   // 短语：一个词放完接下一个
+  var a = clipGet(c[n].url);
+  a.onended = null;
+  speakClip(c[n].url, c[n].gain, mine, vol, rate, fallback, function (ok) {
+    if (ok && n + 1 < c.length) a.onended = function () {
+      a.onended = null;
+      if (mine === sayToken) speakChain(c, n + 1, mine, vol, rate, fallback);
+    };
+  }, 6000);
+}
 var sayToken = 0;
 /* 自动朗读什么时候读（第二十四次优化）：store.set.autoAt 'reveal' = 显示释义（空格）时读，
    'enter' = 一换到新词就读。只管学习卡和整理错词，拼写检测照旧答完才读。 */
 function autoNow(revealed) { return !!store.set.auto && (revealed || store.set.autoAt === 'enter'); }
-function speak(text, btn) {
+function speak(text, btn, pi) {              // pi：多音词读第几个读音，默认第一个
   var mine = ++sayToken;
   stopYd();
   var vol0 = +store.set.vol;
   if (isNaN(vol0)) vol0 = 1;
   if (ydOk(text)) {
     try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
-    speakYd(text, mine, Math.max(0, Math.min(1, vol0)), +store.set.rate || 1, function () { speakSys(text, mine); });
+    var v = Math.max(0, Math.min(1, vol0)), r = +store.set.rate || 1, p = prons(text)[pi || 0];
+    var viaYd = function () {
+      speakClip(ydUrl(String(text).trim()), ydGainOf(text), mine, v, r, function () { speakSys(text, mine); });
+    };
+    /* 牛津在国内要绕到洛杉矶机房，第一次取要 1–3 秒。这里宁可多等一会儿，也别退回可能读错的有道 */
+    if (p && !oxOff()) speakClip(p.url, p.gain, mine, v, r, viaYd, oxResult, 6000);
+    else if (!p && phraseOf(text) && !oxOff()) speakChain(phraseOf(text), 0, mine, v, r, viaYd);
+    /* 新词还没查完就点了喇叭：先照牛津的地址规律试一下，没有这个录音是常事，所以不记牛津连不上 */
+    else if (!p && window.PRON && !oxOff() && !store.pronx[String(text).trim()])
+      speakClip(pronUrl(String(text).trim(), '1', accentGb()), defGain(), mine, v, r, viaYd);
+    else viaYd();
     if (btn) { btn.classList.remove('on'); void btn.offsetWidth; btn.classList.add('on'); }
     return;
   }
@@ -435,9 +557,48 @@ var colFilter = '', colFilterU = null;
 function curFilter(u) { return colFilterU === u ? colFilter : ''; }
 function setFilter(u, c) { colFilterU = u; colFilter = c || ''; dropOrder(); }
 
+/* 首页单元卡的进度（第二十八次优化）：原来一词一个空心胶囊，233 个摆在一起看着发毛。
+   设置里三选一（store.set.uprog）：
+   mosaic 每 10 个词并成一格，越红认识得越多，不认识的多就偏灰蓝；词太多的导入单元把每格放大，一张卡最多 48 格。
+   bar    大数字加一条进度条。
+   ribbon 按词的顺序连成一条，相邻同状态的并成一段，所以再长的单元元素也不多。 */
+function unitProgHtml(ws) {
+  var total = ws.length, k = 0, x = 0;
+  ws.forEach(function (w) { var l = lvl(w.i); if (l === 3) k++; else if (l === 1) x++; });
+  if (store.set.uprog === 'bar') {
+    return '<div class="u-big">' + k + '<span>/ ' + total + '</span></div>' +
+      '<div class="u-bar"><i class="k" style="width:' + (total ? k / total * 100 : 0) + '%"></i>' +
+        '<i class="x" style="width:' + (total ? x / total * 100 : 0) + '%"></i></div>';
+  }
+  if (store.set.uprog === 'ribbon') {
+    var out = '', run = 0, was = null;
+    ws.forEach(function (w) {
+      var c = cls(w.i);
+      if (c !== was && run) { out += '<i class="' + was + '" style="flex-grow:' + run + '"></i>'; run = 0; }
+      was = c; run++;
+    });
+    if (run) out += '<i class="' + was + '" style="flex-grow:' + run + '"></i>';
+    return '<div class="u-rib">' + out + '</div>';
+  }
+  var size = Math.max(10, Math.ceil(total / 48)), cells = '';
+  for (var n = 0; n < total; n += size) {
+    var part = ws.slice(n, n + size), pk = 0, px = 0;
+    part.forEach(function (w) { var l = lvl(w.i); if (l === 3) pk++; else if (l === 1) px++; });
+    cells += '<i style="--k:' + Math.round(pk / part.length * 100) + ';--x:' + Math.round(px / part.length * 100) + '"></i>';
+  }
+  return '<div class="mosaic">' + cells + '</div>';
+}
+function unitFootHtml(ws, u) {
+  var k = ws.filter(function (w) { return lvl(w.i) === 3; }).length;
+  if (store.set.uprog === 'bar') {
+    var x = ws.filter(function (w) { return lvl(w.i) === 1; }).length;
+    return '<span>' + (ws.length ? Math.round(k / ws.length * 100) : 0) + '%</span><span>' + x + ' 个不认识</span>';
+  }
+  return '<span>' + u.n + ' 词</span><span><b>' + k + '</b> 已掌握</span>';
+}
+
 /* ---------- ordering (第三次优化 10) ---------- */
-var SORTS = [['book', '原书顺序'], ['weak', '先不认识'], ['once', '先曾错过'],
-             ['fresh', '先未学'], ['az', '字母序'], ['rand', '随机']];
+var SORTS = [['book', '原书顺序'], ['weak', '先不认识'], ['az', '字母序'], ['rand', '随机']];
 var WEIGHT = { 1: 0, 2: 1, 0: 2, 3: 3 };                 // 不认识 → 未学 → 认识（2 是取消了的模糊）
 var ordCache = { u: null, m: null, f: null, list: null };
 function ordered(u) {
@@ -452,16 +613,6 @@ function ordered(u) {
     ws = ws.slice().sort(function (a, b) {
       return (WEIGHT[lvl(a.i)] - WEIGHT[lvl(b.i)]) || (seq[a.i] - seq[b.i]);
     });
-  } else if (m === 'once') {
-    /* 「认识（曾错过）」排最前 —— 自以为会、却栽过跟头的那一批最值得再看一眼。
-       现在标着不认识的词本来就在「先不认识」里，这里不重复强调。 */
-    ws = ws.slice().sort(function (a, b) {
-      var wa = lvl(a.i) === 3 && everShaky(a.i) ? 0 : 1;
-      var wb = lvl(b.i) === 3 && everShaky(b.i) ? 0 : 1;
-      return (wa - wb) || (seq[a.i] - seq[b.i]);
-    });
-  } else if (m === 'fresh') {
-    ws = ws.slice().sort(function (a, b) { return (lvl(a.i) ? 1 : 0) - (lvl(b.i) ? 1 : 0) || seq[a.i] - seq[b.i]; });
   } else if (m === 'az') {
     ws = ws.slice().sort(function (a, b) { return a.w < b.w ? -1 : a.w > b.w ? 1 : 0; });
   } else if (m === 'rand') {
@@ -660,16 +811,14 @@ function renderHome() {
   var shown = UNITS.filter(function (x) { return shuf ? !!x.ids : !x.ids; });
   var cards = shown.map(function (u) {
     var ws = unitWords(u.u);
-    var kn = ws.filter(function (w) { return lvl(w.i) === 3; }).length;
-    var bub = ws.map(function (w) { return '<i class="bubble ' + cls(w.i) + '"></i>'; }).join('');
     return '<button class="unit-card' + (u.t ? ' extra' : '') +
       (merging ? (u.imported ? (mergeSel[u.u] ? ' msel' : '') : ' mno') : '') +
       '" data-u="' + u.u + '" type="button">' +
       '<div class="unit-no">' + esc(unitLabel(u.u)) +
         (u.imported ? '<span class="tag-imp">' + (u.manual ? '自建' : '导入') + '</span>' : '') + '</div>' +
       '<div class="unit-span">' + esc(u.a) + '<i>—</i>' + esc(u.b) + '</div>' +
-      '<div class="bubbles">' + bub + '</div>' +
-      '<div class="unit-foot"><span>' + u.n + ' 词</span><span><b>' + kn + '</b> 已掌握</span></div>' +
+      unitProgHtml(ws) +
+      '<div class="unit-foot">' + unitFootHtml(ws, u) + '</div>' +
       '</button>';
   }).join('');
   view.innerHTML =
@@ -808,14 +957,14 @@ function wireHeader(u) {
    标题旁边直接写「第 N / M」，不用再去点阵里找自己在哪。（第七次优化 2） */
 var RAIL_BIG = 120;                  // 跟 rail-big 那条线对齐：超过这个数才值当虚拟滚动
 var RAIL_OVERSCAN = 6;                // 视口外再多渲染几行，滚快了不露白
-function railBtn(w, n, curIdx, tone) {      // tone：整理错词按这一轮的状态上色，不用学习进度
-  return '<button class="rail-b ' + (tone ? tone(w) : cls(w.i)) + (n === curIdx ? ' cur' : '') +
-    (!tone && store.sel[w.i] ? ' sel' : '') + '" data-n="' + n + '" data-i="' + w.i +
+function railBtn(w, n, curIdx) {
+  return '<button class="rail-b ' + cls(w.i) + (n === curIdx ? ' cur' : '') +
+    (store.sel[w.i] ? ' sel' : '') + '" data-n="' + n + '" data-i="' + w.i +
     '" data-col="' + colOf(w.i) + '" type="button" title="' + esc(w.w) +
     '" aria-label="' + esc(w.w) + '"></button>';
 }
 function bodyCls(ws) { return 'unit-body' + (ws.length > RAIL_BIG ? ' rail-wide' : ''); }
-function railHtml(ws, curIdx, pick, tone) {
+function railHtml(ws, curIdx, pick) {
   var big = ws.length > RAIL_BIG, usedCol = {};
   ws.forEach(function (w) { var c = colOf(w.i); if (c) usedCol[c] = 1; });
   var colLegend = COLORS.filter(function (c) { return usedCol[c[0]]; }).map(function (c) {
@@ -828,10 +977,9 @@ function railHtml(ws, curIdx, pick, tone) {
       (curIdx >= 0 ? '<span class="rail-at">' + (curIdx + 1) + ' / ' + ws.length + '</span>'
                    : '<span class="rail-at">' + ws.length + ' 词</span>') + '</p>' +
     '<div class="rail-grid">' +
-    (big ? '' : ws.map(function (w, n) { return railBtn(w, n, curIdx, tone); }).join('')) +
-    '</div><div class="rail-legend">' + (tone
-      ? '<div class="k"><i></i>已清</div><div class="f"><i></i>又错了</div><div><i></i>待过</div>'
-      : '<div class="k"><i></i>认识</div><div class="x"><i></i>不认识</div><div><i></i>未学</div>') + '</div>' +
+    (big ? '' : ws.map(function (w, n) { return railBtn(w, n, curIdx); }).join('')) +
+    '</div><div class="rail-legend"><div class="k"><i></i>认识</div>' +
+    '<div class="x"><i></i>不认识</div><div><i></i>未学</div></div>' +
     (colLegend ? '<div class="rail-legend rail-cols">' + colLegend + '</div>' : '') +
     (pick ? '<p class="rail-picktip">选择模式：点／拖答题卡上的点，圈一段词</p>' : '') +
     '</aside>';
@@ -876,7 +1024,7 @@ function scrollRail(ws, center) {
    跟估计对不上就用真实值再画一遍；这之后滚动只管重算该露哪几行，不用再量。
    scrollTop 一定要等真实行高的占位块撑好才设：内容还按估计的高度算时设进去会被截短，
    滚到底点一个词就弹回一大截（第二十五次优化）。 */
-function railMount(ws, curIdx, tone) {
+function railMount(ws, curIdx) {
   if (railRO) { railRO.disconnect(); railRO = null; }
   if (ws.length <= RAIL_BIG) return null;
   var grid = view.querySelector('.rail-grid');
@@ -914,7 +1062,7 @@ function railMount(ws, curIdx, tone) {
     var before = first * rowH - gap, after = (rows - 1 - last) * rowH - gap;
     grid.innerHTML =
       (before > 0 ? '<div class="rail-sp" style="grid-column:1/-1;height:' + before + 'px"></div>' : '') +
-      ws.slice(startI, endI).map(function (w, k) { return railBtn(w, startI + k, curIdx, tone); }).join('') +
+      ws.slice(startI, endI).map(function (w, k) { return railBtn(w, startI + k, curIdx); }).join('') +
       (after > 0 ? '<div class="rail-sp" style="grid-column:1/-1;height:' + after + 'px"></div>' : '');
     if (!measured) {
       measured = true;
@@ -1034,7 +1182,7 @@ function renderBrowse(u) {
       (picking ? '<span class="row-c"></span>' : '') +
       '<div class="row-no" title="单元里第 ' + seq[w.i] + ' 个 · 编号 ' + w.i + '"><span class="dot"></span>' + seq[w.i] + '</div>' +
       '<div class="row-w">' + esc(w.w) + '</div>' +
-      '<div class="row-p">' + esc(w.p) + '</div>' +
+      '<div class="row-p">' + esc(ipaOf(w)) + '</div>' +
       '<div class="row-z' + (store.set.hideZh ? ' hidden' : '') + '">' + esc(w.z) + '</div>' +
       (editing2
         ? '<span class="row-edit">' +
@@ -1222,6 +1370,24 @@ function exHtml(e, t, word, key, extra) {
     (t ? '<p class="ex-zh' + veil + '"' + (veil ? ' title="点一下看翻译"' : '') + '>' + zhEx(t) + '</p>' : '') +
     '</div></div>';
 }
+/* 词头的音标和喇叭：读音不止一个的词，分词性各放一组（第二十八次优化） */
+function sayHtml(w) {
+  var l = prons(w.w);
+  if (l.length < 2) {
+    var ipa = ipaOf(w);
+    return '<span class="w-ipa">' + (ipa ? '/' + ipaHtml(ipa) + '/' : '') + '</span>' +
+      '<button class="speak" data-say="' + esc(w.w) + '" data-key="P" type="button" aria-label="朗读单词（快捷键 P）">' +
+        SPK + '<kbd>P</kbd></button>' +
+      (l.length || phraseOf(w.w) ? '' : '<span class="w-src" data-w="' + esc(w.w) + '" title="词典里没找到这个词的录音，读音来自有道，可能是机器合成">未核对读音</span>');
+  }
+  return l.map(function (p, n) {
+    return '<span class="w-sound">' + (p.pos ? '<span class="w-pos">' + esc(p.pos) + '</span>' : '') +
+      '<span class="w-ipa">/' + ipaHtml(p.ipa) + '/</span>' +
+      '<button class="speak" data-say="' + esc(w.w) + '" data-pi="' + n + '"' + (n ? '' : ' data-key="P"') +
+        ' type="button" aria-label="朗读' + esc(p.pos) + '的读音' + (n ? '' : '（快捷键 P）') + '">' +
+        SPK + (n ? '' : '<kbd>P</kbd>') + '</button></span>';
+  }).join('');
+}
 function cardHtml(w, revealed, u) {
   var r = rich(w), gs = gen(w), body = '';
   if (u == null) u = w.u;
@@ -1262,9 +1428,7 @@ function cardHtml(w, revealed, u) {
       (seq ? '<span class="w-seq">第 ' + seq + (tot ? ' / ' + tot : '') + ' 个</span>' : '') +
       tags + '</div>' +
     '<div class="w-head"><h2 class="w-word' + (/\s/.test(w.w) ? ' phrase' : '') + '">' + esc(w.w) + '</h2>' +
-      '<span class="w-ipa">/' + ipaHtml(w.p) + '/</span>' +
-      '<button class="speak" data-say="' + esc(w.w) + '" data-key="P" type="button" aria-label="朗读单词（快捷键 P）">' +
-        SPK + '<kbd>P</kbd></button>' +
+      sayHtml(w) +
       '<button class="row-s' + (store.star[w.i] ? ' on' : '') + '" data-star="' + w.i + '" type="button" title="加入生词本" style="font-size:1.2rem">★</button>' +
       '<button class="col-b' + (col ? ' on ' + col : '') +
         '" id="colBtn" type="button" title="' + (col ? '标着' + colName(col) + '色' : '标个颜色分组') +
@@ -1279,7 +1443,7 @@ function wireCard(w, redraw) {
     p.onclick = function () { p.classList.toggle('show'); };
   });
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) {
-    b.onclick = function () { speak(b.dataset.say, b); };
+    b.onclick = function () { speak(b.dataset.say, b, +b.dataset.pi || 0); };
   });
   Array.prototype.forEach.call(view.querySelectorAll('[data-star]'), function (b) {
     b.onclick = function () {
@@ -1359,8 +1523,8 @@ function renderStudy(u, n) {
 /* ---- 整理错词：一轮过完为止，标「认识」才出列 ----
    第五次优化 8 把这个界面重做了一遍：原来只有一句「还剩 N 个」和一条细进度条，
    看不出自己清掉了多少、哪些又栽了。现在头上是三个数（已清 / 待过 / 又错了）。
-   第二十七次优化改成跟学习页一样的版面：词卡在左、答题卡在右（换掉了卡片上面那排点子），
-   已清掉的词也能点开看（route.peek），看的时候队列不动。 */
+   第二十七次优化：词卡跟学习页一样宽，已清掉的词也能点开看（route.peek），看的时候队列不动。
+   第二十八次优化：点子放回卡片上面，一眼跟学习页（答题卡在右边）分得开。 */
 function startReview(words, title, from) {
   var deck = shuffle(words.slice());
   go({ name: 'review', deck: deck, order: deck.slice(), total: deck.length,
@@ -1369,13 +1533,25 @@ function startReview(words, title, from) {
 function reviewTone(w) {
   return route.cleared[w.i] ? 'k' : route.asked[w.i] ? 'f' : '';
 }
+function reviewDots(at) {                   // 按抽签后的原始顺序摆开，整轮的地形一眼看完
+  return '<div class="rv-dots" id="rvDots">' + route.order.map(function (w, n) {
+    return '<button class="rv-d ' + reviewTone(w) + (n === at ? ' cur' : '') + '" data-i="' + w.i +
+      '" type="button" title="' + esc(w.w) + '" aria-label="跳到 ' + esc(w.w) + '"></button>';
+  }).join('') + '</div>';
+}
+function wireReviewDots() {
+  document.getElementById('rvDots').onclick = function (e) {
+    var b = e.target.closest ? e.target.closest('.rv-d') : null;
+    if (b) jumpReview(+b.dataset.i);
+  };
+}
 function reviewShown() { return route.peek || route.deck[0]; }
-function reviewAt() {                       // 眼前这个词在答题卡上排第几
+function reviewAt() {                       // 眼前这个词在点子里排第几
   var cur = reviewShown(), at = -1;
   if (cur) route.order.forEach(function (w, n) { if (w.i === cur.i) at = n; });
   return at;
 }
-/* 点答题卡上某个点，就把复习队列转到那个词（第十一次优化 2）。
+/* 点上面某个点，就把复习队列转到那个词（第十一次优化 2）。
    已清掉的词不在队列里，拿出来直接翻开看，队列留在原处，看完接着过。（第二十七次优化） */
 function jumpReview(i) {
   var d = route.deck, idx = -1;
@@ -1390,16 +1566,6 @@ function jumpReview(i) {
   }
   renderReview();
 }
-function wireReviewRail(railCtl) {
-  if (railCtl) {
-    railWireJump(view.querySelector('.rail-grid'), function (k) { jumpReview(route.order[k].i); });
-    return;
-  }
-  Array.prototype.forEach.call(view.querySelectorAll('.rail-b'), function (b) {
-    b.onclick = function () { railHold(b.parentNode); jumpReview(+b.dataset.i); };
-  });
-  scrollRail(route.order);
-}
 function renderReview() {
   var deck = route.deck, done = route.total - deck.length, peek = route.peek;
   var again = 0;
@@ -1411,16 +1577,15 @@ function renderReview() {
     view.innerHTML =
       '<button class="back" id="back" type="button">← 退出复习</button>' +
       '<div class="unit-head"><div><p class="eyebrow">整理错词 · ' + esc(route.title) + '</p>' +
-      '<h1>全部过完了</h1></div></div>' +
-      '<div class="' + bodyCls(route.order) + '"><div class="quiz-wrap"><div class="score"><b>' + route.total + '</b>' +
+      '<h1>全部过完了</h1></div></div>' + reviewDots(-1) +
+      '<div class="quiz-wrap"><div class="score"><b>' + route.total + '</b>' +
       '<p class="lede" style="margin:14px auto 22px;text-align:center">这一轮的 ' + route.total +
       ' 个词都标成「认识」了。过几天再来 <b style="font-family:var(--display);font-size:1rem;color:var(--seal)">整理错词</b>，看看还剩几个。</p>' +
       '<div class="score-acts"><button class="btn" id="reviewDone" type="button">回到' +
-      (route.from.name === 'home' ? '目录' : '单元') + '</button></div></div></div>' +
-      railHtml(route.order, -1, false, reviewTone) + '</div>';
+      (route.from.name === 'home' ? '目录' : '单元') + '</button></div></div></div>';
     document.getElementById('back').onclick =
       document.getElementById('reviewDone').onclick = function () { go(route.from); };
-    wireReviewRail(railMount(route.order, -1, reviewTone));
+    wireReviewDots();
     return;
   }
 
@@ -1436,25 +1601,25 @@ function renderReview() {
       (again ? '<div class="rv-s warn"><b>' + again + '</b><span>又错了</span></div>' : '') +
       '<div class="rv-s"><b>' + pct + '%</b><span>进度</span></div>' +
     '</div></div>' +
-    '<div class="rv-bar"><i style="width:' + pct + '%"></i></div>';
+    '<div class="rv-bar"><i style="width:' + pct + '%"></i></div>' + reviewDots(at);
 
   view.innerHTML = head +
     '<div id="rvExportBox" class="rv-export-box" hidden></div>' +
-    '<div class="' + bodyCls(route.order) + '"><div class="card-stage">' + cardHtml(w, revealed) + RATE_BAR +
+    '<div class="card-stage">' + cardHtml(w, revealed) + RATE_BAR +
       '<div class="study-nav"><button id="prev" type="button">← 上一个</button>' +
         '<span>' + (at + 1) + ' / ' + route.order.length + '<small>↑↓ 换行 · 4–9 标色</small></span>' +
         '<button id="next" type="button">下一个 →</button></div>' +
       '<p class="review-note">' + (peek
-        ? '这个词已经清掉了：标「不认识」放回队尾，标「认识」或按 <kbd>←</kbd><kbd>→</kbd> 回去接着过'
+        ? '这个词已经清掉了：标「不认识」放回队尾，标「认识」回去接着过，<kbd>←</kbd><kbd>→</kbd> 看相邻的词'
         : '标「认识」就划掉，标「不认识」排到队尾待会儿再问' +
           '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>3</kbd> 评级 · ' +
-          '<kbd>←</kbd><kbd>→</kbd> 先看别的</span>') + '</p>' +
-    '</div>' + railHtml(route.order, at, false, reviewTone) + '</div>';
+          '<kbd>←</kbd><kbd>→</kbd> 看相邻的词，已清掉的也能看</span>') + '</p>' +
+    '</div>';
   document.getElementById('back').onclick = function () { go(route.from); };
   document.getElementById('prev').onclick = function () { cycleReview(-1); };
   document.getElementById('next').onclick = function () { cycleReview(1); };
 
-  wireReviewRail(railMount(route.order, at, reviewTone));
+  wireReviewDots();
   var rex = document.getElementById('rvExport'), rbox = document.getElementById('rvExportBox');
   if (rex) rex.onclick = function () {
     if (!rbox.hidden) { rbox.hidden = true; return; }
@@ -1482,16 +1647,20 @@ function nextReview() {                     // 换到下一个词：跟学习页
   renderReview();
   scrollTo0(0);
 }
+/* ←→ 沿着上面那排点子走，碰到已清掉的词也停下来（第二十八次优化，原来只在没清掉的词里转） */
 function cycleReview(dir) {                 // look at another word without grading this one
-  var d = route.deck;
-  if (route.peek) route.peek = null;        // 看完已清的词，回到刚才那个
-  else if (d.length < 2) return;
-  else if (dir > 0) d.push(d.shift());
-  else d.unshift(d.pop());
-  route.rev = false; route.spoke = null;
-  nextReview();
+  var o = route.order, at = reviewAt();
+  if (o.length < 2 && at >= 0) return;
+  var to = at < 0 ? (dir > 0 ? 0 : o.length - 1) : (at + dir + o.length) % o.length;
+  jumpReview(o[to].i);
+  scrollTo0(0);
 }
-function stepReview(k) {                    // ↑↓ 在答题卡上换一行，跟学习页一样
+function dotsCols() {                       // 上面那排点子一行有几个
+  var d = view.querySelectorAll('.rv-d'), n = 0;
+  while (n < d.length && d[n].offsetTop === d[0].offsetTop) n++;
+  return n || 1;
+}
+function stepReview(k) {                    // ↑↓ 在点子上换一行，跟学习页一样
   var at = reviewAt(), to = Math.max(0, Math.min(at + k, route.order.length - 1));
   if (to === at) return;
   jumpReview(route.order[to].i);
@@ -1682,7 +1851,7 @@ function renderQuiz(u, sel) {
   var stem = q.cloze
     ? '<p class="q-kind">填空 · 哪个词填进去合适</p><p class="q-cloze">' + q.sent + '</p>'
     : '<p class="q-kind">释义 · 这个词是什么意思</p><h2 class="q-stem">' + esc(q.w.w) + '</h2>' +
-      '<p class="q-sub">/' + esc(q.w.p) + '　<button class="speak" data-say="' + esc(q.w.w) +
+      '<p class="q-sub">/' + esc(ipaOf(q.w)) + '　<button class="speak" data-say="' + esc(q.w.w) +
       '" type="button" aria-label="朗读" style="width:28px;height:28px;flex:0 0 28px;vertical-align:middle">' + SPK + '</button></p>';
   view.innerHTML = head + '<div class="quiz-wrap">' +
     '<div class="quiz-prog"><i style="width:' + (quiz.at / quiz.qs.length * 100) + '%"></i></div>' +
@@ -1729,7 +1898,7 @@ function renderQuiz(u, sel) {
           '<p class="qx-tag' + (ok ? ' ok' : '') + '">' +
             (how === 'idk' ? '不会 · 那就看一眼' : ok ? '选对了 · 顺手把意思过一眼' : '这个词记一下') + '</p>' +
           '<div class="qx-head"><b>' + esc(q.w.w) + '</b>' +
-            (q.w.p ? '<span class="qx-ipa">/' + esc(q.w.p) + '/</span>' : '') +
+            (ipaOf(q.w) ? '<span class="qx-ipa">/' + esc(ipaOf(q.w)) + '/</span>' : '') +
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
           '</div>' +
           '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : q.w.z) + '</p>' +
@@ -1879,7 +2048,7 @@ function renderSpell(u, sel) {
     '<div class="quiz-prog"><i style="width:' + (spell.at / spell.ws.length * 100) + '%"></i></div>' +
     '<p class="q-kind">拼写 · 照着意思把这个词写出来</p>' +
     '<p class="sp-zh">' + zhHtml(r && r.z ? r.z : w.z) + '</p>' +
-    '<p class="sp-sub">' + (w.p ? '<span class="sp-ipa">/' + esc(w.p) + '/</span>' : '') +
+    '<p class="sp-sub">' + (ipaOf(w) ? '<span class="sp-ipa">/' + esc(ipaOf(w)) + '/</span>' : '') +
       '<button class="speak" data-say="' + esc(w.w) + '" type="button" aria-label="听一下这个词">' + SPK + '</button>' +
     '</p>' +
     '<p class="sp-shape">' + spShape(w.w, spell.hint) + '</p>' +
@@ -1926,7 +2095,7 @@ function renderSpell(u, sel) {
         (how === 'idk' ? '' : '<p class="sp-diff"><span class="sp-l">你写的</span>' + markHtml(d.a) + '</p>') +
         '<p class="sp-diff"><span class="sp-l">正确</span>' + markHtml(d.b) + '</p>' +
         '<div class="qx-head"><b>' + esc(w.w) + '</b>' +
-          (w.p ? '<span class="qx-ipa">/' + esc(w.p) + '/</span>' : '') +
+          (ipaOf(w) ? '<span class="qx-ipa">/' + esc(ipaOf(w)) + '/</span>' : '') +
           '<button class="speak" data-say="' + esc(w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
         '</div>' +
         '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : w.z) + '</p>' +
@@ -1956,32 +2125,10 @@ function renderSpell(u, sel) {
 }
 
 /* ================= AI 例句（第三次优化 6 · 第四次优化 2） =================
-   三条路：
-   · 在 claude.ai 上打开的 Artifact 版，页面可以直接问 Claude（sample 能力），
-     不需要 Key，由观看者的账号计费；
-   · 自己的 Anthropic API Key，浏览器直连 api.anthropic.com；
-   · 自己的 DeepSeek API Key，浏览器直连 api.deepseek.com（第四次优化 2）。
-   设置里选了哪家就走哪家；选 Anthropic 且没填 Key 时才回落到 sample。 */
-var sampler = null;                       // claude.use('sample') 的结果，晚于首次渲染才到
-if (window.claude && typeof window.claude.use === 'function') {
-  try {
-    window.claude.use('sample').then(function (s) {
-      if (!s) return;
-      sampler = s;
-      var h = document.getElementById('aiHint');
-      if (h) h.textContent = '这个版本能直接问 Claude，不用填 Key，由观看者的账号计费。' +
-        '填了 Key 就改走你自己的 api.anthropic.com。';
-      if (view.querySelector('#genEx')) render();
-    }, function () {});
-  } catch (e) {}
-}
-function aiKey() { return ((store.set.prov === 'deepseek' ? store.set.dskey : store.set.key) || '').trim(); }
-function aiRoute() {
-  if (store.set.prov === 'deepseek') return aiKey() ? 'deepseek' : '';
-  if (aiKey()) return 'anthropic';
-  return sampler ? 'sample' : '';
-}
-function aiReady() { return !!aiRoute(); }
+   自己的 DeepSeek API Key，浏览器直连 api.deepseek.com。
+   第二十八次优化删掉了 Anthropic 和 Artifact 里直接问 Claude 这两条路。 */
+function aiKey() { return (store.set.dskey || '').trim(); }
+function aiReady() { return !!aiKey(); }
 /* 模型有时会把 JSON 裹在 ```json 里，剥掉再解析 */
 function parseAiJson(txt) {
   var t = String(txt || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
@@ -1993,19 +2140,10 @@ function parseAiJson(txt) {
 var EXLEN = { short: [10, 15], mid: [16, 24], long: [25, 35] };
 function exRange() { return EXLEN[store.set.exlen] || EXLEN.mid; }
 function exRangeText() { var r = exRange(); return r[0] + '-' + r[1]; }
-var AI_SCHEMA = {
-  type: 'object',
-  properties: {
-    e: { type: 'string', description: 'One English sentence where the target word carries the main meaning.' },
-    t: { type: 'string', description: 'Chinese translation; wrap the fragment that renders the target word in ** **.' }
-  },
-  required: ['e', 't'],
-  additionalProperties: false
-};
 function aiPrompt(w) {
   var r = rich(w), had = gen(w).map(function (g) { return g.e; });
   return 'You are writing a study example for a Chinese student preparing for the SAT.\n\n' +
-    'Target word: ' + w.w + '\nIPA: ' + w.p + '\nChinese definition: ' + ((r && r.z) || w.z) + '\n' +
+    'Target word: ' + w.w + '\nIPA: ' + ipaOf(w) + '\nChinese definition: ' + ((r && r.z) || w.z) + '\n' +
     (r && r.e ? 'An existing example (write a DIFFERENT one, new topic): ' + r.e + '\n' : '') +
     (had.length ? 'Already generated (avoid repeating): ' + had.join(' / ') + '\n' : '') +
     '\nWrite ONE new English sentence of ' + exRangeText() + ' words. Requirements:\n' +
@@ -2014,33 +2152,6 @@ function aiPrompt(w) {
     '- Natural, concrete, SAT-register English. No dictionary phrasing, no "which means".\n' +
     '- Then translate to natural Chinese, and wrap the words that render the target word in ** **. Mark exactly one fragment.\n' +
     '\nReturn only JSON: {"e": "<the English sentence>", "t": "<the Chinese translation>"}';
-}
-function askViaSample(prompt) {
-  return sampler.json(prompt);
-}
-function askViaAnthropic(prompt, schema) {
-  return fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': (store.set.key || '').trim(),
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: store.set.model || 'claude-opus-5',
-      max_tokens: 4000,
-      output_config: { effort: 'medium', format: { type: 'json_schema', schema: schema || AI_SCHEMA } },
-      messages: [{ role: 'user', content: prompt }]
-    })
-  }).then(function (res) {
-    return res.json().then(function (j) { return { ok: res.ok, j: j }; });
-  }).then(function (out) {
-    if (!out.ok) throw new Error((out.j && out.j.error && out.j.error.message) || 'HTTP 错误');
-    if (out.j.stop_reason === 'refusal') throw new Error('模型拒答了，换个词再试。');
-    return parseAiJson((out.j.content || []).filter(function (b) { return b.type === 'text'; })
-      .map(function (b) { return b.text; }).join(''));
-  });
 }
 /* DeepSeek 是 OpenAI 兼容的 /chat/completions，而且服务端本身就发 CORS 头，
    所以浏览器可以直连，不用中间服务器。json_object 模式要求提示词里出现 json 字样，
@@ -2074,18 +2185,10 @@ function askViaDeepSeek(prompt, plain) {
     return parseAiJson(c.message.content);
   });
 }
-function askAI(route, prompt, schema) {
-  return route === 'sample' ? askViaSample(prompt)
-       : route === 'deepseek' ? askViaDeepSeek(prompt)
-       : askViaAnthropic(prompt, schema);
-}
-function aiErr(err, route) {
+function aiErr(err) {
   var m = String((err && (err.message || err.code)) || err);
-  if (/not_granted/.test(m)) return '这次没拿到生成权限。';
-  if (/rate_limited/.test(m)) return '请求太频繁了，等一会儿再试。';
-  if (/cancelled/.test(m)) return '生成被取消了。';
   if (/Failed to fetch|NetworkError|load failed/i.test(m)) {
-    return '连不上 ' + (route === 'deepseek' ? 'api.deepseek.com' : 'api.anthropic.com') + '（检查网络或 Key 权限）。';
+    return '连不上 api.deepseek.com（检查网络或 Key 权限）。';
   }
   if (/Unexpected token|JSON/i.test(m)) return '返回的不是干净的 JSON，再试一次。';
   return m;
@@ -2093,24 +2196,21 @@ function aiErr(err, route) {
 function generateExample(w, redraw) {
   var note = document.getElementById('genNote'), btn = document.getElementById('genEx');
   function say(msg, bad) { if (note) { note.textContent = msg; note.className = 'gen-note' + (bad ? ' bad' : ''); } }
-  var route = aiRoute();
-  if (!route) {
-    var ds = store.set.prov === 'deepseek';
-    say('先到设置里填 ' + (ds ? 'DeepSeek' : 'Anthropic') + ' API Key。', 1);
-    openSettings(ds ? 'dsField' : 'aiField');
+  if (!aiReady()) {
+    say('先到设置里填 DeepSeek API Key。', 1);
+    openSettings('dsField');
     return;
   }
   if (btn) btn.disabled = true;
-  say(route === 'sample' ? '正在问 Claude…' : route === 'deepseek' ? '正在问 DeepSeek…' : '正在生成…');
-  var ask = askAI(route, aiPrompt(w));
-  ask.then(function (obj) {
+  say('正在问 DeepSeek…');
+  askViaDeepSeek(aiPrompt(w)).then(function (obj) {
     if (!obj || !obj.e) throw new Error('返回里没有例句。');
     if (!store.gen[w.w]) store.gen[w.w] = [];
     store.gen[w.w].push({ e: String(obj.e).trim(), t: String(obj.t || '').trim() });
     save(); redraw();
   }).catch(function (err) {
     if (btn) btn.disabled = false;
-    say('生成失败：' + aiErr(err, route), 1);
+    say('生成失败：' + aiErr(err), 1);
   });
 }
 
@@ -2220,28 +2320,21 @@ function trPrompt(w, sent) {
     '- Wrap the words that render "' + w.w + '" in ** **. Mark exactly one fragment.\n' +
     '\nReturn only JSON: {"t": "<the Chinese translation>"}';
 }
-var TR_SCHEMA = {
-  type: 'object',
-  properties: { t: { type: 'string', description: 'Chinese translation; wrap the fragment rendering the target word in ** **.' } },
-  required: ['t'],
-  additionalProperties: false
-};
 function exTranslate() {
   var en = (document.getElementById('exEn').value || '').trim();
   if (!en) { exSay('先写一句英文，或者从上面挑一句。', 1); return; }
-  var route = aiRoute();
-  if (!route) { exSay('要翻译得先到设置里填 API Key。', 1); return; }
+  if (!aiReady()) { exSay('要翻译得先到设置里填 DeepSeek API Key。', 1); return; }
   var btn = document.getElementById('exTr');
   btn.disabled = true;
-  exSay(route === 'deepseek' ? '正在问 DeepSeek…' : '正在翻译…');
-  askAI(route, trPrompt(exFor, en), TR_SCHEMA).then(function (o) {
+  exSay('正在问 DeepSeek…');
+  askViaDeepSeek(trPrompt(exFor, en)).then(function (o) {
     btn.disabled = false;
     if (!o || !o.t) throw new Error('返回里没有翻译。');
     document.getElementById('exZh').value = String(o.t).trim();
     exSay('翻好了，看一眼再「加上」。');
   }).catch(function (err) {
     btn.disabled = false;
-    exSay('翻译失败：' + aiErr(err, route), 1);
+    exSay('翻译失败：' + aiErr(err), 1);
   });
 }
 function exAdd() {
@@ -2860,7 +2953,7 @@ function renderList(title, sub, list, exMap) {
       '<div class="row-w">' + esc(w.w) +
         '<button class="row-u" data-go="' + w.i + '" data-gu="' + w.u + '" type="button" ' +
           'title="到「' + esc(unitShort(w.u)) + '」里看它排在哪">' + esc(unitShort(w.u)) + '</button></div>' +
-      '<div class="row-p">' + esc(w.p) + '</div>' +
+      '<div class="row-p">' + esc(ipaOf(w)) + '</div>' +
       '<div class="row-z">' + esc(w.z) + (ex ? '<span class="row-ex">例句：' + esc(ex) + '</span>' : '') + '</div>' +
       '<button class="row-s' + (store.star[w.i] ? ' on' : '') + '" data-star="' + w.i + '" type="button">★</button>' +
       '</div>';
@@ -3014,8 +3107,7 @@ var sa = document.getElementById('setAccent'), sr = document.getElementById('set
     sv = document.getElementById('setVoice'), su = document.getElementById('setAuto'),
     sh = document.getElementById('setHideZh'), sl = document.getElementById('setVol'),
     sn = document.getElementById('setHint'), sx = document.getElementById('setHideEx'),
-    sk = document.getElementById('aiField'),
-    sm = document.getElementById('setModel'), sd = document.getElementById('dsField'),
+    sd = document.getElementById('dsField'),
     sdm = document.getElementById('setDsModel'), sqn = document.getElementById('setQn'),
     sxl = document.getElementById('setExLen'), szs = document.getElementById('setZhSize'),
     sws = document.getElementById('setWsrc');
@@ -3025,27 +3117,42 @@ sx.checked = !!store.set.hideEx; sqn.value = String(store.set.qn);
 sxl.value = store.set.exlen || 'mid';
 szs.value = store.set.zhSize || 'm';
 sws.value = store.set.wsrc || 'yd';
-sk.value = store.set.key || ''; sm.value = store.set.model || 'claude-opus-5';
-sd.value = store.set.dskey || ''; sdm.value = store.set.dsmodel || 'deepseek-chat';
-/* 两家服务商各存各的 Key，来回切不会把对方的抹掉（第四次优化 2） */
-function paintProv() {
-  var ds = store.set.prov === 'deepseek';
-  document.getElementById('provAnthropic').hidden = ds;
-  document.getElementById('provDeepseek').hidden = !ds;
-  Array.prototype.forEach.call(document.querySelectorAll('[data-prov]'), function (b) {
-    b.classList.toggle('on', (b.dataset.prov === 'deepseek') === ds);
+var tHue = document.getElementById('setHue'), tChroma = document.getElementById('setChroma'),
+    tSw = document.getElementById('toneSwatches');
+tSw.innerHTML = TONES.map(function (t, n) {
+  var bg = t[1] === null ? '#dde6de' : 'oklch(.88 ' + (t[2] * .0016).toFixed(3) + ' ' + t[1] + ')';
+  return '<button class="tone-sw" data-tone-n="' + n + '" type="button" style="background:' + bg + '" title="' + t[0] +
+    '" aria-label="背景换成' + t[0] + '"></button>';
+}).join('');
+function paintTone() {
+  var h = store.set.hue;
+  tHue.value = h === null || h === undefined ? 150 : h; tChroma.value = store.set.chroma;
+  Array.prototype.forEach.call(tSw.children, function (b) {
+    var t = TONES[+b.dataset.toneN];
+    b.classList.toggle('on', t[1] === h && (h === null || t[2] === store.set.chroma));
   });
 }
-Array.prototype.forEach.call(document.querySelectorAll('[data-prov]'), function (b) {
-  b.onclick = function () { store.set.prov = b.dataset.prov; save(); paintProv(); render(); };
-});
-paintProv();
+tSw.onclick = function (e) {
+  var b = e.target.closest ? e.target.closest('.tone-sw') : null;
+  if (!b) return;
+  var t = TONES[+b.dataset.toneN];
+  store.set.hue = t[1]; store.set.chroma = t[2]; save(); applyTone(); paintTone();
+};
+tHue.oninput = tChroma.oninput = function () {
+  store.set.hue = +tHue.value; store.set.chroma = +tChroma.value; applyTone(); paintTone();
+};
+tHue.onchange = tChroma.onchange = function () { save(); };
+paintTone();
+var sup = document.getElementById('setUprog');
+sup.value = store.set.uprog;
+sup.onchange = function () { store.set.uprog = sup.value; save(); render(); };
+sd.value = store.set.dskey || ''; sdm.value = store.set.dsmodel || 'deepseek-chat';
 document.getElementById('rateVal').textContent = (+store.set.rate).toFixed(2);
 document.getElementById('volVal').textContent = Math.round(store.set.vol * 100) + '%';
 var DEMO = 'The storm finally abated, and the crew began repairing the torn sails before dawn.';
 function setAccent(a) {
   store.set.accent = a; store.set.voice = ''; sa.value = a; sv.value = ''; save();
-  loadVoices(); speak(DEMO);
+  loadVoices(); render(); speak(DEMO);
 }
 sa.onchange = function () { setAccent(sa.value); };
 document.getElementById('accentBtn').onclick = function () {
@@ -3073,13 +3180,17 @@ if (esk) esk.onclick = function () {
   if (!ws.length) { this.textContent = '现在没有待复习的词'; return; }
   copyText(exportLines(ws), this);
 };
+var epr = document.getElementById('expPron');
+if (epr) epr.onclick = function () {            // 自己加的词里还没进发音表的，给 src/update_pron.py 用
+  var ws = store.custom.filter(function (w) { return !pronList(window.PRON, String(w.w).trim(), false).length; });
+  if (!ws.length) { this.textContent = '自己加的词都已经在发音表里了'; return; }
+  copyText(ws.map(function (w) { return w.w; }).join('\n'), this);
+};
 if (est) est.onclick = function () {
   var ws = WORDS.filter(function (w) { return store.star[w.i]; });
   if (!ws.length) { this.textContent = '生词本是空的'; return; }
   copyText(exportLines(ws), this);
 };
-sk.onchange = function () { store.set.key = sk.value.trim(); save(); render(); };
-sm.onchange = function () { store.set.model = sm.value; save(); };
 sd.onchange = function () { store.set.dskey = sd.value.trim(); save(); render(); };
 sdm.onchange = function () { store.set.dsmodel = sdm.value; save(); };
 document.getElementById('tryVoice').onclick = function () { speak(DEMO); };
@@ -3139,12 +3250,17 @@ document.addEventListener('keydown', function (e) {
   if (e.key === '/') { e.preventDefault(); si.focus(); return; }
   if (e.key === 'Escape') { modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; return; }
   if (route.name === 'quiz' || (route.name === 'unit' && route.tab === 'quiz')) { quizKey(e); return; }
+  if (route.name === 'review' && route.order && !route.deck.length && !route.peek) {   // 全部过完的页面
+    if (e.key === 'ArrowRight') { e.preventDefault(); cycleReview(1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); cycleReview(-1); }
+    return;
+  }
   if (route.name === 'review' && route.deck && (route.deck.length || route.peek)) {
     if (e.key === ' ') { e.preventDefault(); route.rev = !route.rev; renderReview(); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); cycleReview(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); cycleReview(-1); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); stepReview(railCols()); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); stepReview(-railCols()); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); stepReview(dotsCols()); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); stepReview(-dotsCols()); }
     else if ('psdPSD'.indexOf(e.key) >= 0) { sayKey(e.key.toUpperCase()); }
     else if (e.key === '1' || e.key === '3') { rateReview(+e.key); }   // 2 原来是「模糊」，空着免得误按
     else if ('456789'.indexOf(e.key) >= 0) { setCol(reviewShown().i, 'c' + (+e.key - 3)); save(); renderReview(); }

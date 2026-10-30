@@ -1,0 +1,9 @@
+这个目录的录音来自 Wikimedia Commons（Wiktionary / Lingua Libre），按各自的授权使用：
+
+convolute-us.mp3  ←  commons.wikimedia.org/wiki/File:En-us-convolute.ogg  ·  Dvortygirl  ·  CC BY-SA 3.0
+fungi-us.mp3  ←  commons.wikimedia.org/wiki/File:En-us-fungi.ogg  ·  EncycloPetey  ·  CC BY-SA 3.0
+pluralistic-us.mp3  ←  commons.wikimedia.org/wiki/File:En-us-pluralistic.ogg  ·  Steve Shives  ·  CC0
+vagary-us.mp3  ←  commons.wikimedia.org/wiki/File:En-us-vagary.ogg  ·  DroEsperanto  ·  Public domain
+dishevel-uk.mp3  ←  commons.wikimedia.org/wiki/File:LL-Q1860_(eng)-Vealhurl-dishevel.wav  ·  Vealhurl  ·  CC BY-SA 4.0
+folkway-uk.mp3  ←  commons.wikimedia.org/wiki/File:LL-Q1860_(eng)-Vealhurl-folkway.wav  ·  Vealhurl  ·  CC BY-SA 4.0
+nonplus-uk.mp3  ←  commons.wikimedia.org/wiki/File:LL-Q1860_(eng)-Vealhurl-nonplus.wav  ·  Vealhurl  ·  CC BY-SA 4.0
