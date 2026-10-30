@@ -18,7 +18,7 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
-                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd',
+                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal',
                 prov: 'anthropic', key: '', model: 'claude-opus-5',
                 dskey: '', dsmodel: 'deepseek-chat' };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], set: {}, theme: '' };
@@ -250,6 +250,9 @@ function speakYd(text, mine, vol, rate, fallback) {
   if (p && p.catch) p.catch(fail);
 }
 var sayToken = 0;
+/* 自动朗读什么时候读（第二十四次优化）：store.set.autoAt 'reveal' = 显示释义（空格）时读，
+   'enter' = 一换到新词就读。只管学习卡和整理错词，拼写检测照旧答完才读。 */
+function autoNow(revealed) { return !!store.set.auto && (revealed || store.set.autoAt === 'enter'); }
 function speak(text, btn) {
   var mine = ++sayToken;
   stopYd();
@@ -1277,7 +1280,7 @@ function renderStudy(u, n) {
     });
     scrollRail(ws);
   }
-  if (store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }   // 一换到这个词就读，不等翻开（第二十四次优化）
+  if (autoNow(revealed) && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
   ydPrefetch(w, ws[n + 1]);
 }
 
@@ -1380,7 +1383,7 @@ function renderReview() {
   Array.prototype.forEach.call(view.querySelectorAll('.rate button'), function (b) {
     b.onclick = function () { rateReview(+b.dataset.lvl); };
   });
-  if (store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }   // 一换到这个词就读，不等翻开（第二十四次优化）
+  if (autoNow(revealed) && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
   ydPrefetch(w, deck[1]);
 }
 function cycleReview(dir) {                 // look at another word without grading this one
@@ -2900,7 +2903,7 @@ var sa = document.getElementById('setAccent'), sr = document.getElementById('set
     sdm = document.getElementById('setDsModel'), sqn = document.getElementById('setQn'),
     sxl = document.getElementById('setExLen'), szs = document.getElementById('setZhSize'),
     sws = document.getElementById('setWsrc');
-sa.value = store.set.accent; sr.value = store.set.rate; su.checked = !!store.set.auto;
+sa.value = store.set.accent; sr.value = store.set.rate; su.value = store.set.auto ? (store.set.autoAt === 'enter' ? 'enter' : 'reveal') : 'off';
 sh.checked = !!store.set.hideZh; sl.value = store.set.vol; sn.checked = !!store.set.hint;
 sx.checked = !!store.set.hideEx; sqn.value = String(store.set.qn);
 sxl.value = store.set.exlen || 'mid';
@@ -2936,7 +2939,11 @@ sr.oninput = function () { store.set.rate = +sr.value; document.getElementById('
 sl.oninput = function () { store.set.vol = +sl.value; document.getElementById('volVal').textContent = Math.round(sl.value * 100) + '%'; save(); };
 sl.onchange = function () { speak(DEMO); };
 sv.onchange = function () { store.set.voice = sv.value; save(); paintAccent(); speak(DEMO); };
-su.onchange = function () { store.set.auto = su.checked; save(); };
+su.onchange = function () {
+  store.set.auto = su.value !== 'off';
+  if (su.value !== 'off') store.set.autoAt = su.value;
+  save();
+};
 sws.onchange = function () { store.set.wsrc = sws.value; save(); speak('serendipity'); };
 sn.onchange = function () { store.set.hint = sn.checked; save(); render(); };
 sh.onchange = function () { store.set.hideZh = sh.checked; save(); render(); };

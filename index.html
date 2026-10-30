@@ -63,9 +63,14 @@
     <div class="field">
       <button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button>
     </div>
-    <label class="field-row">
-      <input id="setAuto" type="checkbox" checked>
-      <span>换到新词时自动朗读</span>
+    <label class="field">
+      <span>自动朗读单词</span>
+      <select id="setAuto">
+        <option value="reveal">显示释义时读（空格）</option>
+        <option value="enter">一换到新词就读</option>
+        <option value="off">不自动读</option>
+      </select>
+      <small class="hint">学习卡和整理错词用这一项；拼写检测照旧是答完才读。</small>
     </label>
 
     <p class="sec">卡片</p>
