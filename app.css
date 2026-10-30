@@ -352,7 +352,6 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 
 /* ---------- 错词复习 ---------- */
 
-.review-body{max-width:780px}
 .review-note{font-family:var(--util);font-size:.74rem;color:var(--ink-3);text-align:center;margin:2px 0 0}
 
 /* 错词本 unit sits apart from the 36 book pages */
@@ -547,19 +546,9 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .rv-s span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .rv-s.ok b{color:var(--seal)}
 .rv-s.warn b{color:var(--amber)}
-.rv-bar{position:relative;height:6px;background:var(--rule-2);border-radius:99px;margin:0 0 14px}
+.rv-bar{height:6px;background:var(--rule-2);border-radius:99px;margin:0 0 14px}
 .rv-bar i{display:block;height:100%;background:var(--seal);border-radius:99px;transition:width .3s}
-.rv-bar span{position:absolute;right:0;top:11px;font-family:var(--util);font-size:.68rem;
-  color:var(--ink-3);font-variant-numeric:tabular-nums}
-.rv-dots{display:flex;flex-wrap:wrap;gap:4px;margin:22px 0 20px}
-.rv-d{width:13px;height:8px;border-radius:99px;background:var(--rule-2);border:1px solid var(--rule);
-  padding:0;cursor:pointer;transition:transform .1s}
-.rv-d:not([disabled]):hover{transform:scale(1.5)}
-.rv-d[disabled]{cursor:default}
-.rv-d.ok{background:var(--seal);border-color:var(--seal)}
-.rv-d.again{background:var(--amber-soft);border-color:var(--amber)}
-.rv-d.cur{background:none;border-color:var(--ink);box-shadow:0 0 0 2px var(--ground),0 0 0 3px var(--ink)}
-.review-body .review-note{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;align-items:baseline}
+.review-note{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;align-items:baseline}
 @media (max-width:760px){
   .rv-stats{gap:16px}
   .rv-s b{font-size:1.25rem}
@@ -839,4 +828,13 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   .rate button{font-size:1.05rem;padding:17px 8px}
   .rate button small{font-size:.72rem}
   .study-nav, .study-nav button{font-size:.88rem}
+}
+
+/* ============ 第二十七次优化：整理错词跟学习页同一个版面 ============
+   html.studying 也管这一页，这里只收紧它自己的头部和进度条。 */
+.review-note kbd{font-family:var(--util);font-size:.66rem;border:1px solid var(--rule);border-radius:4px;
+  padding:0 4px;margin:0 1px}
+@media (min-width:901px){
+  html.studying .rv-head{margin-bottom:10px;gap:12px 18px}
+  html.studying .rv-bar{margin-bottom:16px}
 }

@@ -363,7 +363,6 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 
 /* ---------- 错词复习 ---------- */
 
-.review-body{max-width:780px}
 .review-note{font-family:var(--util);font-size:.74rem;color:var(--ink-3);text-align:center;margin:2px 0 0}
 
 /* 错词本 unit sits apart from the 36 book pages */
@@ -558,19 +557,9 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .rv-s span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .rv-s.ok b{color:var(--seal)}
 .rv-s.warn b{color:var(--amber)}
-.rv-bar{position:relative;height:6px;background:var(--rule-2);border-radius:99px;margin:0 0 14px}
+.rv-bar{height:6px;background:var(--rule-2);border-radius:99px;margin:0 0 14px}
 .rv-bar i{display:block;height:100%;background:var(--seal);border-radius:99px;transition:width .3s}
-.rv-bar span{position:absolute;right:0;top:11px;font-family:var(--util);font-size:.68rem;
-  color:var(--ink-3);font-variant-numeric:tabular-nums}
-.rv-dots{display:flex;flex-wrap:wrap;gap:4px;margin:22px 0 20px}
-.rv-d{width:13px;height:8px;border-radius:99px;background:var(--rule-2);border:1px solid var(--rule);
-  padding:0;cursor:pointer;transition:transform .1s}
-.rv-d:not([disabled]):hover{transform:scale(1.5)}
-.rv-d[disabled]{cursor:default}
-.rv-d.ok{background:var(--seal);border-color:var(--seal)}
-.rv-d.again{background:var(--amber-soft);border-color:var(--amber)}
-.rv-d.cur{background:none;border-color:var(--ink);box-shadow:0 0 0 2px var(--ground),0 0 0 3px var(--ink)}
-.review-body .review-note{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;align-items:baseline}
+.review-note{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;align-items:baseline}
 @media (max-width:760px){
   .rv-stats{gap:16px}
   .rv-s b{font-size:1.25rem}
@@ -850,6 +839,15 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   .rate button{font-size:1.05rem;padding:17px 8px}
   .rate button small{font-size:.72rem}
   .study-nav, .study-nav button{font-size:.88rem}
+}
+
+/* ============ 第二十七次优化：整理错词跟学习页同一个版面 ============
+   html.studying 也管这一页，这里只收紧它自己的头部和进度条。 */
+.review-note kbd{font-family:var(--util);font-size:.66rem;border:1px solid var(--rule);border-radius:4px;
+  padding:0 4px;margin:0 1px}
+@media (min-width:901px){
+  html.studying .rv-head{margin-bottom:10px;gap:12px 18px}
+  html.studying .rv-bar{margin-bottom:16px}
 }
 </style>
 </head>
@@ -16217,14 +16215,14 @@ function wireHeader(u) {
    标题旁边直接写「第 N / M」，不用再去点阵里找自己在哪。（第七次优化 2） */
 var RAIL_BIG = 120;                  // 跟 rail-big 那条线对齐：超过这个数才值当虚拟滚动
 var RAIL_OVERSCAN = 6;                // 视口外再多渲染几行，滚快了不露白
-function railBtn(w, n, curIdx) {
-  return '<button class="rail-b ' + cls(w.i) + (n === curIdx ? ' cur' : '') +
-    (store.sel[w.i] ? ' sel' : '') + '" data-n="' + n + '" data-i="' + w.i +
+function railBtn(w, n, curIdx, tone) {      // tone：整理错词按这一轮的状态上色，不用学习进度
+  return '<button class="rail-b ' + (tone ? tone(w) : cls(w.i)) + (n === curIdx ? ' cur' : '') +
+    (!tone && store.sel[w.i] ? ' sel' : '') + '" data-n="' + n + '" data-i="' + w.i +
     '" data-col="' + colOf(w.i) + '" type="button" title="' + esc(w.w) +
     '" aria-label="' + esc(w.w) + '"></button>';
 }
 function bodyCls(ws) { return 'unit-body' + (ws.length > RAIL_BIG ? ' rail-wide' : ''); }
-function railHtml(ws, curIdx, pick) {
+function railHtml(ws, curIdx, pick, tone) {
   var big = ws.length > RAIL_BIG, usedCol = {};
   ws.forEach(function (w) { var c = colOf(w.i); if (c) usedCol[c] = 1; });
   var colLegend = COLORS.filter(function (c) { return usedCol[c[0]]; }).map(function (c) {
@@ -16237,9 +16235,10 @@ function railHtml(ws, curIdx, pick) {
       (curIdx >= 0 ? '<span class="rail-at">' + (curIdx + 1) + ' / ' + ws.length + '</span>'
                    : '<span class="rail-at">' + ws.length + ' 词</span>') + '</p>' +
     '<div class="rail-grid">' +
-    (big ? '' : ws.map(function (w, n) { return railBtn(w, n, curIdx); }).join('')) +
-    '</div><div class="rail-legend"><div class="k"><i></i>认识</div>' +
-    '<div class="x"><i></i>不认识</div><div><i></i>未学</div></div>' +
+    (big ? '' : ws.map(function (w, n) { return railBtn(w, n, curIdx, tone); }).join('')) +
+    '</div><div class="rail-legend">' + (tone
+      ? '<div class="k"><i></i>已清</div><div class="f"><i></i>又错了</div><div><i></i>待过</div>'
+      : '<div class="k"><i></i>认识</div><div class="x"><i></i>不认识</div><div><i></i>未学</div>') + '</div>' +
     (colLegend ? '<div class="rail-legend rail-cols">' + colLegend + '</div>' : '') +
     (pick ? '<p class="rail-picktip">选择模式：点／拖答题卡上的点，圈一段词</p>' : '') +
     '</aside>';
@@ -16284,7 +16283,7 @@ function scrollRail(ws, center) {
    跟估计对不上就用真实值再画一遍；这之后滚动只管重算该露哪几行，不用再量。
    scrollTop 一定要等真实行高的占位块撑好才设：内容还按估计的高度算时设进去会被截短，
    滚到底点一个词就弹回一大截（第二十五次优化）。 */
-function railMount(ws, curIdx) {
+function railMount(ws, curIdx, tone) {
   if (railRO) { railRO.disconnect(); railRO = null; }
   if (ws.length <= RAIL_BIG) return null;
   var grid = view.querySelector('.rail-grid');
@@ -16322,7 +16321,7 @@ function railMount(ws, curIdx) {
     var before = first * rowH - gap, after = (rows - 1 - last) * rowH - gap;
     grid.innerHTML =
       (before > 0 ? '<div class="rail-sp" style="grid-column:1/-1;height:' + before + 'px"></div>' : '') +
-      ws.slice(startI, endI).map(function (w, k) { return railBtn(w, startI + k, curIdx); }).join('') +
+      ws.slice(startI, endI).map(function (w, k) { return railBtn(w, startI + k, curIdx, tone); }).join('') +
       (after > 0 ? '<div class="rail-sp" style="grid-column:1/-1;height:' + after + 'px"></div>' : '');
     if (!measured) {
       measured = true;
@@ -16766,59 +16765,73 @@ function renderStudy(u, n) {
 
 /* ---- 整理错词：一轮过完为止，标「认识」才出列 ----
    第五次优化 8 把这个界面重做了一遍：原来只有一句「还剩 N 个」和一条细进度条，
-   看不出自己清掉了多少、哪些又栽了。现在头上是三个数（已清 / 待过 / 又错了），
-   下面一排点子按原始顺序摆开，一眼能看到整轮的地形。 */
+   看不出自己清掉了多少、哪些又栽了。现在头上是三个数（已清 / 待过 / 又错了）。
+   第二十七次优化改成跟学习页一样的版面：词卡在左、答题卡在右（换掉了卡片上面那排点子），
+   已清掉的词也能点开看（route.peek），看的时候队列不动。 */
 function startReview(words, title, from) {
   var deck = shuffle(words.slice());
   go({ name: 'review', deck: deck, order: deck.slice(), total: deck.length,
        cleared: {}, asked: {}, title: title, from: from || { name: 'home' } });
 }
-function reviewDots() {
-  var order = route.order || [], cur = route.deck[0];
-  if (!order.length || order.length > 120) return '';   // 太多了就不画，光看进度条
-  var live = {};
-  route.deck.forEach(function (w) { live[w.i] = 1; });
-  return '<div class="rv-dots">' + order.map(function (w) {
-    var gone = route.cleared[w.i] || !live[w.i];
-    var k = route.cleared[w.i] ? 'ok'
-          : (cur && w.i === cur.i) ? 'cur'
-          : route.asked[w.i] ? 'again'
-          : live[w.i] ? '' : 'ok';
-    return '<button class="rv-d ' + k + '" data-i="' + w.i + '"' + (gone ? ' disabled' : '') +
-      ' type="button" title="' + esc(w.w) + '" aria-label="跳到 ' + esc(w.w) + '"></button>';
-  }).join('') + '</div>';
+function reviewTone(w) {
+  return route.cleared[w.i] ? 'k' : route.asked[w.i] ? 'f' : '';
 }
-/* 点进度条上某个点，就把复习队列转到那个词（已清掉的点不能点）。（第十一次优化 2） */
+function reviewShown() { return route.peek || route.deck[0]; }
+function reviewAt() {                       // 眼前这个词在答题卡上排第几
+  var cur = reviewShown(), at = -1;
+  if (cur) route.order.forEach(function (w, n) { if (w.i === cur.i) at = n; });
+  return at;
+}
+/* 点答题卡上某个点，就把复习队列转到那个词（第十一次优化 2）。
+   已清掉的词不在队列里，拿出来直接翻开看，队列留在原处，看完接着过。（第二十七次优化） */
 function jumpReview(i) {
   var d = route.deck, idx = -1;
   d.forEach(function (w, n) { if (w.i === i) idx = n; });
-  if (idx <= 0) return;
-  route.deck = d.slice(idx).concat(d.slice(0, idx));
-  route.rev = false; route.spoke = null;
+  route.spoke = null;
+  if (idx < 0) {
+    route.peek = route.order.filter(function (w) { return w.i === i; })[0];
+    route.rev = true;
+  } else {
+    route.peek = null; route.rev = false;
+    route.deck = d.slice(idx).concat(d.slice(0, idx));
+  }
   renderReview();
 }
+function wireReviewRail(railCtl) {
+  if (railCtl) {
+    railWireJump(view.querySelector('.rail-grid'), function (k) { jumpReview(route.order[k].i); });
+    return;
+  }
+  Array.prototype.forEach.call(view.querySelectorAll('.rail-b'), function (b) {
+    b.onclick = function () { railHold(b.parentNode); jumpReview(+b.dataset.i); };
+  });
+  scrollRail(route.order);
+}
 function renderReview() {
-  var deck = route.deck, done = route.total - deck.length;
+  var deck = route.deck, done = route.total - deck.length, peek = route.peek;
   var again = 0;
   for (var k in route.asked) if (!route.cleared[k]) again++;
   var pct = route.total ? Math.round(done / route.total * 100) : 0;
+  var at = reviewAt();
 
-  if (!deck.length) {
+  if (!deck.length && !peek) {
     view.innerHTML =
       '<button class="back" id="back" type="button">← 退出复习</button>' +
       '<div class="unit-head"><div><p class="eyebrow">整理错词 · ' + esc(route.title) + '</p>' +
       '<h1>全部过完了</h1></div></div>' +
-      '<div class="quiz-wrap"><div class="score"><b>' + route.total + '</b>' +
+      '<div class="' + bodyCls(route.order) + '"><div class="quiz-wrap"><div class="score"><b>' + route.total + '</b>' +
       '<p class="lede" style="margin:14px auto 22px;text-align:center">这一轮的 ' + route.total +
       ' 个词都标成「认识」了。过几天再来 <b style="font-family:var(--display);font-size:1rem;color:var(--seal)">整理错词</b>，看看还剩几个。</p>' +
       '<div class="score-acts"><button class="btn" id="reviewDone" type="button">回到' +
-      (route.from.name === 'home' ? '目录' : '单元') + '</button></div></div></div>';
+      (route.from.name === 'home' ? '目录' : '单元') + '</button></div></div></div>' +
+      railHtml(route.order, -1, false, reviewTone) + '</div>';
     document.getElementById('back').onclick =
       document.getElementById('reviewDone').onclick = function () { go(route.from); };
+    wireReviewRail(railMount(route.order, -1, reviewTone));
     return;
   }
 
-  var w = deck[0], revealed = route.rev === true;
+  var w = peek || deck[0], revealed = route.rev === true;
   var head = '<button class="back" id="back" type="button">← 退出复习</button>' +
     '<div class="rv-head"><div>' +
       '<p class="eyebrow">整理错词 · ' + esc(route.title) +
@@ -16828,22 +16841,27 @@ function renderReview() {
       '<div class="rv-s ok"><b>' + done + '</b><span>已清</span></div>' +
       '<div class="rv-s"><b>' + deck.length + '</b><span>待过</span></div>' +
       (again ? '<div class="rv-s warn"><b>' + again + '</b><span>又错了</span></div>' : '') +
+      '<div class="rv-s"><b>' + pct + '%</b><span>进度</span></div>' +
     '</div></div>' +
-    '<div class="rv-bar"><i style="width:' + pct + '%"></i><span>' + pct + '%</span></div>' +
-    reviewDots();
+    '<div class="rv-bar"><i style="width:' + pct + '%"></i></div>';
 
   view.innerHTML = head +
     '<div id="rvExportBox" class="rv-export-box" hidden></div>' +
-    '<div class="review-body"><div class="card-stage">' + cardHtml(w, revealed) + RATE_BAR +
-      '<p class="review-note">标「认识」就划掉，标「不认识」排到队尾待会儿再问' +
-        '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>3</kbd> 评级 · ' +
-        '<kbd>4</kbd>–<kbd>9</kbd> 标色 · <kbd>←</kbd><kbd>→</kbd> 先看别的</span></p>' +
-    '</div></div>';
+    '<div class="' + bodyCls(route.order) + '"><div class="card-stage">' + cardHtml(w, revealed) + RATE_BAR +
+      '<div class="study-nav"><button id="prev" type="button">← 上一个</button>' +
+        '<span>' + (at + 1) + ' / ' + route.order.length + '<small>↑↓ 换行 · 4–9 标色</small></span>' +
+        '<button id="next" type="button">下一个 →</button></div>' +
+      '<p class="review-note">' + (peek
+        ? '这个词已经清掉了：标「不认识」放回队尾，标「认识」或按 <kbd>←</kbd><kbd>→</kbd> 回去接着过'
+        : '标「认识」就划掉，标「不认识」排到队尾待会儿再问' +
+          '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>3</kbd> 评级 · ' +
+          '<kbd>←</kbd><kbd>→</kbd> 先看别的</span>') + '</p>' +
+    '</div>' + railHtml(route.order, at, false, reviewTone) + '</div>';
   document.getElementById('back').onclick = function () { go(route.from); };
+  document.getElementById('prev').onclick = function () { cycleReview(-1); };
+  document.getElementById('next').onclick = function () { cycleReview(1); };
 
-  Array.prototype.forEach.call(view.querySelectorAll('.rv-d[data-i]'), function (b) {
-    b.onclick = function () { if (!b.disabled) jumpReview(+b.dataset.i); };
-  });
+  wireReviewRail(railMount(route.order, at, reviewTone));
   var rex = document.getElementById('rvExport'), rbox = document.getElementById('rvExportBox');
   if (rex) rex.onclick = function () {
     if (!rbox.hidden) { rbox.hidden = true; return; }
@@ -16864,29 +16882,52 @@ function renderReview() {
     b.onclick = function () { rateReview(+b.dataset.lvl); };
   });
   if (autoNow(revealed) && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
-  ydPrefetch(w, deck[1]);
+  ydPrefetch(w, peek ? deck[0] : deck[1]);
+}
+function nextReview() {                     // 换到下一个词：跟学习页一样回到页面顶上
+  if (route.name !== 'review') return;      // 盖章那 340ms 里退出了复习
+  renderReview();
+  scrollTo0(0);
 }
 function cycleReview(dir) {                 // look at another word without grading this one
   var d = route.deck;
-  if (d.length < 2) return;
-  if (dir > 0) d.push(d.shift()); else d.unshift(d.pop());
+  if (route.peek) route.peek = null;        // 看完已清的词，回到刚才那个
+  else if (d.length < 2) return;
+  else if (dir > 0) d.push(d.shift());
+  else d.unshift(d.pop());
   route.rev = false; route.spoke = null;
-  renderReview();
+  nextReview();
+}
+function stepReview(k) {                    // ↑↓ 在答题卡上换一行，跟学习页一样
+  var at = reviewAt(), to = Math.max(0, Math.min(at + k, route.order.length - 1));
+  if (to === at) return;
+  jumpReview(route.order[to].i);
+  scrollTo0(0);
 }
 function rateReview(v) {
-  var w = route.deck[0];
+  var w = reviewShown(), peek = route.peek;
   setLvl(w.i, v);
   route.rev = false; route.spoke = null;
+  if (peek) {                               // 已清的词改口说不认识，重新排到队尾
+    route.peek = null;
+    if (v !== 3) {
+      delete route.cleared[w.i];
+      route.asked[w.i] = (route.asked[w.i] || 0) + 1;
+      route.deck.push(w);
+    }
+    nextReview();
+    return;
+  }
   if (v === 3) {
     var st = document.getElementById('stamp');
     if (st) st.classList.add('show');
     route.cleared[w.i] = 1;
     route.deck.shift();
-    setTimeout(renderReview, 340);
+    setTimeout(nextReview, 340);
   } else {
     route.asked[w.i] = (route.asked[w.i] || 0) + 1;
     route.deck.push(route.deck.shift());
-    renderReview();
+    nextReview();
   }
 }
 
@@ -18335,7 +18376,8 @@ function render() {
      它观察的节点跟着 view.innerHTML 一起没了，但观察者本身不会自动断——
      每次重渲染先断一次，不管这次去哪一页，保证同时只有一个在盯着。 */
   if (railRO) { railRO.disconnect(); railRO = null; }
-  document.documentElement.classList.toggle('studying', route.name === 'unit' && route.tab === 'study');
+  document.documentElement.classList.toggle('studying',
+    route.name === 'review' || (route.name === 'unit' && route.tab === 'study'));
   if (route.name === 'home') renderHome();
   else if (route.name === 'review') renderReview();
   else if (route.name === 'quiz') renderQuiz(null, route.scope === 'sel');
@@ -18504,14 +18546,16 @@ document.addEventListener('keydown', function (e) {
   if (e.key === '/') { e.preventDefault(); si.focus(); return; }
   if (e.key === 'Escape') { modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; return; }
   if (route.name === 'quiz' || (route.name === 'unit' && route.tab === 'quiz')) { quizKey(e); return; }
-  if (route.name === 'review' && route.deck && route.deck.length) {
+  if (route.name === 'review' && route.deck && (route.deck.length || route.peek)) {
     if (e.key === ' ') { e.preventDefault(); route.rev = !route.rev; renderReview(); }
-    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); cycleReview(1); }
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); cycleReview(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); cycleReview(1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); cycleReview(-1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); stepReview(railCols()); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); stepReview(-railCols()); }
     else if ('psdPSD'.indexOf(e.key) >= 0) { sayKey(e.key.toUpperCase()); }
     else if (e.key === '1' || e.key === '3') { rateReview(+e.key); }   // 2 原来是「模糊」，空着免得误按
-    else if ('456789'.indexOf(e.key) >= 0) { setCol(route.deck[0].i, 'c' + (+e.key - 3)); save(); renderReview(); }
-    else if (e.key === '0' || e.key === '`') { setCol(route.deck[0].i, ''); save(); renderReview(); }
+    else if ('456789'.indexOf(e.key) >= 0) { setCol(reviewShown().i, 'c' + (+e.key - 3)); save(); renderReview(); }
+    else if (e.key === '0' || e.key === '`') { setCol(reviewShown().i, ''); save(); renderReview(); }
     return;
   }
   if (route.name !== 'unit' || route.tab !== 'study') return;
