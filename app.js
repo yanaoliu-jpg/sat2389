@@ -18,7 +18,7 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
-                exlen: 'mid', zhSize: 'm', shuf: false,
+                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd',
                 prov: 'anthropic', key: '', model: 'claude-opus-5',
                 dskey: '', dsmodel: 'deepseek-chat' };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], set: {}, theme: '' };
@@ -195,10 +195,52 @@ function breathGroups(text) {
   });
   return merged.length ? merged : [raw];
 }
+/* 单词真人发音（第二十二次优化）：系统 TTS 读单词再怎么挑声音也是合成的，
+   有道词典的发音是录好的，国内直连。只管单词和短语 —— 整句它不给（返回 500），
+   例句照旧走系统声音。没网、查不到这个词、或者 claude.ai 上被拦了，都退回系统声音。
+   设置里「单词发音」可以改成一直用系统声音（store.set.wsrc：'yd' / 'sys'）。 */
+var ydAudio = null;
+function ydOk(text) {
+  var t = String(text).trim();
+  return store.set.wsrc !== 'sys' && navigator.onLine !== false &&
+    t.length <= 40 && t.split(/\s+/).length <= 4 && !/[.!?,;:]$/.test(t) && /[a-z]/i.test(t);
+}
+function stopYd() { if (ydAudio) { try { ydAudio.pause(); } catch (e) {} ydAudio = null; } }
+function speakYd(text, mine, vol, rate, fallback) {
+  var a = new Audio('https://dict.youdao.com/dictvoice?type=' + (store.set.accent === 'en-GB' ? 1 : 2) +
+    '&audio=' + encodeURIComponent(String(text).trim()));
+  var done = false;
+  function fail() {
+    if (done) return; done = true; clearTimeout(t);
+    if (ydAudio === a) ydAudio = null;
+    if (mine === sayToken) fallback();
+  }
+  var t = setTimeout(fail, 2500);            // 网慢到这个份上，不如先用系统声音读出来
+  a.volume = vol;
+  a.playbackRate = Math.max(0.5, Math.min(1.5, rate));
+  a.onplaying = function () { done = true; clearTimeout(t); };
+  a.onerror = fail;
+  ydAudio = a;
+  var p = a.play();
+  if (p && p.catch) p.catch(fail);
+}
 var sayToken = 0;
 function speak(text, btn) {
-  if (!window.speechSynthesis) return;
   var mine = ++sayToken;
+  stopYd();
+  var vol0 = +store.set.vol;
+  if (isNaN(vol0)) vol0 = 1;
+  if (ydOk(text)) {
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    speakYd(text, mine, Math.max(0, Math.min(1, vol0)), +store.set.rate || 1, function () { speakSys(text, mine); });
+    if (btn) { btn.classList.remove('on'); void btn.offsetWidth; btn.classList.add('on'); }
+    return;
+  }
+  speakSys(text, mine);
+  if (btn) { btn.classList.remove('on'); void btn.offsetWidth; btn.classList.add('on'); }
+}
+function speakSys(text, mine) {
+  if (!window.speechSynthesis) return;
   try { speechSynthesis.cancel(); } catch (e) {}
   var v = currentVoice(), base = +store.set.rate || 1, vol = +store.set.vol;
   if (isNaN(vol)) vol = 1;
@@ -227,7 +269,6 @@ function speak(text, btn) {
       try { speechSynthesis.speak(u); } catch (e) {}
     });
   }, 40);
-  if (btn) { btn.classList.remove('on'); void btn.offsetWidth; btn.classList.add('on'); }
 }
 function paintAccent() {
   var b = document.getElementById('accentBtn');
@@ -278,6 +319,12 @@ function unitLabel(u) {                                  // unit 37 is the 错�
 function unitShort(u) {                                  // 搜索结果里的小标签，短一点
   var m = unitMeta(u);
   return m.t || ('UNIT ' + String(u).padStart(2, '0'));
+}
+/* 这个词是单元里的第几个：按单元自己的顺序（原书顺序／乱序单元写死的那份乱序），不随排序和颜色筛选变（第二十二次优化） */
+function unitSeq(u) {
+  var at = {};
+  unitWords(u).forEach(function (w, k) { at[w.i] = k + 1; });
+  return at;
 }
 /* 这个词在它所属单元里排第几（按当前排序） */
 function posInUnit(u, i) {
@@ -731,15 +778,31 @@ function railHtml(ws, curIdx, pick) {
     (pick ? '<p class="rail-picktip">选择模式：点／拖答题卡上的点，圈一段词</p>' : '') +
     '</aside>';
 }
+/* 学习页每换一个词整页重画，点阵也是新的。原来每次都把当前那个点滚到正中，
+   词一多，每换一行点阵就跟着挪一下，看着晃（第二十二次优化）。现在记住上次滚到哪，
+   同一批词接着那个位置；当前的点还在视野里就不动，出去了才往前翻，让它落在上面第二行。 */
+var railKeep = { key: '', top: 0 };
+function railKey(ws) { return ws.length + ':' + ws[0].i + ':' + ws[ws.length - 1].i; }
+function railPlace(g, key, y, h, center) {   // y：当前那个点在点阵内容里的上沿；h：它的高（含行距）
+  var top = railKeep.key === key ? railKeep.top : g.scrollTop;
+  if (center) top = y - (g.clientHeight - h) / 2;
+  else if (y < top || y + h > top + g.clientHeight) top = y - h;
+  g.scrollTop = Math.max(0, top);
+  railKeep = { key: key, top: g.scrollTop };
+}
 /* 点阵内部滚动之后，得把当前那个点自己送到眼前（非大单元：点都在，直接量它的位置） */
-function scrollRail() {
+function scrollRail(ws, center) {
   var g = view.querySelector('.rail-grid'), c = g && g.querySelector('.rail-b.cur');
-  if (!g || !c) return;
+  if (!g || !c || !ws || !ws.length) return;
   if (g.scrollHeight <= g.clientHeight + 4) return;
   /* 用 rect 差值而不是 offsetTop —— offsetTop 是相对定位祖先算的，
      点阵本身没定位，再加上内边距，直接用会算歪。 */
+  var key = railKey(ws);
+  if (railKeep.key === key) g.scrollTop = railKeep.top;
   var gr = g.getBoundingClientRect(), cr = c.getBoundingClientRect();
-  g.scrollTop += (cr.top - gr.top) - (g.clientHeight - cr.height) / 2;
+  var gap = parseFloat(getComputedStyle(g).rowGap) || 0;
+  railPlace(g, key, g.scrollTop + cr.top - gr.top, cr.height + gap, center);
+  g.addEventListener('scroll', function () { railKeep = { key: key, top: g.scrollTop }; }, { passive: true });
 }
 
 /* ---------- 答题卡虚拟滚动（第十六次优化 1） ----------
@@ -756,11 +819,12 @@ function railMount(ws, curIdx) {
   var grid = view.querySelector('.rail-grid');
   if (!grid) return null;
   var cols = railCols(), rowH = 14, measured = false, at = curIdx >= 0 ? curIdx : 0;
+  var key = railKey(ws), center = false;
   function totalRows() { return Math.max(1, Math.ceil(ws.length / cols)); }
   function maxH() { return parseFloat(getComputedStyle(grid).maxHeight) || 400; }
   function scrollToRow() {
-    var h = Math.min(totalRows() * rowH, maxH()), row = Math.floor(at / cols);
-    grid.scrollTop = Math.max(0, row * rowH - (h - rowH) / 2);
+    if (curIdx < 0) return;
+    railPlace(grid, key, Math.floor(at / cols) * rowH, rowH, center);
   }
   function paint() {
     var rows = totalRows(), h = Math.min(rows * rowH, maxH());
@@ -786,6 +850,7 @@ function railMount(ws, curIdx) {
   }
   var raf = null;
   grid.addEventListener('scroll', function () {
+    if (curIdx >= 0) railKeep = { key: key, top: grid.scrollTop };
     if (raf) return;
     raf = requestAnimationFrame(function () { raf = null; paint(); });
   }, { passive: true });
@@ -795,12 +860,13 @@ function railMount(ws, curIdx) {
     });
     railRO.observe(grid);
   }
-  if (curIdx >= 0) scrollToRow();
+  /* 先画一遍把高度撑出来，scrollTop 才设得进去；再按落好的位置重画该露的那几行 */
   paint();
+  if (curIdx >= 0) { scrollToRow(); paint(); }
   return {
     repaint: paint,
-    jumpTo: function (n) {
-      at = n; curIdx = n; scrollToRow(); paint();
+    jumpTo: function (n) {                  // 搜索跳过来找词：这时候还是放正中，一眼看到
+      at = n; curIdx = n; center = true; scrollToRow(); paint(); center = false;
       var atEl = view.querySelector('.rail-at');
       if (atEl) atEl.textContent = (n + 1) + ' / ' + ws.length;
     }
@@ -881,12 +947,12 @@ function colBarHtml(u, ws) {
 function renderBrowse(u) {
   /* 从搜索结果跳过来找某个词：先把颜色筛选撤掉，免得那个词正好被筛在外面 */
   if (route.focus != null && curFilter(u)) setFilter(u, '');
-  var ws = ordered(u), editing2 = editUnit === u;
+  var ws = ordered(u), editing2 = editUnit === u, seq = unitSeq(u);
   var rows = ws.map(function (w, n) {
     return '<div class="row ' + cls(w.i) + (store.sel[w.i] ? ' sel' : '') +
       '" data-n="' + n + '" data-i="' + w.i + '" data-col="' + colOf(w.i) + '">' +
       (picking ? '<span class="row-c"></span>' : '') +
-      '<div class="row-no"><span class="dot"></span>' + w.i + '</div>' +
+      '<div class="row-no" title="单元里第 ' + seq[w.i] + ' 个 · 编号 ' + w.i + '"><span class="dot"></span>' + seq[w.i] + '</div>' +
       '<div class="row-w">' + esc(w.w) + '</div>' +
       '<div class="row-p">' + esc(w.p) + '</div>' +
       '<div class="row-z' + (store.set.hideZh ? ' hidden' : '') + '">' + esc(w.z) + '</div>' +
@@ -1021,7 +1087,7 @@ function renderBrowse(u) {
       if (railCtl) railCtl.jumpTo(n);
       else {
         var rb = view.querySelectorAll('.rail-b')[n];
-        if (rb) { rb.classList.add('cur'); scrollRail(); }
+        if (rb) { rb.classList.add('cur'); scrollRail(ws, true); }
         var at = view.querySelector('.rail-at');
         if (at) at.textContent = (n + 1) + ' / ' + ws.length;
       }
@@ -1046,7 +1112,7 @@ function sayKey(k) {                       // P 单词 · S 例句 · D 生成�
 var RATE_BAR =
   '<div class="rate">' +
     '<button class="r0" data-lvl="1" type="button">不认识<small>1</small></button>' +
-    '<button class="r2" data-lvl="3" type="button">认识<small>2</small></button>' +
+    '<button class="r2" data-lvl="3" type="button">认识<small>3</small></button>' +
   '</div>';
 
 function exHtml(e, t, word, key, extra) {
@@ -1059,8 +1125,10 @@ function exHtml(e, t, word, key, extra) {
     (t ? '<p class="ex-zh' + veil + '"' + (veil ? ' title="点一下看翻译"' : '') + '>' + zhEx(t) + '</p>' : '') +
     '</div></div>';
 }
-function cardHtml(w, revealed) {
+function cardHtml(w, revealed, u) {
   var r = rich(w), gs = gen(w), body = '';
+  if (u == null) u = w.u;
+  var seq = unitSeq(u)[w.i], tot = unitMeta(u).n;
   if (!revealed) {
     /* 提示：先给例句，中文压着不给（第三次优化 8）。自己生成／加的例句也一起给（第二十二次优化） */
     if (store.set.hint && ((r && r.e) || gs.length)) {
@@ -1093,7 +1161,8 @@ function cardHtml(w, revealed) {
   var col = colOf(w.i);
   return '<div class="wcard ' + cls(w.i) + '" data-col="' + col + '">' +
     '<div class="stamp" id="stamp">已掌握</div>' +
-    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : (unitMeta(w.u).imported ? unitMeta(w.u).t : 'UNIT ' + String(w.u).padStart(2, '0'))) +
+    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : (unitMeta(u).t || 'UNIT ' + String(u).padStart(2, '0'))) +
+      (seq ? '<span class="w-seq">第 ' + seq + (tot ? ' / ' + tot : '') + ' 个</span>' : '') +
       tags + '</div>' +
     '<div class="w-head"><h2 class="w-word' + (/\s/.test(w.w) ? ' phrase' : '') + '">' + esc(w.w) + '</h2>' +
       '<span class="w-ipa">/' + ipaHtml(w.p) + '/</span>' +
@@ -1147,7 +1216,7 @@ function renderStudy(u, n) {
   var w = ws[n];
   var revealed = route.rev === true;
   view.innerHTML = unitHeader(u, 'study') +
-    '<div class="unit-body"><div class="card-stage">' + cardHtml(w, revealed) +
+    '<div class="unit-body"><div class="card-stage">' + cardHtml(w, revealed, u) +
       RATE_BAR +
       '<div class="study-nav"><button id="prev" type="button">← 上一个</button>' +
         '<span>' + (n + 1) + ' / ' + ws.length + '<small>↑↓ 换行 · 4–9 标色</small></span>' +
@@ -1179,7 +1248,7 @@ function renderStudy(u, n) {
     Array.prototype.forEach.call(view.querySelectorAll('.rail-b'), function (b) {
       b.onclick = function () { goN(+b.dataset.n); };
     });
-    scrollRail();
+    scrollRail(ws);
   }
   if (revealed && store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
 }
@@ -1256,7 +1325,7 @@ function renderReview() {
     '<div id="rvExportBox" class="rv-export-box" hidden></div>' +
     '<div class="review-body"><div class="card-stage">' + cardHtml(w, revealed) + RATE_BAR +
       '<p class="review-note">标「认识」就划掉，标「不认识」排到队尾待会儿再问' +
-        '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>2</kbd> 评级 · ' +
+        '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>3</kbd> 评级 · ' +
         '<kbd>4</kbd>–<kbd>9</kbd> 标色 · <kbd>←</kbd><kbd>→</kbd> 先看别的</span></p>' +
     '</div></div>';
   document.getElementById('back').onclick = function () { go(route.from); };
@@ -2799,12 +2868,14 @@ var sa = document.getElementById('setAccent'), sr = document.getElementById('set
     sk = document.getElementById('aiField'),
     sm = document.getElementById('setModel'), sd = document.getElementById('dsField'),
     sdm = document.getElementById('setDsModel'), sqn = document.getElementById('setQn'),
-    sxl = document.getElementById('setExLen'), szs = document.getElementById('setZhSize');
+    sxl = document.getElementById('setExLen'), szs = document.getElementById('setZhSize'),
+    sws = document.getElementById('setWsrc');
 sa.value = store.set.accent; sr.value = store.set.rate; su.checked = !!store.set.auto;
 sh.checked = !!store.set.hideZh; sl.value = store.set.vol; sn.checked = !!store.set.hint;
 sx.checked = !!store.set.hideEx; sqn.value = String(store.set.qn);
 sxl.value = store.set.exlen || 'mid';
 szs.value = store.set.zhSize || 'm';
+sws.value = store.set.wsrc || 'yd';
 sk.value = store.set.key || ''; sm.value = store.set.model || 'claude-opus-5';
 sd.value = store.set.dskey || ''; sdm.value = store.set.dsmodel || 'deepseek-chat';
 /* 两家服务商各存各的 Key，来回切不会把对方的抹掉（第四次优化 2） */
@@ -2836,6 +2907,7 @@ sl.oninput = function () { store.set.vol = +sl.value; document.getElementById('v
 sl.onchange = function () { speak(DEMO); };
 sv.onchange = function () { store.set.voice = sv.value; save(); paintAccent(); speak(DEMO); };
 su.onchange = function () { store.set.auto = su.checked; save(); };
+sws.onchange = function () { store.set.wsrc = sws.value; save(); speak('serendipity'); };
 sn.onchange = function () { store.set.hint = sn.checked; save(); render(); };
 sh.onchange = function () { store.set.hideZh = sh.checked; save(); render(); };
 sx.onchange = function () { store.set.hideEx = sx.checked; save(); render(); };
@@ -2919,7 +2991,7 @@ document.addEventListener('keydown', function (e) {
     else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); cycleReview(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); cycleReview(-1); }
     else if ('psdPSD'.indexOf(e.key) >= 0) { sayKey(e.key.toUpperCase()); }
-    else if ('123'.indexOf(e.key) >= 0) { rateReview(e.key === '1' ? 1 : 3); }   // 3 是取消「模糊」前的认识键，留着
+    else if (e.key === '1' || e.key === '3') { rateReview(+e.key); }   // 2 原来是「模糊」，空着免得误按
     else if ('456789'.indexOf(e.key) >= 0) { setCol(route.deck[0].i, 'c' + (+e.key - 3)); save(); renderReview(); }
     else if (e.key === '0' || e.key === '`') { setCol(route.deck[0].i, ''); save(); renderReview(); }
     return;
@@ -2935,8 +3007,8 @@ document.addEventListener('keydown', function (e) {
     go({ name: 'unit', u: route.u, tab: 'study', n: Math.max(0, Math.min(n + dir * step, ws.length - 1)) });
   }
   else if ('psdPSD'.indexOf(e.key) >= 0) { sayKey(e.key.toUpperCase()); }
-  else if ('123'.indexOf(e.key) >= 0) {
-    setLvl(ws[n].i, e.key === '1' ? 1 : 3); route.rev = false;
+  else if (e.key === '1' || e.key === '3') {
+    setLvl(ws[n].i, +e.key); route.rev = false;
     go({ name: 'unit', u: route.u, tab: 'study', n: Math.min(n + 1, ws.length - 1) });
   }
   else if ('456789'.indexOf(e.key) >= 0) { setCol(ws[n].i, 'c' + (+e.key - 3)); save(); renderStudy(route.u, n); }

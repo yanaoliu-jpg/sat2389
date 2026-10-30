@@ -199,6 +199,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .wcard.f::before{background:var(--amber)}
 .w-no{font-family:var(--util);font-size:.72rem;letter-spacing:.18em;color:var(--ink-3);
   font-variant-numeric:tabular-nums}
+.w-seq{margin-left:.9em;letter-spacing:.06em;color:var(--ink-2)}
 .w-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px 18px;margin:6px 0 4px}
 .w-word{font-family:var(--display);font-weight:600;font-size:clamp(2.3rem,6.4vw,4rem);
   line-height:1;letter-spacing:-.02em;margin:0}
