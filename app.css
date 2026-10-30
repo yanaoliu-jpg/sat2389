@@ -235,12 +235,11 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .cover button:hover{color:var(--ink);border-color:var(--ink-3)}
 
 /* rating bar */
-.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rate{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .rate button{font-family:var(--util);font-size:.9rem;padding:15px 8px;border-radius:12px;
   border:1px solid var(--rule);background:var(--card);cursor:pointer;transition:all .14s}
 .rate button small{display:block;font-size:.66rem;color:var(--ink-3);letter-spacing:.1em;margin-top:3px}
 .rate .r0:hover{border-color:var(--ink-2)}
-.rate .r1:hover{border-color:var(--amber);color:var(--amber)}
 .rate .r2:hover{border-color:var(--seal);color:var(--seal)}
 .study-nav{display:flex;justify-content:space-between;align-items:center;font-family:var(--util);font-size:.8rem;color:var(--ink-3)}
 .study-nav button{font-family:var(--util);font-size:.8rem;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:6px}

@@ -245,12 +245,11 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .cover button:hover{color:var(--ink);border-color:var(--ink-3)}
 
 /* rating bar */
-.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rate{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .rate button{font-family:var(--util);font-size:.9rem;padding:15px 8px;border-radius:12px;
   border:1px solid var(--rule);background:var(--card);cursor:pointer;transition:all .14s}
 .rate button small{display:block;font-size:.66rem;color:var(--ink-3);letter-spacing:.1em;margin-top:3px}
 .rate .r0:hover{border-color:var(--ink-2)}
-.rate .r1:hover{border-color:var(--amber);color:var(--amber)}
 .rate .r2:hover{border-color:var(--seal);color:var(--seal)}
 .study-nav{display:flex;justify-content:space-between;align-items:center;font-family:var(--util);font-size:.8rem;color:var(--ink-3)}
 .study-nav button{font-family:var(--util);font-size:.8rem;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:6px}
@@ -15383,10 +15382,14 @@ if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort
   store.set.v = 4;
   if (store.set.accent !== 'en-US' && store.set.accent !== 'en-GB') store.set.accent = 'en-US';
 }
-if (store.pv !== 2) {                    // levels used to be {1 模糊, 2 认识}; 不认识 stored nothing
+if (!(store.pv >= 2)) {                  // levels used to be {1 模糊, 2 认识}; 不认识 stored nothing
   var moved = {};
   for (var pk in store.prog) moved[pk] = store.prog[pk] === 2 ? 3 : 2;
   store.prog = moved; store.pv = 2;
+}
+if (store.pv !== 3) {                    // 第二十二次优化取消了「模糊」：标着模糊的词并进不认识，曾错过不补记
+  for (var fk in store.prog) if (store.prog[fk] === 2) store.prog[fk] = 1;
+  store.pv = 3;
 }
 if (!store.sel) store.sel = {};
 if (!store.gen) store.gen = {};
@@ -15590,15 +15593,11 @@ function paintAccent() {
 var SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6.5a8 8 0 0 1 0 11"/></svg>';
 
 /* ---------- progress helpers ---------- */
-function lvl(i) { return store.prog[i] || 0; }   // 0 未学 · 1 不认识 · 2 模糊 · 3 认识
-/* 记账规则：
-   · 标「不认识」永远算错过一次。
-   · 掌握之后再掉到「模糊」也算错过。
-   · 第一遍标「模糊」不记账 —— 之后改成「认识」就当认识（第三次优化 7）。 */
-function setLvl(i, v, force) {
-  var prev = lvl(i);
+function lvl(i) { return store.prog[i] || 0; }   // 0 未学 · 1 不认识 · 3 认识（2 原来是「模糊」，第二十二次优化取消）
+/* 记账规则：标「不认识」（包括测验答错）就算错过一次。 */
+function setLvl(i, v) {
   if (v) store.prog[i] = v; else delete store.prog[i];
-  if (v === 1 || force || (v === 2 && prev === 3)) store.hist[i] = (store.hist[i] || 0) + 1;
+  if (v === 1) store.hist[i] = (store.hist[i] || 0) + 1;
   save();
 }
 function everShaky(i) { return !!store.hist[i]; }
@@ -15689,7 +15688,7 @@ function setFilter(u, c) { colFilterU = u; colFilter = c || ''; dropOrder(); }
 /* ---------- ordering (第三次优化 10) ---------- */
 var SORTS = [['book', '原书顺序'], ['weak', '先不认识'], ['once', '先曾错过'],
              ['fresh', '先未学'], ['az', '字母序'], ['rand', '随机']];
-var WEIGHT = { 1: 0, 2: 1, 0: 2, 3: 3 };                 // 不认识 → 模糊 → 未学 → 认识
+var WEIGHT = { 1: 0, 2: 1, 0: 2, 3: 3 };                 // 不认识 → 未学 → 认识（2 是取消了的模糊）
 var ordCache = { u: null, m: null, f: null, list: null };
 function ordered(u) {
   var m = store.set.sort || 'book', f = curFilter(u);
@@ -15705,7 +15704,7 @@ function ordered(u) {
     });
   } else if (m === 'once') {
     /* 「认识（曾错过）」排最前 —— 自以为会、却栽过跟头的那一批最值得再看一眼。
-       现在标着不认识／模糊的词本来就在「先不认识」里，这里不重复强调。 */
+       现在标着不认识的词本来就在「先不认识」里，这里不重复强调。 */
     ws = ws.slice().sort(function (a, b) {
       var wa = lvl(a.i) === 3 && everShaky(a.i) ? 0 : 1;
       var wb = lvl(b.i) === 3 && everShaky(b.i) ? 0 : 1;
@@ -16080,7 +16079,7 @@ function railHtml(ws, curIdx, pick) {
     '<div class="rail-grid">' +
     (big ? '' : ws.map(function (w, n) { return railBtn(w, n, curIdx); }).join('')) +
     '</div><div class="rail-legend"><div class="k"><i></i>认识</div>' +
-    '<div class="k h"><i></i>认识（曾错过）</div><div class="f"><i></i>模糊</div>' +
+    '<div class="k h"><i></i>认识（曾错过）</div>' +
     '<div class="x"><i></i>不认识</div><div><i></i>未学</div></div>' +
     (colLegend ? '<div class="rail-legend rail-cols">' + colLegend + '</div>' : '') +
     (pick ? '<p class="rail-picktip">选择模式：点／拖答题卡上的点，圈一段词</p>' : '') +
@@ -16401,8 +16400,7 @@ function sayKey(k) {                       // P 单词 · S 例句 · D 生成�
 var RATE_BAR =
   '<div class="rate">' +
     '<button class="r0" data-lvl="1" type="button">不认识<small>1</small></button>' +
-    '<button class="r1" data-lvl="2" type="button">模糊<small>2</small></button>' +
-    '<button class="r2" data-lvl="3" type="button">认识<small>3</small></button>' +
+    '<button class="r2" data-lvl="3" type="button">认识<small>2</small></button>' +
   '</div>';
 
 function exHtml(e, t, word, key, extra) {
@@ -16418,10 +16416,12 @@ function exHtml(e, t, word, key, extra) {
 function cardHtml(w, revealed) {
   var r = rich(w), gs = gen(w), body = '';
   if (!revealed) {
-    /* 提示：先给一句例句，中文压着不给（第三次优化 8） */
-    if (store.set.hint && r && r.e) {
+    /* 提示：先给例句，中文压着不给（第三次优化 8）。自己生成／加的例句也一起给（第二十二次优化） */
+    if (store.set.hint && ((r && r.e) || gs.length)) {
       body += '<div class="blk hintblk"><p class="blk-l">例句提示</p>' +
-        exHtml(r.e, '', w.w, 'S') + '</div>';
+        (r && r.e ? exHtml(r.e, '', w.w, 'S') : '') +
+        gs.map(function (g, n) { return exHtml(g.e, '', w.w, n === 0 ? 'D' : '·', ' ex-gen'); }).join('') +
+        '</div>';
     }
     body += '<div class="cover"><button type="button" id="reveal">显示释义 <span style="color:var(--ink-3)">空格</span></button></div>';
   } else {
@@ -16609,8 +16609,8 @@ function renderReview() {
   view.innerHTML = head +
     '<div id="rvExportBox" class="rv-export-box" hidden></div>' +
     '<div class="review-body"><div class="card-stage">' + cardHtml(w, revealed) + RATE_BAR +
-      '<p class="review-note">标「认识」就划掉，标「不认识」「模糊」排到队尾待会儿再问' +
-        '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 评级 · ' +
+      '<p class="review-note">标「认识」就划掉，标「不认识」排到队尾待会儿再问' +
+        '<span class="q-keys"><kbd>空格</kbd> 翻卡 · <kbd>1</kbd><kbd>2</kbd> 评级 · ' +
         '<kbd>4</kbd>–<kbd>9</kbd> 标色 · <kbd>←</kbd><kbd>→</kbd> 先看别的</span></p>' +
     '</div></div>';
   document.getElementById('back').onclick = function () { go(route.from); };
@@ -16664,7 +16664,7 @@ function rateReview(v) {
 }
 
 /* ---- quiz：题源有三种 ----
-   · 单元测验、全站「测验错词」：只考标过「不认识」「模糊」的词（第三次优化 4）
+   · 单元测验、全站「测验错词」：只考标过「不认识」的词（第三次优化 4）
    · 「测验选中的词」：考自己在列表里勾出来的那一批（第四次优化 3） */
 var quiz = null;
 function quizPool(u, sel) {
@@ -16788,7 +16788,7 @@ function renderQuiz(u, sel) {
   if (!pool.length) {
     view.innerHTML = head + '<div class="quiz-wrap"><div class="empty">' + (sel
       ? '<b>还没选词</b>到浏览页或生词本，点一下「选择」，勾出想考的词再回来。'
-      : '<b>还没有错词</b>测验只从标过「不认识」和「模糊」的词里出题。' +
+      : '<b>还没有错词</b>测验只从标过「不认识」的词里出题。' +
         '先去学习模式过一遍，把不会的标出来，这里就有题了。') + '</div></div>';
     wire();
     return;
@@ -16853,7 +16853,7 @@ function renderQuiz(u, sel) {
       if (ok) { quiz.right++; if (lvl(q.w.i) < 3) setLvl(q.w.i, 3); }
       else {
         if (how === 'wrong') { b.classList.add('wrong'); b.insertAdjacentHTML('beforeend', '<span class="mark">✕</span>'); }
-        setLvl(q.w.i, 2, true); quiz.wrong.push(q.w);
+        setLvl(q.w.i, 1); quiz.wrong.push(q.w);
       }
       /* 释义题答对就翻篇；答错要停下来看（第五次优化 3）。
          填空题即使选对了也停 —— 从句子里猜出该填哪个词，跟知道这个词什么意思
@@ -17168,7 +17168,7 @@ function askViaAnthropic(prompt, schema) {
     body: JSON.stringify({
       model: store.set.model || 'claude-opus-5',
       max_tokens: 4000,
-      output_config: { effort: 'low', format: { type: 'json_schema', schema: schema || AI_SCHEMA } },
+      output_config: { effort: 'medium', format: { type: 'json_schema', schema: schema || AI_SCHEMA } },
       messages: [{ role: 'user', content: prompt }]
     })
   }).then(function (res) {
@@ -18273,7 +18273,7 @@ document.addEventListener('keydown', function (e) {
     else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); cycleReview(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); cycleReview(-1); }
     else if ('psdPSD'.indexOf(e.key) >= 0) { sayKey(e.key.toUpperCase()); }
-    else if ('123'.indexOf(e.key) >= 0) { rateReview(+e.key); }
+    else if ('123'.indexOf(e.key) >= 0) { rateReview(e.key === '1' ? 1 : 3); }   // 3 是取消「模糊」前的认识键，留着
     else if ('456789'.indexOf(e.key) >= 0) { setCol(route.deck[0].i, 'c' + (+e.key - 3)); save(); renderReview(); }
     else if (e.key === '0' || e.key === '`') { setCol(route.deck[0].i, ''); save(); renderReview(); }
     return;
@@ -18290,7 +18290,7 @@ document.addEventListener('keydown', function (e) {
   }
   else if ('psdPSD'.indexOf(e.key) >= 0) { sayKey(e.key.toUpperCase()); }
   else if ('123'.indexOf(e.key) >= 0) {
-    setLvl(ws[n].i, +e.key); route.rev = false;
+    setLvl(ws[n].i, e.key === '1' ? 1 : 3); route.rev = false;
     go({ name: 'unit', u: route.u, tab: 'study', n: Math.min(n + 1, ws.length - 1) });
   }
   else if ('456789'.indexOf(e.key) >= 0) { setCol(ws[n].i, 'c' + (+e.key - 3)); save(); renderStudy(route.u, n); }
