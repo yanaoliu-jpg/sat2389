@@ -210,18 +210,39 @@ function ydOk(text) {
     t.length <= 40 && t.split(/\s+/).length <= 4 && !/[.!?,;:]$/.test(t) && /[a-z]/i.test(t);
 }
 function stopYd() { if (ydAudio) { try { ydAudio.pause(); } catch (e) {} ydAudio = null; } }
+/* 有道的录音要等一秒多才回来，也不带缓存头（第二十四次优化）：进一个词时顺手把这个词和
+   下一个词的录音先取好，真要读的时候直接播，不再干等网络。留最近 12 个，回头再听也不用重取。 */
+var ydCache = {}, ydKeys = [];
+function ydGet(text) {
+  var type = store.set.accent === 'en-GB' ? 1 : 2, t = String(text).trim(), k = type + '|' + t;
+  var a = ydCache[k];
+  if (a && !a.error) return a;
+  a = new Audio();
+  a.preload = 'auto';
+  a.src = 'https://dict.youdao.com/dictvoice?type=' + type + '&audio=' + encodeURIComponent(t);
+  if (!ydCache[k]) ydKeys.push(k);
+  ydCache[k] = a;
+  while (ydKeys.length > 12) delete ydCache[ydKeys.shift()];
+  return a;
+}
+function ydPrefetch() {
+  for (var i = 0; i < arguments.length; i++) {
+    var w = arguments[i];
+    if (w && ydOk(w.w)) ydGet(w.w);
+  }
+}
 function speakYd(text, mine, vol, rate, fallback) {
-  var a = new Audio('https://dict.youdao.com/dictvoice?type=' + (store.set.accent === 'en-GB' ? 1 : 2) +
-    '&audio=' + encodeURIComponent(String(text).trim()));
+  var a = ydGet(text);
   var done = false;
   function fail() {
-    if (done) return; done = true; clearTimeout(t);
+    if (done || mine !== sayToken) return; done = true; clearTimeout(t);
     if (ydAudio === a) ydAudio = null;
-    if (mine === sayToken) fallback();
+    fallback();
   }
   var t = setTimeout(fail, 2500);            // 网慢到这个份上，不如先用系统声音读出来
   a.volume = vol;
   a.playbackRate = Math.max(0.5, Math.min(1.5, rate));
+  try { a.currentTime = 0; } catch (e) {}
   a.onplaying = function () { done = true; clearTimeout(t); };
   a.onerror = fail;
   ydAudio = a;
@@ -1257,6 +1278,7 @@ function renderStudy(u, n) {
     scrollRail(ws);
   }
   if (revealed && store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
+  ydPrefetch(w, ws[n + 1]);
 }
 
 /* ---- 整理错词：一轮过完为止，标「认识」才出列 ----
@@ -1359,6 +1381,7 @@ function renderReview() {
     b.onclick = function () { rateReview(+b.dataset.lvl); };
   });
   if (revealed && store.set.auto && route.spoke !== w.i) { route.spoke = w.i; speak(w.w); }
+  ydPrefetch(w, deck[1]);
 }
 function cycleReview(dir) {                 // look at another word without grading this one
   var d = route.deck;
@@ -1756,6 +1779,7 @@ function renderSpell(u, sel) {
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) {
     b.onclick = function () { speak(b.dataset.say, b); };
   });
+  ydPrefetch(w, spell.ws[spell.at + 1]);
 
   var inp = document.getElementById('spIn');
   function next() { spell.at++; spell.answered = false; spell.hint = 0; renderSpell(u, sel); }

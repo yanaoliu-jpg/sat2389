@@ -20,6 +20,7 @@ body = re.sub(r'\s*<script src="[^"]+"></script>', "", body)
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+         '<link rel="preconnect" href="https://dict.youdao.com">\n'
          '<link href="https://fonts.googleapis.com/css2?family=Faustina:ital,wght@0,400..700;1,400..600'
          '&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">')
 
