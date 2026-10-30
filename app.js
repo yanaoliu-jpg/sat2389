@@ -328,9 +328,26 @@ function setLvl(i, v) {
   save();
 }
 function everShaky(i) { return !!store.hist[i]; }
-function cls(i) {
-  var l = lvl(i), c = l === 3 ? 'k' : l === 2 ? 'f' : l === 1 ? 'x' : '';
-  return c + (l === 3 && everShaky(i) ? ' h' : '');
+function cls(i) {                          // 曾错过不再单独描边：不认识改成认识就是纯红（第二十五次优化）
+  var l = lvl(i);
+  return l === 3 ? 'k' : l === 2 ? 'f' : l === 1 ? 'x' : '';
+}
+function paintLvl(el, i) {                 // 只换一行／一个点的颜色，不整页重画
+  el.classList.remove('k', 'f', 'x');
+  if (cls(i)) el.classList.add(cls(i));
+}
+/* 浏览页一行上的「不会」：点一下归到不认识，再点一下撤回到标之前（第二十五次优化）。
+   认识的词标错了也能撤干净，连带记上的那次「错过」一起退掉。 */
+var rowMiss = {};                          // i → 标之前的等级，只留到关页面
+function toggleMiss(i) {
+  if (lvl(i) !== 1) { rowMiss[i] = lvl(i); setLvl(i, 1); return; }
+  var p = rowMiss[i] || 0;
+  delete rowMiss[i];
+  setLvl(i, p);
+  if (p === 3 && store.hist[i]) {
+    if (--store.hist[i] <= 0) delete store.hist[i];
+    save();
+  }
 }
 /* 乱序版单元（u 3001 起，第二十一次优化）不自带词条，ids 按顺序指向原书词条 ——
    进度、星标、颜色都按 i 存，所以跟原书单元共用，不会多出一份 */
@@ -797,6 +814,7 @@ function railBtn(w, n, curIdx) {
     '" data-col="' + colOf(w.i) + '" type="button" title="' + esc(w.w) +
     '" aria-label="' + esc(w.w) + '"></button>';
 }
+function bodyCls(ws) { return 'unit-body' + (ws.length > RAIL_BIG ? ' rail-wide' : ''); }
 function railHtml(ws, curIdx, pick) {
   var big = ws.length > RAIL_BIG, usedCol = {};
   ws.forEach(function (w) { var c = colOf(w.i); if (c) usedCol[c] = 1; });
@@ -812,7 +830,6 @@ function railHtml(ws, curIdx, pick) {
     '<div class="rail-grid">' +
     (big ? '' : ws.map(function (w, n) { return railBtn(w, n, curIdx); }).join('')) +
     '</div><div class="rail-legend"><div class="k"><i></i>认识</div>' +
-    '<div class="k h"><i></i>认识（曾错过）</div>' +
     '<div class="x"><i></i>不认识</div><div><i></i>未学</div></div>' +
     (colLegend ? '<div class="rail-legend rail-cols">' + colLegend + '</div>' : '') +
     (pick ? '<p class="rail-picktip">选择模式：点／拖答题卡上的点，圈一段词</p>' : '') +
@@ -823,10 +840,13 @@ function railHtml(ws, curIdx, pick) {
    同一批词接着那个位置；当前的点还在视野里就不动，出去了才往前翻，让它落在上面第二行。 */
 var railKeep = { key: '', top: 0 };
 function railKey(ws) { return ws.length + ':' + ws[0].i + ':' + ws[ws.length - 1].i; }
+function railHold(g) { railKeep.top = g.scrollTop; railKeep.hold = true; }   // 点下去那一刻的位置直接记下，不等滚动事件
 function railPlace(g, key, y, h, center) {   // y：当前那个点在点阵内容里的上沿；h：它的高（含行距）
-  var top = railKeep.key === key ? railKeep.top : g.scrollTop;
+  var same = railKeep.key === key;
+  var top = same ? railKeep.top : g.scrollTop;
+  var hold = same && railKeep.hold;            // 在点阵上亲手点的词就在眼前，一格都不挪（第二十五次优化）
   if (center) top = y - (g.clientHeight - h) / 2;
-  else if (y < top || y + h > top + g.clientHeight) top = y - h;
+  else if (!hold && (y < top || y + h > top + g.clientHeight)) top = y - h;
   g.scrollTop = Math.max(0, top);
   railKeep = { key: key, top: g.scrollTop };
 }
@@ -852,7 +872,9 @@ function scrollRail(ws, center) {
    滚动、断点变化（窄屏点阵会从 4 列变 17 列）时重新算一遍该画哪几行。
    行高算不出来——CSS 靠 aspect-ratio 从列宽推高度，得先真的画一个按钮才量得到。
    于是先按一个偏小的估计（宁可多渲染几行也不能算漏了）画一遍，量出真实高度
-   跟估计对不上就用真实值再画一遍；这之后滚动只管重算该露哪几行，不用再量。 */
+   跟估计对不上就用真实值再画一遍；这之后滚动只管重算该露哪几行，不用再量。
+   scrollTop 一定要等真实行高的占位块撑好才设：内容还按估计的高度算时设进去会被截短，
+   滚到底点一个词就弹回一大截（第二十五次优化）。 */
 function railMount(ws, curIdx) {
   if (railRO) { railRO.disconnect(); railRO = null; }
   if (ws.length <= RAIL_BIG) return null;
@@ -862,30 +884,41 @@ function railMount(ws, curIdx) {
   var key = railKey(ws), center = false;
   function totalRows() { return Math.max(1, Math.ceil(ws.length / cols)); }
   function maxH() { return parseFloat(getComputedStyle(grid).maxHeight) || 400; }
+  function padY() {                         // 点阵的上下内边距和边框，算高度时不能漏，不然放得下也多出一截滚动
+    var cs = getComputedStyle(grid);
+    return parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) +
+      parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+  }
+  function gapY() {
+    var cs = getComputedStyle(grid);
+    return parseFloat(cs.rowGap || cs.gap) || 0;
+  }
+  function rowReal() {                      // 量一个真按钮：行高 = 按钮高 + 行距
+    var b = grid.querySelector('.rail-b');
+    if (!b) return rowH;
+    return b.getBoundingClientRect().height + gapY() || rowH;
+  }
   function scrollToRow() {
     if (curIdx < 0) return;
     railPlace(grid, key, Math.floor(at / cols) * rowH, rowH, center);
   }
   function paint() {
-    var rows = totalRows(), h = Math.min(rows * rowH, maxH());
+    var rows = totalRows(), gap = gapY(), h = Math.min(rows * rowH - gap + padY(), maxH());
     grid.style.height = h + 'px';
     var vis = Math.max(1, Math.ceil(h / rowH));
     var first = Math.max(0, Math.floor(grid.scrollTop / rowH) - RAIL_OVERSCAN);
     var last = Math.min(rows - 1, first + vis + RAIL_OVERSCAN * 2);
     var startI = first * cols, endI = Math.min(ws.length, (last + 1) * cols);
-    var before = first * rowH, after = (rows - 1 - last) * rowH;
+    /* 占位块自己也占一格、后面跟一道行距，减掉才跟真的行一样高，内容总高度不会随滚动变 */
+    var before = first * rowH - gap, after = (rows - 1 - last) * rowH - gap;
     grid.innerHTML =
       (before > 0 ? '<div class="rail-sp" style="grid-column:1/-1;height:' + before + 'px"></div>' : '') +
       ws.slice(startI, endI).map(function (w, k) { return railBtn(w, startI + k, curIdx); }).join('') +
       (after > 0 ? '<div class="rail-sp" style="grid-column:1/-1;height:' + after + 'px"></div>' : '');
     if (!measured) {
       measured = true;
-      var b = grid.querySelector('.rail-b');
-      if (b) {
-        var cs = getComputedStyle(grid), gap = parseFloat(cs.rowGap || cs.gap) || 0;
-        var real = b.getBoundingClientRect().height + gap;
-        if (real > 0 && Math.abs(real - rowH) > 1) { rowH = real; scrollToRow(); paint(); return; }
-      }
+      var real = rowReal();
+      if (Math.abs(real - rowH) > 1) { rowH = real; paint(); }
     }
   }
   var raf = null;
@@ -895,8 +928,12 @@ function railMount(ws, curIdx) {
     raf = requestAnimationFrame(function () { raf = null; paint(); });
   }, { passive: true });
   if (typeof ResizeObserver === 'function') {
+    /* 刚挂上时它会先报一次，那时候尺寸其实没变，不能把已经放好的滚动位置重算一遍；
+       列数或行高真的变了（窗口缩放、窄屏换列）才重放。 */
     railRO = new ResizeObserver(function () {
-      cols = railCols(); measured = false; rowH = 14; scrollToRow(); paint();
+      var c = railCols(), real = rowReal();
+      if (c === cols && Math.abs(real - rowH) <= 1) { paint(); return; }
+      cols = c; rowH = real; paint(); scrollToRow(); paint();
     });
     railRO.observe(grid);
   }
@@ -917,7 +954,7 @@ function railMount(ws, curIdx) {
 function railWireJump(grid, onJump) {
   grid.addEventListener('click', function (e) {
     var b = e.target.closest('.rail-b');
-    if (b) onJump(+b.dataset.n);
+    if (b) { railHold(grid); onJump(+b.dataset.n); }
   });
 }
 /* 浏览页多一层：不在选择模式时点一下跳去学习；选择模式下点／拖／Shift 点
@@ -988,7 +1025,9 @@ function renderBrowse(u) {
   /* 从搜索结果跳过来找某个词：先把颜色筛选撤掉，免得那个词正好被筛在外面 */
   if (route.focus != null && curFilter(u)) setFilter(u, '');
   var ws = ordered(u), editing2 = editUnit === u, seq = unitSeq(u);
+  var canMiss = !picking && !editing2;
   var rows = ws.map(function (w, n) {
+    var star = '<button class="row-s' + (store.star[w.i] ? ' on' : '') + '" data-star="' + w.i + '" type="button" title="加入生词本">★</button>';
     return '<div class="row ' + cls(w.i) + (store.sel[w.i] ? ' sel' : '') +
       '" data-n="' + n + '" data-i="' + w.i + '" data-col="' + colOf(w.i) + '">' +
       (picking ? '<span class="row-c"></span>' : '') +
@@ -1000,10 +1039,13 @@ function renderBrowse(u) {
         ? '<span class="row-edit">' +
             '<button data-edit="' + w.i + '" type="button" title="改这一条">✎</button>' +
             '<button data-del2="' + w.i + '" type="button" title="删掉这个词">×</button></span>'
-        : '<button class="row-s' + (store.star[w.i] ? ' on' : '') + '" data-star="' + w.i + '" type="button" title="加入生词本">★</button>') +
+        : canMiss
+        ? '<span class="row-acts"><button class="row-miss' + (lvl(w.i) === 1 ? ' on' : '') + '" data-miss="' + w.i +
+            '" type="button" title="归到不认识，再点一下撤回">不会</button>' + star + '</span>'
+        : star) +
       '</div>';
   }).join('');
-  view.innerHTML = unitHeader(u, 'browse') +
+  view.innerHTML = '<div id="unitHead">' + unitHeader(u, 'browse') + '</div>' +
     '<div class="sortbar"><span>排序</span>' +
       SORTS.map(function (s) {
         var name = s[0] === 'book' && unitMeta(u).ids ? '固定乱序' : s[1];   // 乱序单元的「原书顺序」就是那份写死的乱序
@@ -1017,7 +1059,7 @@ function renderBrowse(u) {
         : '') +
       pickBarHtml() +
     '</div>' + colBarHtml(u, ws) +
-    '<div class="unit-body"><div><div class="rows' + (picking ? ' picking' : '') + '">' + rows + '</div></div>' +
+    '<div class="' + bodyCls(ws) + '"><div><div class="rows' + (picking ? ' picking' : '') + (canMiss ? ' can-miss' : '') + '">' + rows + '</div></div>' +
       railHtml(ws, -1, picking) + '</div>' +
     '<div id="selbarSlot">' + selBarHtml() + '</div>';
   wireHeader(u);
@@ -1065,6 +1107,20 @@ function renderBrowse(u) {
       var i = +b.dataset.star;
       if (store.star[i]) delete store.star[i]; else store.star[i] = 1;
       b.classList.toggle('on'); save(); starCount();
+    };
+  });
+  /* 只改这一行、答题卡上那个点和头上的「整理错词」数，不整页重画：列表和答题卡都停在原处 */
+  Array.prototype.forEach.call(view.querySelectorAll('[data-miss]'), function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      var i = +b.dataset.miss;
+      toggleMiss(i);
+      b.classList.toggle('on', lvl(i) === 1);
+      paintLvl(b.closest('.row'), i);
+      var rb = view.querySelector('.rail-b[data-i="' + i + '"]');
+      if (rb) paintLvl(rb, i);
+      document.getElementById('unitHead').innerHTML = unitHeader(u, 'browse');
+      wireHeader(u);
     };
   });
   /* 答题卡的点：不在选择模式时点一下跳去学习；在选择模式时，点／拖／Shift 点
@@ -1256,7 +1312,7 @@ function renderStudy(u, n) {
   var w = ws[n];
   var revealed = route.rev === true;
   view.innerHTML = unitHeader(u, 'study') +
-    '<div class="unit-body"><div class="card-stage">' + cardHtml(w, revealed, u) +
+    '<div class="' + bodyCls(ws) + '"><div class="card-stage">' + cardHtml(w, revealed, u) +
       RATE_BAR +
       '<div class="study-nav"><button id="prev" type="button">← 上一个</button>' +
         '<span>' + (n + 1) + ' / ' + ws.length + '<small>↑↓ 换行 · 4–9 标色</small></span>' +
@@ -1286,7 +1342,7 @@ function renderStudy(u, n) {
     railWireJump(view.querySelector('.rail-grid'), goN);
   } else {
     Array.prototype.forEach.call(view.querySelectorAll('.rail-b'), function (b) {
-      b.onclick = function () { goN(+b.dataset.n); };
+      b.onclick = function () { railHold(b.parentNode); goN(+b.dataset.n); };
     });
     scrollRail(ws);
   }

@@ -137,6 +137,11 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 /* rail + content */
 .unit-body{display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:clamp(18px,3vw,38px);align-items:start}
 @media (max-width:900px){.unit-body{grid-template-columns:1fr}.rail{order:-1;position:static!important}}
+/* 大单元的答题卡加宽成 8 列（点的大小不变）：233 词从 59 行缩到 30 行，一般窗口不用滚（第二十五次优化） */
+@media (min-width:901px){
+  .unit-body.rail-wide{grid-template-columns:minmax(0,1fr) 228px}
+  .rail-wide .rail-grid{grid-template-columns:repeat(8,1fr)}
+}
 .rail{position:sticky;top:calc(var(--topbar-h,58px) + 50px)}
 .rail-title{font-family:var(--util);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
   color:var(--ink-3);margin:0 0 9px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -176,6 +181,13 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .row-ex{display:block;margin-top:2px;font-size:.78rem;color:var(--ink-3)}
 .row-s{text-align:right;font-size:.9rem;color:var(--rule);background:none;border:0;cursor:pointer;padding:0}
 .row-s.on{color:var(--seal)}
+/* 浏览页一行上的「不会」（第二十五次优化） */
+.rows.can-miss .row{grid-template-columns:44px minmax(150px,1.05fr) minmax(120px,.9fr) minmax(0,1.5fr) 76px}
+.row-acts{display:flex;gap:9px;align-items:center;justify-content:flex-end}
+.row-miss{font-family:var(--util);font-size:.68rem;line-height:1;padding:4px 8px;border-radius:99px;white-space:nowrap;
+  border:1px solid var(--rule);background:none;color:var(--ink-3);cursor:pointer;transition:.14s}
+.row-miss:hover{border-color:var(--miss);color:var(--miss)}
+.row-miss.on{background:var(--miss-soft);border-color:var(--miss);color:var(--miss)}
 .row .dot{display:inline-block;width:7px;height:7px;border-radius:99px;background:var(--rule);
   margin-right:8px;vertical-align:middle}
 .row.k .dot{background:var(--seal)}
@@ -183,6 +195,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .row-detail{grid-column:1/-1;padding:4px 0 10px 56px}
 @media (max-width:760px){
   .row{grid-template-columns:34px 1fr 30px;row-gap:2px}
+  .rows.can-miss .row{grid-template-columns:34px 1fr 76px}
   .row-p{grid-column:2;font-size:.8rem}
   .row-z{grid-column:2}
   .row-detail{padding-left:34px}
@@ -355,12 +368,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 }
 .speak:hover kbd{border-color:var(--seal);color:var(--seal)}
 
-/* ---------- mastered, but missed at some point ---------- */
-.bubble.k.h, .rail-b.k.h{box-shadow:inset 0 0 0 2px var(--card), inset 0 0 0 3.5px var(--amber)}
-.rail-legend .k.h i{background:var(--seal);border-color:var(--seal);
-  box-shadow:inset 0 0 0 2px var(--card), inset 0 0 0 3px var(--amber)}
-.row.k.h .dot{background:var(--seal);box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--amber)}
-.wcard.k.h::before{background:linear-gradient(var(--seal) 0 50%, var(--amber) 50% 100%)}
+/* ---------- 认识过又错过：颜色跟认识一样是纯红，只在词卡上留个「曾错过」小标（第二十五次优化） ---------- */
 .once{font-family:var(--util);font-size:.62rem;letter-spacing:.08em;color:var(--amber);
   border:1px solid var(--amber);border-radius:4px;padding:1px 5px;margin-left:9px;vertical-align:2px}
 
