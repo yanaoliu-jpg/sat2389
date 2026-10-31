@@ -251,7 +251,16 @@ function pronUrl(word, clip, gb) {
   var stem = /^\d/.test(clip)
     ? word.toLowerCase().replace(/[ -]/g, '_') + '__' + (gb ? 'gb' : 'us') + '_' + clip
     : clip;
+  if (/^(con|aux|nul|prn)/.test(stem)) stem = 'x' + stem;   // 这几个开头是 Windows 的保留名，牛津的文件名前面多一个 x
   return OX_MEDIA + dir + '/' + stem.charAt(0) + '/' + stem.slice(0, 3) + '/' + stem.slice(0, 5) + '/' + stem + '.mp3';
+}
+/* 新词没有现成地址，按牛津的命名规律一个个试（第三十次优化）：有些词要到 _2 或 _1_rr 才有这个口音的录音，
+   带连字符的词文件名是 far_fetched_1_us_1，不是双下划线 */
+function pronGuesses(word, gb) {
+  var out = ['1', '1_rr', '2', '2_rr', '3', '4'].map(function (c) { return pronUrl(word, c, gb); });
+  if (word.indexOf('-') >= 0)
+    out.unshift(pronUrl(word, word.toLowerCase().replace(/-/g, '_') + '_1_' + (gb ? 'gb' : 'us') + '_1', gb));
+  return out;
 }
 function pronList(table, word, gb) {
   if (!table || !Object.prototype.hasOwnProperty.call(table.w, word)) return [];
@@ -301,6 +310,6 @@ if (typeof module !== 'undefined' && module.exports) {
     phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell,
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
-    pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips
+    pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses
   };
 }

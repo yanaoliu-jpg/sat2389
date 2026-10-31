@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { pronUrl, pronList, phraseClips } = require('../pure.js');
+const { pronUrl, pronList, phraseClips, pronGuesses } = require('../pure.js');
 
 const ROOT = path.join(__dirname, '..');
 const ctx = { window: {} };
@@ -79,4 +79,20 @@ test('短语拆成单词的录音，多音词和冠词留给有道', function ()
   assert.strictEqual(phraseClips(PRON, 'make a case for', false), null);  // 含冠词
   assert.strictEqual(phraseClips(PRON, 'serendipity', false), null);      // 单词不走这里
   assert.strictEqual(phraseClips(PRON, 'one two three four five six seven', false), null);
+});
+
+const OX = 'https://www.oxfordlearnersdictionaries.com/media/english/';
+test('牛津给 con / aux / nul 开头的文件名多加一个 x', function () {
+  assert.strictEqual(pronUrl('concept', '1', false), OX + 'us_pron/x/xco/xconc/xconcept__us_1.mp3');
+  assert.strictEqual(pronUrl('auxiliary', '1', true), OX + 'uk_pron/x/xau/xauxi/xauxiliary__gb_1.mp3');
+  assert.strictEqual(pronUrl('nullify', '1', false), OX + 'us_pron/x/xnu/xnull/xnullify__us_1.mp3');
+  assert.strictEqual(pronUrl('coffee', '1', false), OX + 'us_pron/c/cof/coffe/coffee__us_1.mp3');
+});
+test('新词的地址按规律一个个试，先试最常见的', function () {
+  const us = pronGuesses('kettle', false);
+  assert.strictEqual(us[0], OX + 'us_pron/k/ket/kettl/kettle__us_1.mp3');
+  assert.ok(us.includes(OX + 'us_pron/k/ket/kettl/kettle__us_1_rr.mp3'));
+  assert.ok(us.includes(OX + 'us_pron/k/ket/kettl/kettle__us_2.mp3'));
+  assert.strictEqual(new Set(us).size, us.length);
+  assert.strictEqual(pronGuesses('far-fetched', true)[0], OX + 'uk_pron/f/far/far_f/far_fetched_1_gb_1.mp3');
 });

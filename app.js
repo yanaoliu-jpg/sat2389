@@ -246,7 +246,7 @@ function ipaOf(w) {
   return (l.length && l[0].ipa) || phraseIpa(phraseOf(w.w)) || w.p || (x && x.ipa) || '';
 }
 /* 新词的发音（第二十八次优化）：发音表是事先做好的，新词不在里面。第一次显示这个词时网页自己查一遍：
-   牛津的录音地址有规律（约 96% 能中），英美各试一个，都没有再试朗文的美音；<audio> 不受跨域限制，能播就是有。
+   牛津的录音地址有规律（pure.js 的 pronGuesses），英美各按顺序试，都没有再试朗文的美音；<audio> 不受跨域限制，能播就是有。
    查到的存进 store.pronx，下次不用再试。音标没法从词典网站取（它们不许网页跨域），只有词表里没写音标时
    才去 dictionaryapi.dev 查一个。想要英美音标、多音词、统一音量，跑 src/update_pron.py 进发音表。 */
 var probing = {};
@@ -260,15 +260,22 @@ function probeClip(url) {
     a.src = url;
   });
 }
+function firstClip(urls, i) {               // 第一个能播的地址；一个都没有是 ''，超时是 null
+  i = i || 0;
+  if (i >= urls.length) return Promise.resolve('');
+  return probeClip(urls[i]).then(function (hit) {
+    return hit ? urls[i] : hit === null ? null : firstClip(urls, i + 1);
+  });
+}
 function probeNew(w) {
   var t = String(w.w).trim(), x = store.pronx[t];
   if (!window.PRON || probing[t] || !ydOk(t) || oxOff() || pronList(PRON, t, false).length) return;
   if (!/^[a-z][a-z'-]*$/i.test(t)) return;             // 短语在 phraseOf 里拆开，不单独找
-  if (x && (x.u || x.g || Date.now() - x.t < 86400000)) return;     // 没查到的隔一天再试，可能只是当时断网
+  /* 没查到的隔一天再试，可能只是当时断网。v 是地址规则的版本，第三十次优化之前查的词重查一遍 */
+  if (x && x.v === 2 && (x.u || x.g || Date.now() - x.t < 86400000)) return;
   probing[t] = 1;
-  var us = pronUrl(t, '1', false), gb = pronUrl(t, '1', true);
-  Promise.all([probeClip(us), probeClip(gb)]).then(function (r) {
-    if (r[0] || r[1]) return { u: r[0] ? us : '', g: r[1] ? gb : '' };
+  Promise.all([firstClip(pronGuesses(t, false)), firstClip(pronGuesses(t, true))]).then(function (r) {
+    if (r[0] || r[1]) return { u: r[0] || '', g: r[1] || '' };
     if (r[0] === null && r[1] === null) return null;                // 都超时：网络问题，不算没有
     var ld = 'https://www.ldoceonline.com/media/english/ameProns/' + encodeURIComponent(t.toLowerCase()) + '.mp3';
     return probeClip(ld).then(function (hit) { return { u: hit ? ld : '', g: '' }; });
@@ -276,6 +283,7 @@ function probeNew(w) {
     delete probing[t];
     if (!got) return;
     got.t = Date.now();
+    got.v = 2;
     store.pronx[t] = got;
     save();
     var tag = view.querySelector('.w-src[data-w="' + esc(t) + '"]');
@@ -392,7 +400,7 @@ function speak(text, btn, pi) {              // pi：多音词读第几个读音
     else if (!p && phraseOf(text) && !oxOff()) speakChain(phraseOf(text), 0, mine, v, r, viaYd);
     /* 新词还没查完就点了喇叭：先照牛津的地址规律试一下，没有这个录音是常事，所以不记牛津连不上 */
     else if (!p && window.PRON && !oxOff() && !store.pronx[String(text).trim()])
-      speakClip(pronUrl(String(text).trim(), '1', accentGb()), defGain(), mine, v, r, viaYd);
+      speakClip(pronGuesses(String(text).trim(), accentGb())[0], defGain(), mine, v, r, viaYd);
     else viaYd();
     if (btn) { btn.classList.remove('on'); void btn.offsetWidth; btn.classList.add('on'); }
     return;
