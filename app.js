@@ -482,7 +482,12 @@ function toggleMiss(i) {
 }
 /* 乱序版单元（u 3001 起，第二十一次优化）不自带词条，ids 按顺序指向原书词条 ——
    进度、星标、颜色都按 i 存，所以跟原书单元共用，不会多出一份 */
+/* 生词本也是一个单元（第三十一次优化）：有自己的浏览、学习、测验、拼写和答题卡，
+   词不搬家，还属于原来的单元，这里只是把打了星的词摆到一起 */
+var STAR_U = -1;
+function starWords() { return WORDS.filter(function (w) { return store.star[w.i]; }); }
 function unitWords(u) {
+  if (u === STAR_U) return starWords();
   var ids = unitMeta(u).ids;
   if (!ids) return WORDS.filter(function (w) { return w.u === u; });
   var at = {};
@@ -499,7 +504,10 @@ function homePool() {
   });
   return out;
 }
-function unitMeta(u) { return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' }; }
+function unitMeta(u) {
+  if (u === STAR_U) return { u: u, n: starWords().length, a: '', b: '', t: '生词本' };
+  return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' };
+}
 /* 单元改名（第二十九次优化）：内置单元的新名字存在 store.uname，单元本身不动，留空就回到原名；
    导入和自建的单元本来就是自己起的名字，直接改 store.custom 里的 t */
 function unitName(u) { return store.uname[u] || unitMeta(u).t || ''; }
@@ -612,8 +620,8 @@ var SORTS = [['book', '原书顺序'], ['weak', '先不认识'], ['az', '字母�
 var WEIGHT = { 1: 0, 2: 1, 0: 2, 3: 3 };                 // 不认识 → 未学 → 认识（2 是取消了的模糊）
 var ordCache = { u: null, m: null, f: null, list: null };
 function ordered(u) {
-  var m = store.set.sort || 'book', f = curFilter(u);
-  if (ordCache.u === u && ordCache.m === m && ordCache.f === f) return ordCache.list;
+  var m = store.set.sort || 'book', f = curFilter(u), s = u === STAR_U ? starWords().length : 0;
+  if (ordCache.u === u && ordCache.m === m && ordCache.f === f && ordCache.s === s) return ordCache.list;
   var ws = unitWords(u);
   /* 同一档里谁先谁后：原有单元照编号；乱序单元照它写死的乱序 —— 退回编号就又成了字母顺序 */
   var seq = {}, shuffled = !!unitMeta(u).ids;
@@ -629,7 +637,7 @@ function ordered(u) {
     ws = ws.slice();
     for (var i = ws.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = ws[i]; ws[i] = ws[j]; ws[j] = t; }
   }
-  ordCache = { u: u, m: m, f: f, list: ws };
+  ordCache = { u: u, m: m, f: f, s: s, list: ws };
   return ws;
 }
 function dropOrder() { ordCache = { u: null, m: null, f: null, list: null }; }
@@ -783,7 +791,7 @@ var scrollMem = {};
 function scrollKey(r) {
   if (!r) return null;
   if (r.name === 'home') return 'home';
-  if (r.name === 'star') return 'star';
+  if (r.name === 'group') return 'g' + r.id;
   if (r.name === 'unit' && (r.tab || 'browse') === 'browse') return 'u' + r.u;
   return null;
 }
@@ -808,6 +816,137 @@ document.getElementById('goHome').onclick = function () {
   go({ name: 'home' });
 };
 
+/* ---------- 单元分组（第三十一次优化）----------
+   一百来个单元摊在首页太长。store.groups 是 [{ id, name, us: [单元号] }]，一个单元最多在一个组里，
+   没进组的单元直接摆在首页。撤销分组只是把单元放回首页，词和进度不动。
+   单元被删掉或合并后 us 里可能留着旧号，所以一律经 groupUnits 取。 */
+function defaultGroups() {
+  function pick(a, b) {
+    return UNITS.filter(function (x) { return x.u >= a && x.u <= b && !x.imported; }).map(function (x) { return x.u; });
+  }
+  return [{ id: 'sat', name: 'SAT 词汇', us: pick(1, 37) },
+          { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
+          { id: 'ielts', name: '雅思核心词汇', us: pick(2001, 2008) }];
+}
+if (!store.groups) store.groups = defaultGroups();
+function groupOf(u) { return store.groups.filter(function (g) { return g.us.indexOf(u) >= 0; })[0] || null; }
+function groupById(id) { return store.groups.filter(function (g) { return g.id === id; })[0] || null; }
+function groupUnits(g) { return UNITS.filter(function (x) { return g.us.indexOf(x.u) >= 0; }); }
+function groupWords(g) {
+  var out = [];
+  groupUnits(g).forEach(function (x) { out = out.concat(unitWords(x.u)); });
+  return out;
+}
+function unitCardHtml(u) {
+  var ws = unitWords(u.u), m = merging && route.name === 'home';
+  return '<button class="unit-card' + (u.t ? ' extra' : '') +
+    (m ? (u.imported ? (mergeSel[u.u] ? ' msel' : '') : ' mno') : '') +
+    '" data-u="' + u.u + '" type="button">' +
+    '<div class="unit-no">' + esc(unitLabel(u.u)) +
+      (u.imported ? '<span class="tag-imp">' + (u.manual ? '自建' : '导入') + '</span>' : '') + '</div>' +
+    '<div class="unit-span">' + esc(u.a) + '<i>—</i>' + esc(u.b) + '</div>' +
+    unitProgHtml(ws) +
+    '<div class="unit-foot">' + unitFootHtml(ws, u) + '</div>' +
+    '</button>';
+}
+function groupCardHtml(g) {
+  var us = groupUnits(g), ws = groupWords(g), t = tally(ws), n = ws.length || 1;
+  return '<button class="group-card" data-g="' + esc(g.id) + '" type="button">' +
+    '<span class="group-name">' + esc(g.name) + '</span>' +
+    '<span class="group-sub">' + us.length + ' 个单元，' + ws.length + ' 个词</span>' +
+    '<span class="group-bar"><i class="k" style="width:' + (t.known / n * 100) + '%"></i>' +
+      '<i class="x" style="width:' + (t.shaky / n * 100) + '%"></i></span>' +
+    '<span class="group-foot"><span><b>' + t.known + '</b> 已掌握</span><span>' + t.shaky + ' 待复习</span></span>' +
+    '</button>';
+}
+function wireGroupCards() {
+  Array.prototype.forEach.call(view.querySelectorAll('.group-card'), function (b) {
+    b.onclick = function () { go({ name: 'group', id: b.dataset.g }); };
+  });
+}
+function renderGroup(id) {
+  var g = groupById(id);
+  if (!g) { route = { name: 'home' }; renderHome(); return; }
+  var us = groupUnits(g), ws = groupWords(g), bad = ws.filter(shaky);
+  view.innerHTML = '<button class="back" id="back" type="button">← 返回目录</button>' +
+    '<div class="unit-head"><div><p class="eyebrow">' + us.length + ' 个单元 · ' + ws.length + ' 个词</p>' +
+      '<h1>' + esc(g.name) + '</h1></div>' +
+      '<div class="head-tools">' +
+        (bad.length ? '<button class="btn btn-ghost" id="sweepGroup" type="button">整理错词 · ' + bad.length + '</button>' : '') +
+        '<button class="btn btn-ghost" id="editGroup" type="button">编辑分组</button>' +
+      '</div></div>' +
+    (us.length ? '<div class="unit-grid">' + us.map(unitCardHtml).join('') + '</div>'
+      : '<div class="empty"><b>这个分组还是空的</b>点右上角的「编辑分组」，把单元勾进来。</div>');
+  document.getElementById('back').onclick = function () { go({ name: 'home' }); };
+  document.getElementById('editGroup').onclick = function () { openGroup(g.id); };
+  var sg = document.getElementById('sweepGroup');
+  if (sg) sg.onclick = function () { startReview(bad, g.name + ' 错词', { name: 'group', id: g.id }); };
+  Array.prototype.forEach.call(view.querySelectorAll('.unit-card'), function (b) {
+    b.onclick = function () { dropOrder(); go({ name: 'unit', u: +b.dataset.u, tab: 'browse' }); };
+  });
+}
+/* 新建和编辑是同一个弹窗：起名字，再勾单元。勾别的组里的单元就是把它挪过来，
+   这个组里取消勾选的单元回到首页 */
+var groupEdit = null;
+function groupRowHtml(x, on) {
+  return '<label class="gp-u"><input type="checkbox" data-u="' + x.u + '"' + (on ? ' checked' : '') + '>' +
+    '<span>' + esc(unitLabel(x.u)) + '<small>' + esc(x.a) + ' — ' + esc(x.b) + '</small></span></label>';
+}
+function groupSecHtml(title, list, open, on) {
+  if (!list.length) return '';
+  return '<details class="gp-sec"' + (open ? ' open' : '') + '><summary><span>' + esc(title) + '</span>' +
+    '<em>' + list.length + ' 个单元</em><button class="gp-all" type="button">全选</button></summary>' +
+    '<div class="gp-list">' + list.map(function (x) { return groupRowHtml(x, on); }).join('') + '</div></details>';
+}
+function paintGroupCount() {
+  var n = document.querySelectorAll('#groupPick input:checked').length;
+  document.getElementById('groupCount').textContent = '已选 ' + n + ' 个单元';
+}
+function openGroup(id) {
+  var g = id ? groupById(id) : null;
+  groupEdit = g;
+  document.getElementById('groupTitle').textContent = g ? '编辑分组' : '新建分组';
+  document.getElementById('groupName').value = g ? g.name : '';
+  document.getElementById('groupNote').textContent = '';
+  document.getElementById('groupDrop').hidden = !g;
+  var free = UNITS.filter(function (x) { return !groupOf(x.u); });
+  document.getElementById('groupPick').innerHTML =
+    (g ? groupSecHtml('已在这个分组里', groupUnits(g), true, true) : '') +
+    groupSecHtml('没分组的单元', free, true, false) +
+    store.groups.filter(function (o) { return o !== g; }).map(function (o) {
+      return groupSecHtml('在「' + o.name + '」里', groupUnits(o), false, false);
+    }).join('');
+  paintGroupCount();
+  document.getElementById('groupModal').hidden = false;
+  document.getElementById('groupName').focus();
+}
+function saveGroup() {
+  var name = document.getElementById('groupName').value.trim();
+  if (!name) {
+    document.getElementById('groupNote').textContent = '先给分组起个名字。';
+    document.getElementById('groupName').focus();
+    return;
+  }
+  var us = Array.prototype.map.call(document.querySelectorAll('#groupPick input:checked'), function (b) { return +b.dataset.u; });
+  var g = groupEdit;
+  store.groups.forEach(function (o) {
+    if (o !== g) o.us = o.us.filter(function (u) { return us.indexOf(u) < 0; });
+  });
+  if (!g) { g = { id: 'g' + Date.now(), name: name, us: [] }; store.groups.push(g); }
+  g.name = name; g.us = us;
+  save();
+  document.getElementById('groupModal').hidden = true;
+  go({ name: 'group', id: g.id });
+}
+function dropGroup() {
+  var g = groupEdit;
+  if (!confirm('撤销分组「' + g.name + '」？里面的单元回到首页，词和学习进度都不动。')) return;
+  store.groups = store.groups.filter(function (o) { return o !== g; });
+  save();
+  document.getElementById('groupModal').hidden = true;
+  go({ name: 'home' });
+}
+
 /* ================= HOME ================= */
 function renderHome() {
   var pool = homePool(), all = tally(pool);
@@ -819,18 +958,13 @@ function renderHome() {
      乱序版是带 ids 的单元。标题下面的开关切换，记在 store.set.shuf */
   var shuf = !!store.set.shuf;
   var shown = UNITS.filter(function (x) { return shuf ? !!x.ids : !x.ids; });
-  var cards = shown.map(function (u) {
-    var ws = unitWords(u.u);
-    return '<button class="unit-card' + (u.t ? ' extra' : '') +
-      (merging ? (u.imported ? (mergeSel[u.u] ? ' msel' : '') : ' mno') : '') +
-      '" data-u="' + u.u + '" type="button">' +
-      '<div class="unit-no">' + esc(unitLabel(u.u)) +
-        (u.imported ? '<span class="tag-imp">' + (u.manual ? '自建' : '导入') + '</span>' : '') + '</div>' +
-      '<div class="unit-span">' + esc(u.a) + '<i>—</i>' + esc(u.b) + '</div>' +
-      unitProgHtml(ws) +
-      '<div class="unit-foot">' + unitFootHtml(ws, u) + '</div>' +
-      '</button>';
-  }).join('');
+  /* 合并时要挑的是单元，分组收起来，全摊开 */
+  var loose = merging ? shown : shown.filter(function (x) { return !groupOf(x.u); });
+  var groups = merging ? [] : store.groups.filter(function (g) {
+    var us = groupUnits(g);
+    return us.length ? us.some(function (x) { return !!x.ids === shuf; }) : !shuf;
+  });
+  var cards = loose.map(unitCardHtml).join('');
   view.innerHTML =
     '<div class="home-head"><div>' +
       '<p class="eyebrow">' + (shuf ? '乱序版 · ' : '') + shown.length + ' 个单元 · ' + pool.length + ' 个词条</p>' +
@@ -866,8 +1000,11 @@ function renderHome() {
         (store.custom.length >= 2
           ? '<button class="btn btn-ghost' + (merging ? ' on' : '') + '" id="mergeOn" type="button">' +
             (merging ? '✓ 挑要合并的单元' : '合并单元') + '</button>' : '')) +
+      (merging ? '' : '<button class="btn btn-ghost" id="newGroup" type="button">新建分组</button>') +
     '</div>' +
-    '<div class="unit-grid' + (merging ? ' merging' : '') + '">' + cards + '</div>' +
+    (groups.length ? '<div class="group-grid">' + groups.map(groupCardHtml).join('') + '</div>' : '') +
+    (groups.length && cards ? '<h2 class="loose-h">没分组的单元</h2>' : '') +
+    (cards ? '<div class="unit-grid' + (merging ? ' merging' : '') + '">' + cards + '</div>' : '') +
     '<div id="mergeSlot">' + mergeBarHtml() + '</div>';
   Array.prototype.forEach.call(view.querySelectorAll('.unit-card'), function (b) {
     b.onclick = function () {
@@ -885,6 +1022,8 @@ function renderHome() {
       dropOrder(); go({ name: 'unit', u: uu, tab: 'browse' });
     };
   });
+  wireGroupCards();
+  var ng = document.getElementById('newGroup'); if (ng) ng.onclick = function () { openGroup(null); };
   Array.prototype.forEach.call(view.querySelectorAll('[data-shelf]'), function (b) {
     b.onclick = function () {
       var want = b.dataset.shelf === '1';
@@ -926,13 +1065,14 @@ function unitEyebrow(u) {
   return (store.uname[u] ? store.uname[u] + '（原来是 ' + unitBase(u) + '）' : unitBase(u)) + ' · ' + unitMeta(u).n + ' 词';
 }
 function unitHeader(u, tab) {
-  var meta = unitMeta(u);
+  var meta = unitMeta(u), g = groupOf(u), star = u === STAR_U;
   var n = unitWords(u).filter(shaky).length;
-  return '<button class="back" id="back" type="button">← 返回目录</button>' +
+  return '<button class="back" id="back" type="button">← ' + esc(g ? g.name : '返回目录') + '</button>' +
     '<div class="unit-head"><div>' +
-      '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
-        '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
-      '<h1>' + esc(meta.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(meta.b) + '</h1>' +
+      (star ? '<p class="eyebrow">' + meta.n + ' 个词</p><h1>生词本</h1>'
+        : '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
+            '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
+          '<h1>' + esc(meta.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(meta.b) + '</h1>') +
     '</div>' +
     '<div class="head-tools">' +
       (meta.imported ? '<button class="btn btn-ghost" id="dropUnit" type="button">删掉这个单元</button>' : '') +
@@ -946,7 +1086,11 @@ function unitHeader(u, tab) {
     '</div></div>';
 }
 function wireHeader(u) {
-  var b = document.getElementById('back'); if (b) b.onclick = function () { dropOrder(); go({ name: 'home' }); };
+  var b = document.getElementById('back');
+  if (b) b.onclick = function () {
+    var g = groupOf(u);
+    dropOrder(); go(g ? { name: 'group', id: g.id } : { name: 'home' });
+  };
   var sw = document.getElementById('sweepUnit');
   if (sw) sw.onclick = function () {
     startReview(unitWords(u).filter(shaky), unitShort(u) + ' 错词',
@@ -1197,7 +1341,7 @@ function renderBrowse(u) {
       '" data-n="' + n + '" data-i="' + w.i + '" data-col="' + colOf(w.i) + '">' +
       (picking ? '<span class="row-c"></span>' : '') +
       '<div class="row-no" title="单元里第 ' + seq[w.i] + ' 个 · 编号 ' + w.i + '"><span class="dot"></span>' + seq[w.i] + '</div>' +
-      '<div class="row-w">' + esc(w.w) + '</div>' +
+      '<div class="row-w">' + esc(w.w) + (u === STAR_U ? rowUnitTag(w) : '') + '</div>' +
       '<div class="row-p">' + esc(ipaOf(w)) + '</div>' +
       '<div class="row-z' + (store.set.hideZh ? ' hidden' : '') + '">' + esc(w.z) + '</div>' +
       (editing2
@@ -1274,6 +1418,7 @@ function renderBrowse(u) {
       b.classList.toggle('on'); save(); starCount();
     };
   });
+  wireRowUnit();
   /* 只改这一行、答题卡上那个点和头上的「整理错词」数，不整页重画：列表和答题卡都停在原处 */
   Array.prototype.forEach.call(view.querySelectorAll('[data-miss]'), function (b) {
     b.onclick = function (e) {
@@ -1440,7 +1585,7 @@ function cardHtml(w, revealed, u) {
   var col = colOf(w.i);
   return '<div class="wcard ' + cls(w.i) + '" data-col="' + col + '">' +
     '<div class="stamp" id="stamp">已掌握</div>' +
-    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : unitShort(u)) +
+    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : unitShort(u === STAR_U ? w.u : u)) +
       (seq ? '<span class="w-seq">第 ' + seq + (tot ? ' / ' + tot : '') + ' 个</span>' : '') +
       tags + '</div>' +
     '<div class="w-head"><h2 class="w-word' + (/\s/.test(w.w) ? ' phrase' : '') + '">' + esc(w.w) + '</h2>' +
@@ -1488,7 +1633,7 @@ function wireCard(w, redraw) {
 function renderStudy(u, n) {
   var ws = ordered(u);
   if (!ws.length && curFilter(u)) { setFilter(u, ''); ws = ordered(u); }   // 这一批被挑空了
-  if (!ws.length) return;
+  if (!ws.length) { if (u === STAR_U) render(); return; }
   n = Math.max(0, Math.min(n || 0, ws.length - 1));
   var w = ws[n];
   var revealed = route.rev === true;
@@ -1715,6 +1860,7 @@ function rateReview(v) {
 var quiz = null;
 function quizPool(u, sel) {
   if (sel) return selWords();
+  if (u === STAR_U) return ordered(u);        // 生词本是自己挑的词，全都考，不只考标了不认识的
   /* 单元里正筛着某个颜色，就只考这一批 —— ordered() 已经把筛选算进去了 */
   return (u == null ? homePool() : ordered(u)).filter(shaky);
 }
@@ -1812,7 +1958,7 @@ function buildQuiz(key, pool, swept) {
     return { w: w, cloze: cloze, src: src, sent: src ? blankOut(src.e, w.w) : '',
              opts: shuffle([w].concat(distractors(w, 3))) };
   });
-  return { key: key, qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], swept: done };
+  return { key: key, qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], good: [], swept: done };
 }
 function renderQuiz(u, sel) {
   var all = u == null;
@@ -1831,7 +1977,8 @@ function renderQuiz(u, sel) {
   }
   var back = all ? { name: 'home' } : { name: 'unit', u: u, tab: 'quiz' };
 
-  if (!pool.length) {
+  var over = quiz && quiz.key === key && quiz.at >= quiz.qs.length;   // 结算页上把词全标成认识后，题库空了也留在这一页
+  if (!pool.length && !over) {
     view.innerHTML = head + '<div class="quiz-wrap"><div class="empty">' + (sel
       ? '<b>还没选词</b>到浏览页或生词本，点一下「选择」，勾出想考的词再回来。'
       : '<b>还没有错词</b>测验只从标过「不认识」的词里出题。' +
@@ -1843,11 +1990,18 @@ function renderQuiz(u, sel) {
   if (quiz.at >= quiz.qs.length) {
     var missed = quiz.wrong.slice();
     var rest = pool.filter(function (w) { return !quiz.swept[w.i]; }).length;
+    var good = quiz.good.filter(function (w) { return lvl(w.i) !== 3; });
     view.innerHTML = head + '<div class="quiz-wrap"><div class="score"><b>' + quiz.right + '/' + quiz.qs.length + '</b>' +
       '<p class="lede" style="margin:14px auto 22px;text-align:center">' +
       (missed.length ? '错了 ' + missed.length + ' 个：' + missed.map(function (w) { return esc(w.w); }).join('、')
                      : (sel ? '这批词你已经拿得很稳了。' : '这批错词你已经拿得很稳了。')) +
       (rest ? '<br><span class="score-rest">题库里还有 ' + rest + ' 个这一趟没抽到。</span>' : '') + '</p>' +
+      (quiz.marked ? '<p class="good-done">已把 ' + quiz.marked + ' 个词标成认识。</p>' : '') +
+      (good.length ? '<div class="score-good"><p class="good-tip">答对的 ' + good.length + ' 个词还没算认识。确实会的留着，蒙对的点一下去掉。</p>' +
+        '<div class="good-chips">' + good.map(function (w) {
+          return '<button class="good-chip on" data-i="' + w.i + '" type="button" aria-pressed="true">' + esc(w.w) + '</button>';
+        }).join('') + '</div>' +
+        '<button class="btn" id="markGood" type="button">把这 ' + good.length + ' 个标成认识</button></div>' : '') +
       '<div class="score-acts">' +
         (missed.length ? '<button class="btn" id="sweepQuiz" type="button">整理错题 · 重过这 ' + missed.length + ' 个</button>' : '') +
         (rest ? '<button class="btn' + (missed.length ? ' btn-ghost' : '') + '" id="more" type="button">继续考剩下的 ' + rest + ' 个</button>' : '') +
@@ -1857,6 +2011,22 @@ function renderQuiz(u, sel) {
     document.getElementById('again').onclick = function () { quiz = null; renderQuiz(u, sel); };
     var mo = document.getElementById('more');
     if (mo) mo.onclick = function () { quiz = buildQuiz(key, pool, quiz.swept); renderQuiz(u, sel); };
+    var mg = document.getElementById('markGood');
+    Array.prototype.forEach.call(view.querySelectorAll('.good-chip'), function (c) {
+      c.onclick = function () {
+        var on = c.classList.toggle('on');
+        c.setAttribute('aria-pressed', on);
+        var n = view.querySelectorAll('.good-chip.on').length;
+        mg.textContent = n ? '把这 ' + n + ' 个标成认识' : '一个都不标';
+        mg.disabled = !n;
+      };
+    });
+    if (mg) mg.onclick = function () {
+      var on = view.querySelectorAll('.good-chip.on');
+      Array.prototype.forEach.call(on, function (c) { setLvl(+c.dataset.i, 3); });
+      quiz.marked = (quiz.marked || 0) + on.length;
+      renderQuiz(u, sel);
+    };
     var sq = document.getElementById('sweepQuiz');
     if (sq) sq.onclick = function () {
       startReview(missed, (sel ? '选中的词' : all ? '错词' : unitShort(u)) + '测验错题', back);
@@ -1896,7 +2066,8 @@ function renderQuiz(u, sel) {
         x.disabled = true;
         if (+x.dataset.i === q.w.i) { x.classList.add('right'); x.insertAdjacentHTML('beforeend', '<span class="mark">✓</span>'); }
       });
-      if (ok) { quiz.right++; if (lvl(q.w.i) < 3) setLvl(q.w.i, 3); }
+      /* 答对不改状态（第三十一次优化）：四选一蒙对也算对，要不要标成认识留到结算页自己定 */
+      if (ok) { quiz.right++; quiz.good.push(q.w); }
       else {
         if (how === 'wrong') { b.classList.add('wrong'); b.insertAdjacentHTML('beforeend', '<span class="mark">✕</span>'); }
         setLvl(q.w.i, 1); quiz.wrong.push(q.w);
@@ -2984,6 +3155,18 @@ function addWord() {
 }
 
 /* ================= SEARCH & STARS ================= */
+function rowUnitTag(w) {
+  return '<button class="row-u" data-go="' + w.i + '" data-gu="' + w.u + '" type="button" ' +
+    'title="到「' + esc(unitShort(w.u)) + '」里看它排在哪">' + esc(unitShort(w.u)) + '</button>';
+}
+function wireRowUnit() {                     // 点单元标签 → 到那个单元的浏览列表，滚到这个词那一行并高亮一下
+  Array.prototype.forEach.call(view.querySelectorAll('[data-go]'), function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      go({ name: 'unit', u: +b.dataset.gu, tab: 'browse', focus: +b.dataset.go });
+    };
+  });
+}
 function renderList(title, sub, list, exMap) {
   var rows = list.map(function (w) {
     var ex = exMap && exMap[w.i];
@@ -2992,8 +3175,7 @@ function renderList(title, sub, list, exMap) {
       (picking ? '<span class="row-c"></span>' : '') +
       '<div class="row-no"><span class="dot"></span>' + w.i + '</div>' +
       '<div class="row-w">' + esc(w.w) +
-        '<button class="row-u" data-go="' + w.i + '" data-gu="' + w.u + '" type="button" ' +
-          'title="到「' + esc(unitShort(w.u)) + '」里看它排在哪">' + esc(unitShort(w.u)) + '</button></div>' +
+        rowUnitTag(w) + '</div>' +
       '<div class="row-p">' + esc(ipaOf(w)) + '</div>' +
       '<div class="row-z">' + esc(w.z) + (ex ? '<span class="row-ex">例句：' + esc(ex) + '</span>' : '') + '</div>' +
       '<button class="row-s' + (store.star[w.i] ? ' on' : '') + '" data-star="' + w.i + '" type="button">★</button>' +
@@ -3018,13 +3200,7 @@ function renderList(title, sub, list, exMap) {
       go({ name: 'unit', u: u, tab: 'study', n: Math.max(0, posInUnit(u, i)), rev: true });
     };
   });
-  /* 点单元标签 → 到那个单元的浏览列表，滚到这个词那一行并高亮一下 */
-  Array.prototype.forEach.call(view.querySelectorAll('[data-go]'), function (b) {
-    b.onclick = function (e) {
-      e.stopPropagation();
-      go({ name: 'unit', u: +b.dataset.gu, tab: 'browse', focus: +b.dataset.go });
-    };
-  });
+  wireRowUnit();
   Array.prototype.forEach.call(view.querySelectorAll('[data-star]'), function (b) {
     b.onclick = function (e) {
       e.stopPropagation(); var i = +b.dataset.star;
@@ -3105,7 +3281,9 @@ function render() {
   if (railRO) { railRO.disconnect(); railRO = null; }
   document.documentElement.classList.toggle('studying',
     route.name === 'review' || (route.name === 'unit' && route.tab === 'study'));
-  if (route.name === 'home') renderHome();
+  if (route.name === 'unit' && route.u === STAR_U && !starWords().length) renderList('生词本', '0 个词条', []);
+  else if (route.name === 'home') renderHome();
+  else if (route.name === 'group') renderGroup(route.id);
   else if (route.name === 'review') renderReview();
   else if (route.name === 'quiz') renderQuiz(null, route.scope === 'sel');
   else if (route.name === 'spell') renderSpell(null, true);
@@ -3119,8 +3297,6 @@ function render() {
     var hit = all.slice(0, SEARCH_CAP);
     renderList('“' + route.q + '” 的结果',
       all.length + ' 个词条' + (all.length > hit.length ? ' · 只列前 ' + hit.length + ' 个' : ''), hit, searchExcerpt);
-  } else if (route.name === 'star') {
-    renderList('生词本', Object.keys(store.star).length + ' 个词条', WORDS.filter(function (w) { return store.star[w.i]; }));
   }
   starCount();
 }
@@ -3135,11 +3311,24 @@ si.addEventListener('input', function () {
     go({ name: 'search', q: q });
   }, 180);
 });
-document.getElementById('openStar').onclick = function () { go({ name: 'star' }); };
+document.getElementById('openStar').onclick = function () { dropOrder(); go({ name: 'unit', u: STAR_U, tab: 'browse' }); };
 var modal = document.getElementById('setModal');
+/* 设置分成几个分类（第三十一次优化）：原来三十来项排成一长条，要翻很久才找得到 */
+function showPane(name) {
+  Array.prototype.forEach.call(modal.querySelectorAll('.set-tab'), function (t) {
+    t.setAttribute('aria-selected', t.dataset.pane === name);
+  });
+  Array.prototype.forEach.call(modal.querySelectorAll('.set-pane'), function (p) { p.hidden = p.dataset.pane !== name; });
+}
+Array.prototype.forEach.call(modal.querySelectorAll('.set-tab'), function (t) {
+  t.onclick = function () { showPane(t.dataset.pane); };
+});
 function openSettings(focus) {
   modal.hidden = false;
-  if (focus) { var f = document.getElementById(focus); if (f) { f.focus(); f.scrollIntoView({ block: 'center' }); } }
+  if (focus) {
+    var f = document.getElementById(focus);
+    if (f) { showPane(f.closest('.set-pane').dataset.pane); f.focus(); f.scrollIntoView({ block: 'center' }); }
+  }
 }
 document.getElementById('openSet').onclick = function () { openSettings(); };
 document.getElementById('closeSet').onclick = function () { modal.hidden = true; };
@@ -3246,6 +3435,25 @@ var addM = document.getElementById('addModal');
 document.getElementById('closeAdd').onclick = function () { addM.hidden = true; };
 addM.addEventListener('click', function (e) { if (e.target === addM) addM.hidden = true; });
 document.getElementById('addGo').onclick = addWord;
+var gpM = document.getElementById('groupModal');
+document.getElementById('closeGroup').onclick = function () { gpM.hidden = true; };
+gpM.addEventListener('click', function (e) { if (e.target === gpM) gpM.hidden = true; });
+document.getElementById('groupGo').onclick = saveGroup;
+document.getElementById('groupDrop').onclick = dropGroup;
+document.getElementById('groupName').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { e.preventDefault(); saveGroup(); }
+  else if (e.key === 'Escape') { e.stopPropagation(); gpM.hidden = true; }
+});
+document.getElementById('groupPick').addEventListener('click', function (e) {
+  if (!e.target.classList.contains('gp-all')) return;
+  e.preventDefault();                       // 按钮在 summary 里，别顺手把这一段收起来
+  var boxes = e.target.closest('.gp-sec').querySelectorAll('input');
+  var all = Array.prototype.every.call(boxes, function (b) { return b.checked; });
+  Array.prototype.forEach.call(boxes, function (b) { b.checked = !all; });
+  e.target.textContent = all ? '全选' : '全不选';
+  paintGroupCount();
+});
+document.getElementById('groupPick').addEventListener('change', paintGroupCount);
 var rnM = document.getElementById('renameModal');
 document.getElementById('closeRename').onclick = function () { rnM.hidden = true; };
 rnM.addEventListener('click', function (e) { if (e.target === rnM) rnM.hidden = true; });
@@ -3299,8 +3507,8 @@ document.addEventListener('keydown', function (e) {
   if (e.key === '/') { e.preventDefault(); si.focus(); return; }
   if (e.key === 'Escape') {
     /* 有弹窗先关弹窗；没有弹窗、又开着选择模式，就退出选择（第二十九次优化），已勾的词留着 */
-    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden;
-    modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; rnM.hidden = true;
+    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden || !gpM.hidden;
+    modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; rnM.hidden = true; gpM.hidden = true;
     var pt = !pop && picking && document.getElementById('pickToggle');
     if (pt) pt.click();
     return;
@@ -3324,7 +3532,8 @@ document.addEventListener('keydown', function (e) {
     return;
   }
   if (route.name !== 'unit' || route.tab !== 'study') return;
-  var ws = ordered(route.u), n = route.n || 0;
+  var ws = ordered(route.u), n = Math.min(route.n || 0, ws.length - 1);
+  if (!ws.length) { render(); return; }                 // 生词本里最后一个词刚被去掉星
   if (e.key === ' ') { e.preventDefault(); route.rev = !route.rev; renderStudy(route.u, n); }
   else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();

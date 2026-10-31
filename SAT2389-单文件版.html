@@ -191,10 +191,10 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   color:var(--ink-3);margin:0 0 9px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .rail-at{letter-spacing:.04em;text-transform:none;color:var(--ink-2);font-variant-numeric:tabular-nums;
   white-space:nowrap}
-.rail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;
+/* 点阵自己滚（第七次优化 2），不跟着整页往下走，所以四周画一条线框住（第三十一次优化） */
+.rail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:6px;
+  border:1px solid var(--ink-3);border-radius:8px;
   max-height:calc(100vh - 220px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
-/* 上千词的单元：点阵自己滚，别把卡片顶下去（第七次优化 2） */
-.rail-big .rail-grid{padding-right:4px;border:1px solid var(--rule-2);border-radius:8px;padding:6px}
 @media (max-width:900px){
   .rail-grid{grid-template-columns:repeat(17,1fr);max-height:112px}
   .rail-big .rail-grid{max-height:86px}
@@ -904,6 +904,95 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   html.studying .rv-head{margin-bottom:10px;gap:12px 18px}
   html.studying .rv-bar{margin-bottom:16px}
 }
+
+/* 设置面板（第三十一次优化）：左边分类，右边一行一项，「完成」一直在底部 */
+.modal-card.modal-set{width:min(780px,94vw);height:min(640px,88vh);max-height:none;padding:0;
+  display:flex;flex-direction:column;overflow:hidden}
+.set-head{padding:20px 28px 16px;border-bottom:1px solid var(--rule-2)}
+.set-head h2{margin:0}
+.set-body{flex:1;min-height:0;display:grid;grid-template-columns:148px minmax(0,1fr)}
+.set-nav{display:flex;flex-direction:column;gap:2px;padding:14px 10px;border-right:1px solid var(--rule-2)}
+.set-tab{padding:9px 12px;border:0;border-radius:8px;background:none;text-align:left;cursor:pointer;
+  font-family:var(--util);font-size:.86rem;color:var(--ink-2)}
+.set-tab:hover{background:var(--card-2)}
+.set-tab[aria-selected=true]{background:var(--ink);color:var(--card)}
+.set-tab:focus-visible{outline:2px solid var(--seal);outline-offset:1px}
+.set-panes{overflow-y:auto;overscroll-behavior:contain;padding:4px 28px 12px}
+.set-pane[hidden]{display:none}
+.set-pane .field{display:grid;grid-template-columns:112px minmax(0,1fr);column-gap:18px;align-items:center;
+  margin:0;padding:15px 0;border-bottom:1px solid var(--rule-2)}
+.set-pane .field>span{margin:0;font-size:.84rem;color:var(--ink)}
+.set-pane .field>span b{font-weight:500;color:var(--ink-3);margin-left:4px;font-variant-numeric:tabular-nums}
+.set-pane .field>.hint{grid-column:2;margin-top:7px}
+.set-pane .field-row{flex-direction:row-reverse;justify-content:space-between;gap:18px;margin:0;padding:15px 0;
+  border-bottom:1px solid var(--rule-2);font-size:.84rem;color:var(--ink)}
+.set-pane .field-row input{flex:none;width:17px;height:17px;accent-color:var(--ink)}
+.set-pane>:last-child{border-bottom:0}
+.set-pane input[type=range]:not(.tone-hue){accent-color:var(--ink)}
+.set-btns{display:flex;flex-wrap:wrap;gap:8px}
+.modal-set .modal-foot{margin:0;padding:14px 28px;border-top:1px solid var(--rule-2);justify-content:flex-end}
+@media (max-width:640px){
+  .set-head{padding:16px 18px 12px}
+  .set-body{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  .set-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding:8px 10px;border-right:0;border-bottom:1px solid var(--rule-2)}
+  .set-tab{flex:none;white-space:nowrap;padding:7px 8px;font-size:.82rem}
+  .set-panes{padding:2px 18px 10px}
+  .set-pane .field{grid-template-columns:minmax(0,1fr);row-gap:9px}
+  .set-pane .field>.hint{grid-column:1;margin-top:0}
+  .modal-set .modal-foot{padding:10px 18px}
+}
+
+/* 测验结算页：答对的词由自己决定要不要标成认识（第三十一次优化） */
+.score-good{max-width:560px;margin:0 auto 26px}
+.good-tip{margin:0 0 12px;font-family:var(--util);font-size:.86rem;color:var(--ink-2)}
+.good-done{margin:0 0 18px;font-family:var(--util);font-size:.86rem;color:var(--ink-2)}
+.good-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:16px}
+.good-chip{padding:5px 12px;border:1px solid var(--rule);border-radius:99px;background:none;cursor:pointer;
+  font-family:var(--display);font-size:.98rem;color:var(--ink-3);text-decoration:line-through}
+.good-chip.on{border-color:var(--seal);background:var(--seal-soft);color:var(--ink);text-decoration:none}
+.good-chip:focus-visible{outline:2px solid var(--seal);outline-offset:1px}
+
+/* 单元分组（第三十一次优化）：组卡片底下多垫两层纸，一眼能看出里面还有东西，跟单元卡分开 */
+.group-grid{display:grid;gap:26px 22px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin:6px 0 40px}
+.group-card{position:relative;display:flex;flex-direction:column;text-align:left;padding:20px 22px 16px;cursor:pointer;
+  background:var(--card);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow);
+  transition:transform .16s cubic-bezier(.2,.7,.3,1), border-color .16s}
+.group-card::before,.group-card::after{content:"";position:absolute;left:12px;right:12px;bottom:-7px;height:14px;z-index:-1;
+  background:var(--card-2);border:1px solid var(--rule);border-radius:0 0 12px 12px}
+.group-card::after{left:24px;right:24px;bottom:-13px;background:var(--card-2);opacity:.7}
+.group-grid{position:relative;z-index:0}
+.group-card:hover{transform:translateY(-3px);border-color:var(--ink-3)}
+.group-card:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.group-name{font-family:var(--display);font-size:1.5rem;font-weight:600;line-height:1.2;color:var(--ink)}
+.group-sub{margin:5px 0 16px;font-family:var(--util);font-size:.78rem;color:var(--ink-3)}
+.group-bar{display:flex;height:7px;border-radius:99px;overflow:hidden;background:var(--rule-2)}
+.group-bar i{display:block}
+.group-bar .k{background:var(--seal)}
+.group-bar .x{background:color-mix(in srgb, var(--miss) 55%, var(--rule-2))}
+.group-foot{display:flex;justify-content:space-between;margin-top:10px;font-family:var(--util);font-size:.76rem;color:var(--ink-3)}
+.group-foot b{font-weight:500;color:var(--seal)}
+.loose-h{margin:0 0 14px;font-family:var(--util);font-size:.86rem;font-weight:500;color:var(--ink-2)}
+.modal-group{display:flex;flex-direction:column;overflow:hidden}
+.modal-group .field{margin-bottom:6px}
+.modal-group .add-note{margin:0 0 6px}
+.modal-group .add-note:empty{display:none}
+.gp-head{display:flex;justify-content:space-between;margin:12px 0 8px;font-family:var(--util);font-size:.82rem;color:var(--ink-2)}
+.gp-pick{flex:1;min-height:120px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--rule);border-radius:10px}
+.gp-sec+.gp-sec{border-top:1px solid var(--rule-2)}
+.gp-sec summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;
+  font-family:var(--util);font-size:.84rem;color:var(--ink)}
+.gp-sec summary em{font-style:normal;font-size:.74rem;color:var(--ink-3)}
+.gp-all{margin-left:auto;padding:3px 10px;border:1px solid var(--rule);border-radius:99px;background:none;cursor:pointer;
+  font-family:var(--util);font-size:.72rem;color:var(--ink-2)}
+.gp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 10px;padding:0 10px 10px}
+.gp-u{display:flex;gap:9px;align-items:flex-start;padding:6px 4px;border-radius:7px;cursor:pointer;
+  font-family:var(--util);font-size:.8rem;color:var(--ink)}
+.gp-u:hover{background:var(--card-2)}
+.gp-u input{flex:none;width:15px;height:15px;margin-top:2px;accent-color:var(--ink)}
+.gp-u small{display:block;margin-top:1px;font-size:.7rem;color:var(--ink-3)}
+.modal-group .hint{margin-top:8px}
+.modal-group .modal-foot{margin-top:14px;align-items:center}
+.foot-r{display:flex;gap:10px;margin-left:auto}
 </style>
 </head>
 <body>
@@ -929,153 +1018,175 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 <main id="view"></main>
 
 <div class="modal" id="setModal" hidden>
-  <div class="modal-card" role="dialog" aria-modal="true" aria-label="设置">
-    <h2>设置</h2>
+  <div class="modal-card modal-set" role="dialog" aria-modal="true" aria-label="设置">
+    <div class="set-head"><h2>设置</h2></div>
+    <div class="set-body">
+      <div class="set-nav" role="tablist" aria-label="设置分类">
+        <button class="set-tab" role="tab" data-pane="look" aria-selected="true" type="button">外观</button>
+        <button class="set-tab" role="tab" data-pane="sound" aria-selected="false" type="button">发音</button>
+        <button class="set-tab" role="tab" data-pane="card" aria-selected="false" type="button">卡片</button>
+        <button class="set-tab" role="tab" data-pane="quiz" aria-selected="false" type="button">测验</button>
+        <button class="set-tab" role="tab" data-pane="ai" aria-selected="false" type="button">AI 例句</button>
+        <button class="set-tab" role="tab" data-pane="data" aria-selected="false" type="button">词表与数据</button>
+      </div>
+      <div class="set-panes">
+        <section class="set-pane" data-pane="look">
+          <div class="field">
+            <span>背景色调</span>
+            <div class="tone-row" id="toneSwatches"></div>
+          </div>
+          <label class="field">
+            <span>色相</span>
+            <input id="setHue" class="tone-hue" type="range" min="0" max="360" step="1" value="150">
+          </label>
+          <label class="field">
+            <span>浓淡</span>
+            <input id="setChroma" type="range" min="0" max="100" step="1" value="30">
+            <small class="hint">拉到最左是不带颜色的灰。深色模式跟着一起变。</small>
+          </label>
+          <label class="field">
+            <span>首页进度样式</span>
+            <select id="setUprog">
+              <option value="mosaic">色块（每 10 个词一格）</option>
+              <option value="bar">进度条</option>
+              <option value="ribbon">条带（每个词一段）</option>
+            </select>
+          </label>
+        </section>
 
-    <p class="sec">外观</p>
-    <div class="field">
-      <span>背景色调</span>
-      <div class="tone-row" id="toneSwatches"></div>
+        <section class="set-pane" data-pane="sound" hidden>
+          <label class="field">
+            <span>口音</span>
+            <select id="setAccent"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option></select>
+          </label>
+          <label class="field">
+            <span>单词发音</span>
+            <select id="setWsrc"><option value="yd">真人录音（牛津词典，需联网）</option><option value="sys">系统声音</option></select>
+            <small class="hint">牛津没收的词用有道，没网时用系统声音。</small>
+            <small class="hint" id="oxState"></small>
+          </label>
+          <label class="field">
+            <span>自动朗读单词</span>
+            <select id="setAuto">
+              <option value="reveal">显示释义时读（空格）</option>
+              <option value="enter">一换到新词就读</option>
+              <option value="off">不自动读</option>
+            </select>
+            <small class="hint">学习卡和整理错词用这一项；拼写检测照旧是答完才读。</small>
+          </label>
+          <label class="field">
+            <span>语速 <b id="rateVal">1.0</b></span>
+            <input id="setRate" type="range" min="0.5" max="1.3" step="0.05" value="0.95">
+          </label>
+          <label class="field">
+            <span>音量 <b id="volVal">100%</b></span>
+            <input id="setVol" type="range" min="0" max="1" step="0.05" value="1">
+          </label>
+          <label class="field">
+            <span>例句的声音</span>
+            <select id="setVoice"></select>
+            <small class="hint">例句用这台电脑自带的声音读。带「高清」的最接近真人。</small>
+          </label>
+          <div class="field">
+            <span>试听</span>
+            <div class="set-btns"><button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button></div>
+          </div>
+        </section>
+
+        <section class="set-pane" data-pane="card" hidden>
+          <label class="field-row">
+            <input id="setHint" type="checkbox" checked>
+            <span>没显示释义前，先给一句例句当提示</span>
+          </label>
+          <label class="field-row">
+            <input id="setHideZh" type="checkbox">
+            <span>浏览列表时先隐藏中文释义</span>
+          </label>
+          <label class="field-row">
+            <input id="setHideEx" type="checkbox">
+            <span>例句的中文翻译先蒙起来（点一下看）</span>
+          </label>
+          <label class="field">
+            <span>中文字号</span>
+            <select id="setZhSize">
+              <option value="s">小</option>
+              <option value="m">中 · 默认</option>
+              <option value="l">大</option>
+              <option value="xl">特大</option>
+            </select>
+            <small class="hint">学习、复习、测验、拼写卡片上的释义和译文。</small>
+          </label>
+        </section>
+
+        <section class="set-pane" data-pane="quiz" hidden>
+          <label class="field">
+            <span>每轮题数</span>
+            <select id="setQn">
+              <option value="10">10 题 · 快速一轮</option>
+              <option value="20">20 题 · 默认</option>
+              <option value="30">30 题</option>
+              <option value="50">50 题</option>
+              <option value="100">100 题</option>
+              <option value="200">200 题</option>
+              <option value="0">全部 · 不设上限</option>
+            </select>
+            <small class="hint">测验和拼写都按这个数。做完可以接着考没抽到的词，不会把刚做完的又抽一遍。</small>
+          </label>
+        </section>
+
+        <section class="set-pane" data-pane="ai" hidden>
+          <label class="field">
+            <span>例句长度</span>
+            <select id="setExLen">
+              <option value="short">短 · 10–15 词</option>
+              <option value="mid">中 · 16–24 词（和内置例句一致）</option>
+              <option value="long">长 · 25–35 词</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>DeepSeek API Key</span>
+            <input id="dsField" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false">
+            <small class="hint">在 platform.deepseek.com 申请。只存在这台设备的浏览器里，
+              直接发给 api.deepseek.com，不经过任何中间服务器。</small>
+          </label>
+          <label class="field">
+            <span>模型</span>
+            <select id="setDsModel">
+              <option value="deepseek-chat">deepseek-chat · 快，够用</option>
+              <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="set-pane" data-pane="data" hidden>
+          <div class="field">
+            <span>添加单词</span>
+            <div class="set-btns">
+              <button class="btn btn-ghost" id="openImp2" type="button">导入 Excel / PDF / HTML 词表</button>
+              <button class="btn btn-ghost" id="openAdd2" type="button">手动添加单词或词组</button>
+            </div>
+          </div>
+          <div class="field">
+            <span>复制词表</span>
+            <div class="set-btns">
+              <button class="btn btn-ghost" id="expShaky" type="button">复制待复习的词</button>
+              <button class="btn btn-ghost" id="expStar" type="button">复制生词本</button>
+            </div>
+            <small class="hint">Tab 分隔的纯文本，能直接粘回「导入词表」的文本框。</small>
+          </div>
+          <div class="field">
+            <span>发音表</span>
+            <div class="set-btns"><button class="btn btn-ghost" id="expPron" type="button">复制还没进发音表的词</button></div>
+            <small class="hint">平时用不到：新词加进来，网页会自己找录音。只有想给多音词分开两个读音时，才把复制的词交给 src/update_pron.py。</small>
+          </div>
+          <div class="field">
+            <span>学习进度</span>
+            <div class="set-btns"><button class="btn btn-ghost" id="resetProg" type="button">清空学习进度</button></div>
+          </div>
+        </section>
+      </div>
     </div>
-    <label class="field">
-      <span>色相</span>
-      <input id="setHue" class="tone-hue" type="range" min="0" max="360" step="1" value="150">
-    </label>
-    <label class="field">
-      <span>浓淡</span>
-      <input id="setChroma" type="range" min="0" max="100" step="1" value="30">
-      <small class="hint">拖色相可以选任意颜色，浓淡拉到最左是不带颜色的灰。深色模式跟着一起变。</small>
-    </label>
-    <label class="field">
-      <span>首页进度样式</span>
-      <select id="setUprog">
-        <option value="mosaic">色块（每 10 个词一格）</option>
-        <option value="bar">进度条</option>
-        <option value="ribbon">条带（每个词一段）</option>
-      </select>
-    </label>
-
-    <p class="sec">发音</p>
-    <label class="field">
-      <span>口音</span>
-      <select id="setAccent"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option></select>
-    </label>
-    <label class="field">
-      <span>语速 <b id="rateVal">1.0</b></span>
-      <input id="setRate" type="range" min="0.5" max="1.3" step="0.05" value="0.95">
-    </label>
-    <label class="field">
-      <span>音量 <b id="volVal">100%</b></span>
-      <input id="setVol" type="range" min="0" max="1" step="0.05" value="1">
-    </label>
-    <label class="field">
-      <span>声音</span>
-      <select id="setVoice"></select>
-      <small class="hint">已隐藏 Albert、Bubbles 等系统玩笑音色；带「高清」的是神经网络音色，最接近真人。
-        例句会按标点断成气口来读，音高逐句下沉，句尾放慢。</small>
-    </label>
-    <label class="field">
-      <span>单词发音</span>
-      <select id="setWsrc"><option value="yd">真人录音（牛津词典，需联网）</option><option value="sys">系统声音</option></select>
-      <small class="hint">真人录音只管单词和短语，例句还是用上面选的声音读。牛津没收的词用有道，没网时用系统声音。</small>
-      <small class="hint" id="oxState"></small>
-    </label>
-    <div class="field">
-      <button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button>
-    </div>
-    <label class="field">
-      <span>自动朗读单词</span>
-      <select id="setAuto">
-        <option value="reveal">显示释义时读（空格）</option>
-        <option value="enter">一换到新词就读</option>
-        <option value="off">不自动读</option>
-      </select>
-      <small class="hint">学习卡和整理错词用这一项；拼写检测照旧是答完才读。</small>
-    </label>
-
-    <p class="sec">卡片</p>
-    <label class="field-row">
-      <input id="setHint" type="checkbox" checked>
-      <span>没显示释义前，先给一句例句当提示</span>
-    </label>
-    <label class="field-row">
-      <input id="setHideZh" type="checkbox">
-      <span>浏览列表时先隐藏中文释义</span>
-    </label>
-    <label class="field-row">
-      <input id="setHideEx" type="checkbox">
-      <span>例句的中文翻译先蒙起来（点一下看）</span>
-    </label>
-    <label class="field">
-      <span>卡片中文字号</span>
-      <select id="setZhSize">
-        <option value="s">小</option>
-        <option value="m">中 · 默认</option>
-        <option value="l">大</option>
-        <option value="xl">特大</option>
-      </select>
-      <small class="hint">学习、复习、测验、拼写的卡片上，中文释义和译文的字号。</small>
-    </label>
-
-    <p class="sec">测验 · 拼写</p>
-    <label class="field">
-      <span>每轮题数</span>
-      <select id="setQn">
-        <option value="10">10 题 · 快速一轮</option>
-        <option value="20">20 题 · 默认</option>
-        <option value="30">30 题</option>
-        <option value="50">50 题</option>
-        <option value="100">100 题</option>
-        <option value="200">200 题</option>
-        <option value="0">全部 · 不设上限</option>
-      </select>
-      <small class="hint">一轮做完，结算页会告诉你题库里还剩几个没抽到，可以接着考剩下的，
-        不会把刚做完的又抽一遍。选「全部」就一次考完这批词，没有上限。拼写检测每轮也按这个数。</small>
-    </label>
-
-    <p class="sec">AI 例句</p>
-    <label class="field">
-      <span>生成的例句长度</span>
-      <select id="setExLen">
-        <option value="short">短 · 10–15 词</option>
-        <option value="mid">中 · 16–24 词（和内置例句一致）</option>
-        <option value="long">长 · 25–35 词</option>
-      </select>
-    </label>
-      <label class="field">
-        <span>DeepSeek API Key</span>
-        <input id="dsField" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false">
-        <small class="hint">在 platform.deepseek.com 申请。只存在这台设备的浏览器里，
-          直接发给 api.deepseek.com，不经过任何中间服务器。</small>
-      </label>
-      <label class="field">
-        <span>模型</span>
-        <select id="setDsModel">
-          <option value="deepseek-chat">deepseek-chat · 快，够用</option>
-          <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
-        </select>
-      </label>
-
-    <p class="sec">词表</p>
-    <div class="field">
-      <button class="btn btn-ghost" id="openImp2" type="button">导入 Excel / PDF / HTML 词表</button>
-    </div>
-    <div class="field">
-      <button class="btn btn-ghost" id="openAdd2" type="button">手动添加单词或词组</button>
-    </div>
-    <div class="field exp-row">
-      <button class="btn btn-ghost" id="expShaky" type="button">复制待复习的词</button>
-      <button class="btn btn-ghost" id="expStar" type="button">复制生词本</button>
-      <small class="hint">Tab 分隔的纯文本，能直接粘回上面「导入词表」的文本框，也能存到别处。
-        复习页里也有「导出这批词」，导的是当前这一轮。</small>
-    </div>
-    <div class="field">
-      <button class="btn btn-ghost" id="expPron" type="button">复制还没进发音表的词</button>
-      <small class="hint">平时用不到这个按钮：新词加进来，网页会自己去牛津、朗文找录音，哪台电脑上都一样。只有想给多音词分开两个读音时，才把这里复制的词交给 src/update_pron.py。</small>
-    </div>
-
     <div class="modal-foot">
-      <button class="btn btn-ghost" id="resetProg" type="button">清空学习进度</button>
       <button class="btn" id="closeSet" type="button">完成</button>
     </div>
   </div>
@@ -1151,6 +1262,27 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
     <div class="modal-foot">
       <button class="btn btn-ghost" id="closeRename" type="button">取消</button>
       <button class="btn" id="renameGo" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="groupModal" hidden>
+  <div class="modal-card modal-wide modal-group" role="dialog" aria-modal="true" aria-label="分组">
+    <h2 id="groupTitle">新建分组</h2>
+    <label class="field">
+      <span>分组名字</span>
+      <input id="groupName" type="text" autocomplete="off" maxlength="20" placeholder="比如：托福冲刺">
+    </label>
+    <p class="add-note" id="groupNote"></p>
+    <p class="gp-head"><span>勾选要放进来的单元</span><span id="groupCount"></span></p>
+    <div class="gp-pick" id="groupPick"></div>
+    <p class="hint">勾选别的分组里的单元，会把它移到这里。取消勾选的单元回到首页。</p>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="groupDrop" type="button">撤销这个分组</button>
+      <div class="foot-r">
+        <button class="btn btn-ghost" id="closeGroup" type="button">取消</button>
+        <button class="btn" id="groupGo" type="button">保存</button>
+      </div>
     </div>
   </div>
 </div>
@@ -16039,7 +16171,12 @@ function toggleMiss(i) {
 }
 /* 乱序版单元（u 3001 起，第二十一次优化）不自带词条，ids 按顺序指向原书词条 ——
    进度、星标、颜色都按 i 存，所以跟原书单元共用，不会多出一份 */
+/* 生词本也是一个单元（第三十一次优化）：有自己的浏览、学习、测验、拼写和答题卡，
+   词不搬家，还属于原来的单元，这里只是把打了星的词摆到一起 */
+var STAR_U = -1;
+function starWords() { return WORDS.filter(function (w) { return store.star[w.i]; }); }
 function unitWords(u) {
+  if (u === STAR_U) return starWords();
   var ids = unitMeta(u).ids;
   if (!ids) return WORDS.filter(function (w) { return w.u === u; });
   var at = {};
@@ -16056,7 +16193,10 @@ function homePool() {
   });
   return out;
 }
-function unitMeta(u) { return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' }; }
+function unitMeta(u) {
+  if (u === STAR_U) return { u: u, n: starWords().length, a: '', b: '', t: '生词本' };
+  return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' };
+}
 /* 单元改名（第二十九次优化）：内置单元的新名字存在 store.uname，单元本身不动，留空就回到原名；
    导入和自建的单元本来就是自己起的名字，直接改 store.custom 里的 t */
 function unitName(u) { return store.uname[u] || unitMeta(u).t || ''; }
@@ -16169,8 +16309,8 @@ var SORTS = [['book', '原书顺序'], ['weak', '先不认识'], ['az', '字母�
 var WEIGHT = { 1: 0, 2: 1, 0: 2, 3: 3 };                 // 不认识 → 未学 → 认识（2 是取消了的模糊）
 var ordCache = { u: null, m: null, f: null, list: null };
 function ordered(u) {
-  var m = store.set.sort || 'book', f = curFilter(u);
-  if (ordCache.u === u && ordCache.m === m && ordCache.f === f) return ordCache.list;
+  var m = store.set.sort || 'book', f = curFilter(u), s = u === STAR_U ? starWords().length : 0;
+  if (ordCache.u === u && ordCache.m === m && ordCache.f === f && ordCache.s === s) return ordCache.list;
   var ws = unitWords(u);
   /* 同一档里谁先谁后：原有单元照编号；乱序单元照它写死的乱序 —— 退回编号就又成了字母顺序 */
   var seq = {}, shuffled = !!unitMeta(u).ids;
@@ -16186,7 +16326,7 @@ function ordered(u) {
     ws = ws.slice();
     for (var i = ws.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = ws[i]; ws[i] = ws[j]; ws[j] = t; }
   }
-  ordCache = { u: u, m: m, f: f, list: ws };
+  ordCache = { u: u, m: m, f: f, s: s, list: ws };
   return ws;
 }
 function dropOrder() { ordCache = { u: null, m: null, f: null, list: null }; }
@@ -16340,7 +16480,7 @@ var scrollMem = {};
 function scrollKey(r) {
   if (!r) return null;
   if (r.name === 'home') return 'home';
-  if (r.name === 'star') return 'star';
+  if (r.name === 'group') return 'g' + r.id;
   if (r.name === 'unit' && (r.tab || 'browse') === 'browse') return 'u' + r.u;
   return null;
 }
@@ -16365,6 +16505,137 @@ document.getElementById('goHome').onclick = function () {
   go({ name: 'home' });
 };
 
+/* ---------- 单元分组（第三十一次优化）----------
+   一百来个单元摊在首页太长。store.groups 是 [{ id, name, us: [单元号] }]，一个单元最多在一个组里，
+   没进组的单元直接摆在首页。撤销分组只是把单元放回首页，词和进度不动。
+   单元被删掉或合并后 us 里可能留着旧号，所以一律经 groupUnits 取。 */
+function defaultGroups() {
+  function pick(a, b) {
+    return UNITS.filter(function (x) { return x.u >= a && x.u <= b && !x.imported; }).map(function (x) { return x.u; });
+  }
+  return [{ id: 'sat', name: 'SAT 词汇', us: pick(1, 37) },
+          { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
+          { id: 'ielts', name: '雅思核心词汇', us: pick(2001, 2008) }];
+}
+if (!store.groups) store.groups = defaultGroups();
+function groupOf(u) { return store.groups.filter(function (g) { return g.us.indexOf(u) >= 0; })[0] || null; }
+function groupById(id) { return store.groups.filter(function (g) { return g.id === id; })[0] || null; }
+function groupUnits(g) { return UNITS.filter(function (x) { return g.us.indexOf(x.u) >= 0; }); }
+function groupWords(g) {
+  var out = [];
+  groupUnits(g).forEach(function (x) { out = out.concat(unitWords(x.u)); });
+  return out;
+}
+function unitCardHtml(u) {
+  var ws = unitWords(u.u), m = merging && route.name === 'home';
+  return '<button class="unit-card' + (u.t ? ' extra' : '') +
+    (m ? (u.imported ? (mergeSel[u.u] ? ' msel' : '') : ' mno') : '') +
+    '" data-u="' + u.u + '" type="button">' +
+    '<div class="unit-no">' + esc(unitLabel(u.u)) +
+      (u.imported ? '<span class="tag-imp">' + (u.manual ? '自建' : '导入') + '</span>' : '') + '</div>' +
+    '<div class="unit-span">' + esc(u.a) + '<i>—</i>' + esc(u.b) + '</div>' +
+    unitProgHtml(ws) +
+    '<div class="unit-foot">' + unitFootHtml(ws, u) + '</div>' +
+    '</button>';
+}
+function groupCardHtml(g) {
+  var us = groupUnits(g), ws = groupWords(g), t = tally(ws), n = ws.length || 1;
+  return '<button class="group-card" data-g="' + esc(g.id) + '" type="button">' +
+    '<span class="group-name">' + esc(g.name) + '</span>' +
+    '<span class="group-sub">' + us.length + ' 个单元，' + ws.length + ' 个词</span>' +
+    '<span class="group-bar"><i class="k" style="width:' + (t.known / n * 100) + '%"></i>' +
+      '<i class="x" style="width:' + (t.shaky / n * 100) + '%"></i></span>' +
+    '<span class="group-foot"><span><b>' + t.known + '</b> 已掌握</span><span>' + t.shaky + ' 待复习</span></span>' +
+    '</button>';
+}
+function wireGroupCards() {
+  Array.prototype.forEach.call(view.querySelectorAll('.group-card'), function (b) {
+    b.onclick = function () { go({ name: 'group', id: b.dataset.g }); };
+  });
+}
+function renderGroup(id) {
+  var g = groupById(id);
+  if (!g) { route = { name: 'home' }; renderHome(); return; }
+  var us = groupUnits(g), ws = groupWords(g), bad = ws.filter(shaky);
+  view.innerHTML = '<button class="back" id="back" type="button">← 返回目录</button>' +
+    '<div class="unit-head"><div><p class="eyebrow">' + us.length + ' 个单元 · ' + ws.length + ' 个词</p>' +
+      '<h1>' + esc(g.name) + '</h1></div>' +
+      '<div class="head-tools">' +
+        (bad.length ? '<button class="btn btn-ghost" id="sweepGroup" type="button">整理错词 · ' + bad.length + '</button>' : '') +
+        '<button class="btn btn-ghost" id="editGroup" type="button">编辑分组</button>' +
+      '</div></div>' +
+    (us.length ? '<div class="unit-grid">' + us.map(unitCardHtml).join('') + '</div>'
+      : '<div class="empty"><b>这个分组还是空的</b>点右上角的「编辑分组」，把单元勾进来。</div>');
+  document.getElementById('back').onclick = function () { go({ name: 'home' }); };
+  document.getElementById('editGroup').onclick = function () { openGroup(g.id); };
+  var sg = document.getElementById('sweepGroup');
+  if (sg) sg.onclick = function () { startReview(bad, g.name + ' 错词', { name: 'group', id: g.id }); };
+  Array.prototype.forEach.call(view.querySelectorAll('.unit-card'), function (b) {
+    b.onclick = function () { dropOrder(); go({ name: 'unit', u: +b.dataset.u, tab: 'browse' }); };
+  });
+}
+/* 新建和编辑是同一个弹窗：起名字，再勾单元。勾别的组里的单元就是把它挪过来，
+   这个组里取消勾选的单元回到首页 */
+var groupEdit = null;
+function groupRowHtml(x, on) {
+  return '<label class="gp-u"><input type="checkbox" data-u="' + x.u + '"' + (on ? ' checked' : '') + '>' +
+    '<span>' + esc(unitLabel(x.u)) + '<small>' + esc(x.a) + ' — ' + esc(x.b) + '</small></span></label>';
+}
+function groupSecHtml(title, list, open, on) {
+  if (!list.length) return '';
+  return '<details class="gp-sec"' + (open ? ' open' : '') + '><summary><span>' + esc(title) + '</span>' +
+    '<em>' + list.length + ' 个单元</em><button class="gp-all" type="button">全选</button></summary>' +
+    '<div class="gp-list">' + list.map(function (x) { return groupRowHtml(x, on); }).join('') + '</div></details>';
+}
+function paintGroupCount() {
+  var n = document.querySelectorAll('#groupPick input:checked').length;
+  document.getElementById('groupCount').textContent = '已选 ' + n + ' 个单元';
+}
+function openGroup(id) {
+  var g = id ? groupById(id) : null;
+  groupEdit = g;
+  document.getElementById('groupTitle').textContent = g ? '编辑分组' : '新建分组';
+  document.getElementById('groupName').value = g ? g.name : '';
+  document.getElementById('groupNote').textContent = '';
+  document.getElementById('groupDrop').hidden = !g;
+  var free = UNITS.filter(function (x) { return !groupOf(x.u); });
+  document.getElementById('groupPick').innerHTML =
+    (g ? groupSecHtml('已在这个分组里', groupUnits(g), true, true) : '') +
+    groupSecHtml('没分组的单元', free, true, false) +
+    store.groups.filter(function (o) { return o !== g; }).map(function (o) {
+      return groupSecHtml('在「' + o.name + '」里', groupUnits(o), false, false);
+    }).join('');
+  paintGroupCount();
+  document.getElementById('groupModal').hidden = false;
+  document.getElementById('groupName').focus();
+}
+function saveGroup() {
+  var name = document.getElementById('groupName').value.trim();
+  if (!name) {
+    document.getElementById('groupNote').textContent = '先给分组起个名字。';
+    document.getElementById('groupName').focus();
+    return;
+  }
+  var us = Array.prototype.map.call(document.querySelectorAll('#groupPick input:checked'), function (b) { return +b.dataset.u; });
+  var g = groupEdit;
+  store.groups.forEach(function (o) {
+    if (o !== g) o.us = o.us.filter(function (u) { return us.indexOf(u) < 0; });
+  });
+  if (!g) { g = { id: 'g' + Date.now(), name: name, us: [] }; store.groups.push(g); }
+  g.name = name; g.us = us;
+  save();
+  document.getElementById('groupModal').hidden = true;
+  go({ name: 'group', id: g.id });
+}
+function dropGroup() {
+  var g = groupEdit;
+  if (!confirm('撤销分组「' + g.name + '」？里面的单元回到首页，词和学习进度都不动。')) return;
+  store.groups = store.groups.filter(function (o) { return o !== g; });
+  save();
+  document.getElementById('groupModal').hidden = true;
+  go({ name: 'home' });
+}
+
 /* ================= HOME ================= */
 function renderHome() {
   var pool = homePool(), all = tally(pool);
@@ -16376,18 +16647,13 @@ function renderHome() {
      乱序版是带 ids 的单元。标题下面的开关切换，记在 store.set.shuf */
   var shuf = !!store.set.shuf;
   var shown = UNITS.filter(function (x) { return shuf ? !!x.ids : !x.ids; });
-  var cards = shown.map(function (u) {
-    var ws = unitWords(u.u);
-    return '<button class="unit-card' + (u.t ? ' extra' : '') +
-      (merging ? (u.imported ? (mergeSel[u.u] ? ' msel' : '') : ' mno') : '') +
-      '" data-u="' + u.u + '" type="button">' +
-      '<div class="unit-no">' + esc(unitLabel(u.u)) +
-        (u.imported ? '<span class="tag-imp">' + (u.manual ? '自建' : '导入') + '</span>' : '') + '</div>' +
-      '<div class="unit-span">' + esc(u.a) + '<i>—</i>' + esc(u.b) + '</div>' +
-      unitProgHtml(ws) +
-      '<div class="unit-foot">' + unitFootHtml(ws, u) + '</div>' +
-      '</button>';
-  }).join('');
+  /* 合并时要挑的是单元，分组收起来，全摊开 */
+  var loose = merging ? shown : shown.filter(function (x) { return !groupOf(x.u); });
+  var groups = merging ? [] : store.groups.filter(function (g) {
+    var us = groupUnits(g);
+    return us.length ? us.some(function (x) { return !!x.ids === shuf; }) : !shuf;
+  });
+  var cards = loose.map(unitCardHtml).join('');
   view.innerHTML =
     '<div class="home-head"><div>' +
       '<p class="eyebrow">' + (shuf ? '乱序版 · ' : '') + shown.length + ' 个单元 · ' + pool.length + ' 个词条</p>' +
@@ -16423,8 +16689,11 @@ function renderHome() {
         (store.custom.length >= 2
           ? '<button class="btn btn-ghost' + (merging ? ' on' : '') + '" id="mergeOn" type="button">' +
             (merging ? '✓ 挑要合并的单元' : '合并单元') + '</button>' : '')) +
+      (merging ? '' : '<button class="btn btn-ghost" id="newGroup" type="button">新建分组</button>') +
     '</div>' +
-    '<div class="unit-grid' + (merging ? ' merging' : '') + '">' + cards + '</div>' +
+    (groups.length ? '<div class="group-grid">' + groups.map(groupCardHtml).join('') + '</div>' : '') +
+    (groups.length && cards ? '<h2 class="loose-h">没分组的单元</h2>' : '') +
+    (cards ? '<div class="unit-grid' + (merging ? ' merging' : '') + '">' + cards + '</div>' : '') +
     '<div id="mergeSlot">' + mergeBarHtml() + '</div>';
   Array.prototype.forEach.call(view.querySelectorAll('.unit-card'), function (b) {
     b.onclick = function () {
@@ -16442,6 +16711,8 @@ function renderHome() {
       dropOrder(); go({ name: 'unit', u: uu, tab: 'browse' });
     };
   });
+  wireGroupCards();
+  var ng = document.getElementById('newGroup'); if (ng) ng.onclick = function () { openGroup(null); };
   Array.prototype.forEach.call(view.querySelectorAll('[data-shelf]'), function (b) {
     b.onclick = function () {
       var want = b.dataset.shelf === '1';
@@ -16483,13 +16754,14 @@ function unitEyebrow(u) {
   return (store.uname[u] ? store.uname[u] + '（原来是 ' + unitBase(u) + '）' : unitBase(u)) + ' · ' + unitMeta(u).n + ' 词';
 }
 function unitHeader(u, tab) {
-  var meta = unitMeta(u);
+  var meta = unitMeta(u), g = groupOf(u), star = u === STAR_U;
   var n = unitWords(u).filter(shaky).length;
-  return '<button class="back" id="back" type="button">← 返回目录</button>' +
+  return '<button class="back" id="back" type="button">← ' + esc(g ? g.name : '返回目录') + '</button>' +
     '<div class="unit-head"><div>' +
-      '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
-        '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
-      '<h1>' + esc(meta.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(meta.b) + '</h1>' +
+      (star ? '<p class="eyebrow">' + meta.n + ' 个词</p><h1>生词本</h1>'
+        : '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
+            '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
+          '<h1>' + esc(meta.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(meta.b) + '</h1>') +
     '</div>' +
     '<div class="head-tools">' +
       (meta.imported ? '<button class="btn btn-ghost" id="dropUnit" type="button">删掉这个单元</button>' : '') +
@@ -16503,7 +16775,11 @@ function unitHeader(u, tab) {
     '</div></div>';
 }
 function wireHeader(u) {
-  var b = document.getElementById('back'); if (b) b.onclick = function () { dropOrder(); go({ name: 'home' }); };
+  var b = document.getElementById('back');
+  if (b) b.onclick = function () {
+    var g = groupOf(u);
+    dropOrder(); go(g ? { name: 'group', id: g.id } : { name: 'home' });
+  };
   var sw = document.getElementById('sweepUnit');
   if (sw) sw.onclick = function () {
     startReview(unitWords(u).filter(shaky), unitShort(u) + ' 错词',
@@ -16754,7 +17030,7 @@ function renderBrowse(u) {
       '" data-n="' + n + '" data-i="' + w.i + '" data-col="' + colOf(w.i) + '">' +
       (picking ? '<span class="row-c"></span>' : '') +
       '<div class="row-no" title="单元里第 ' + seq[w.i] + ' 个 · 编号 ' + w.i + '"><span class="dot"></span>' + seq[w.i] + '</div>' +
-      '<div class="row-w">' + esc(w.w) + '</div>' +
+      '<div class="row-w">' + esc(w.w) + (u === STAR_U ? rowUnitTag(w) : '') + '</div>' +
       '<div class="row-p">' + esc(ipaOf(w)) + '</div>' +
       '<div class="row-z' + (store.set.hideZh ? ' hidden' : '') + '">' + esc(w.z) + '</div>' +
       (editing2
@@ -16831,6 +17107,7 @@ function renderBrowse(u) {
       b.classList.toggle('on'); save(); starCount();
     };
   });
+  wireRowUnit();
   /* 只改这一行、答题卡上那个点和头上的「整理错词」数，不整页重画：列表和答题卡都停在原处 */
   Array.prototype.forEach.call(view.querySelectorAll('[data-miss]'), function (b) {
     b.onclick = function (e) {
@@ -16997,7 +17274,7 @@ function cardHtml(w, revealed, u) {
   var col = colOf(w.i);
   return '<div class="wcard ' + cls(w.i) + '" data-col="' + col + '">' +
     '<div class="stamp" id="stamp">已掌握</div>' +
-    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : unitShort(u)) +
+    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : unitShort(u === STAR_U ? w.u : u)) +
       (seq ? '<span class="w-seq">第 ' + seq + (tot ? ' / ' + tot : '') + ' 个</span>' : '') +
       tags + '</div>' +
     '<div class="w-head"><h2 class="w-word' + (/\s/.test(w.w) ? ' phrase' : '') + '">' + esc(w.w) + '</h2>' +
@@ -17045,7 +17322,7 @@ function wireCard(w, redraw) {
 function renderStudy(u, n) {
   var ws = ordered(u);
   if (!ws.length && curFilter(u)) { setFilter(u, ''); ws = ordered(u); }   // 这一批被挑空了
-  if (!ws.length) return;
+  if (!ws.length) { if (u === STAR_U) render(); return; }
   n = Math.max(0, Math.min(n || 0, ws.length - 1));
   var w = ws[n];
   var revealed = route.rev === true;
@@ -17272,6 +17549,7 @@ function rateReview(v) {
 var quiz = null;
 function quizPool(u, sel) {
   if (sel) return selWords();
+  if (u === STAR_U) return ordered(u);        // 生词本是自己挑的词，全都考，不只考标了不认识的
   /* 单元里正筛着某个颜色，就只考这一批 —— ordered() 已经把筛选算进去了 */
   return (u == null ? homePool() : ordered(u)).filter(shaky);
 }
@@ -17369,7 +17647,7 @@ function buildQuiz(key, pool, swept) {
     return { w: w, cloze: cloze, src: src, sent: src ? blankOut(src.e, w.w) : '',
              opts: shuffle([w].concat(distractors(w, 3))) };
   });
-  return { key: key, qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], swept: done };
+  return { key: key, qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], good: [], swept: done };
 }
 function renderQuiz(u, sel) {
   var all = u == null;
@@ -17388,7 +17666,8 @@ function renderQuiz(u, sel) {
   }
   var back = all ? { name: 'home' } : { name: 'unit', u: u, tab: 'quiz' };
 
-  if (!pool.length) {
+  var over = quiz && quiz.key === key && quiz.at >= quiz.qs.length;   // 结算页上把词全标成认识后，题库空了也留在这一页
+  if (!pool.length && !over) {
     view.innerHTML = head + '<div class="quiz-wrap"><div class="empty">' + (sel
       ? '<b>还没选词</b>到浏览页或生词本，点一下「选择」，勾出想考的词再回来。'
       : '<b>还没有错词</b>测验只从标过「不认识」的词里出题。' +
@@ -17400,11 +17679,18 @@ function renderQuiz(u, sel) {
   if (quiz.at >= quiz.qs.length) {
     var missed = quiz.wrong.slice();
     var rest = pool.filter(function (w) { return !quiz.swept[w.i]; }).length;
+    var good = quiz.good.filter(function (w) { return lvl(w.i) !== 3; });
     view.innerHTML = head + '<div class="quiz-wrap"><div class="score"><b>' + quiz.right + '/' + quiz.qs.length + '</b>' +
       '<p class="lede" style="margin:14px auto 22px;text-align:center">' +
       (missed.length ? '错了 ' + missed.length + ' 个：' + missed.map(function (w) { return esc(w.w); }).join('、')
                      : (sel ? '这批词你已经拿得很稳了。' : '这批错词你已经拿得很稳了。')) +
       (rest ? '<br><span class="score-rest">题库里还有 ' + rest + ' 个这一趟没抽到。</span>' : '') + '</p>' +
+      (quiz.marked ? '<p class="good-done">已把 ' + quiz.marked + ' 个词标成认识。</p>' : '') +
+      (good.length ? '<div class="score-good"><p class="good-tip">答对的 ' + good.length + ' 个词还没算认识。确实会的留着，蒙对的点一下去掉。</p>' +
+        '<div class="good-chips">' + good.map(function (w) {
+          return '<button class="good-chip on" data-i="' + w.i + '" type="button" aria-pressed="true">' + esc(w.w) + '</button>';
+        }).join('') + '</div>' +
+        '<button class="btn" id="markGood" type="button">把这 ' + good.length + ' 个标成认识</button></div>' : '') +
       '<div class="score-acts">' +
         (missed.length ? '<button class="btn" id="sweepQuiz" type="button">整理错题 · 重过这 ' + missed.length + ' 个</button>' : '') +
         (rest ? '<button class="btn' + (missed.length ? ' btn-ghost' : '') + '" id="more" type="button">继续考剩下的 ' + rest + ' 个</button>' : '') +
@@ -17414,6 +17700,22 @@ function renderQuiz(u, sel) {
     document.getElementById('again').onclick = function () { quiz = null; renderQuiz(u, sel); };
     var mo = document.getElementById('more');
     if (mo) mo.onclick = function () { quiz = buildQuiz(key, pool, quiz.swept); renderQuiz(u, sel); };
+    var mg = document.getElementById('markGood');
+    Array.prototype.forEach.call(view.querySelectorAll('.good-chip'), function (c) {
+      c.onclick = function () {
+        var on = c.classList.toggle('on');
+        c.setAttribute('aria-pressed', on);
+        var n = view.querySelectorAll('.good-chip.on').length;
+        mg.textContent = n ? '把这 ' + n + ' 个标成认识' : '一个都不标';
+        mg.disabled = !n;
+      };
+    });
+    if (mg) mg.onclick = function () {
+      var on = view.querySelectorAll('.good-chip.on');
+      Array.prototype.forEach.call(on, function (c) { setLvl(+c.dataset.i, 3); });
+      quiz.marked = (quiz.marked || 0) + on.length;
+      renderQuiz(u, sel);
+    };
     var sq = document.getElementById('sweepQuiz');
     if (sq) sq.onclick = function () {
       startReview(missed, (sel ? '选中的词' : all ? '错词' : unitShort(u)) + '测验错题', back);
@@ -17453,7 +17755,8 @@ function renderQuiz(u, sel) {
         x.disabled = true;
         if (+x.dataset.i === q.w.i) { x.classList.add('right'); x.insertAdjacentHTML('beforeend', '<span class="mark">✓</span>'); }
       });
-      if (ok) { quiz.right++; if (lvl(q.w.i) < 3) setLvl(q.w.i, 3); }
+      /* 答对不改状态（第三十一次优化）：四选一蒙对也算对，要不要标成认识留到结算页自己定 */
+      if (ok) { quiz.right++; quiz.good.push(q.w); }
       else {
         if (how === 'wrong') { b.classList.add('wrong'); b.insertAdjacentHTML('beforeend', '<span class="mark">✕</span>'); }
         setLvl(q.w.i, 1); quiz.wrong.push(q.w);
@@ -18541,6 +18844,18 @@ function addWord() {
 }
 
 /* ================= SEARCH & STARS ================= */
+function rowUnitTag(w) {
+  return '<button class="row-u" data-go="' + w.i + '" data-gu="' + w.u + '" type="button" ' +
+    'title="到「' + esc(unitShort(w.u)) + '」里看它排在哪">' + esc(unitShort(w.u)) + '</button>';
+}
+function wireRowUnit() {                     // 点单元标签 → 到那个单元的浏览列表，滚到这个词那一行并高亮一下
+  Array.prototype.forEach.call(view.querySelectorAll('[data-go]'), function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      go({ name: 'unit', u: +b.dataset.gu, tab: 'browse', focus: +b.dataset.go });
+    };
+  });
+}
 function renderList(title, sub, list, exMap) {
   var rows = list.map(function (w) {
     var ex = exMap && exMap[w.i];
@@ -18549,8 +18864,7 @@ function renderList(title, sub, list, exMap) {
       (picking ? '<span class="row-c"></span>' : '') +
       '<div class="row-no"><span class="dot"></span>' + w.i + '</div>' +
       '<div class="row-w">' + esc(w.w) +
-        '<button class="row-u" data-go="' + w.i + '" data-gu="' + w.u + '" type="button" ' +
-          'title="到「' + esc(unitShort(w.u)) + '」里看它排在哪">' + esc(unitShort(w.u)) + '</button></div>' +
+        rowUnitTag(w) + '</div>' +
       '<div class="row-p">' + esc(ipaOf(w)) + '</div>' +
       '<div class="row-z">' + esc(w.z) + (ex ? '<span class="row-ex">例句：' + esc(ex) + '</span>' : '') + '</div>' +
       '<button class="row-s' + (store.star[w.i] ? ' on' : '') + '" data-star="' + w.i + '" type="button">★</button>' +
@@ -18575,13 +18889,7 @@ function renderList(title, sub, list, exMap) {
       go({ name: 'unit', u: u, tab: 'study', n: Math.max(0, posInUnit(u, i)), rev: true });
     };
   });
-  /* 点单元标签 → 到那个单元的浏览列表，滚到这个词那一行并高亮一下 */
-  Array.prototype.forEach.call(view.querySelectorAll('[data-go]'), function (b) {
-    b.onclick = function (e) {
-      e.stopPropagation();
-      go({ name: 'unit', u: +b.dataset.gu, tab: 'browse', focus: +b.dataset.go });
-    };
-  });
+  wireRowUnit();
   Array.prototype.forEach.call(view.querySelectorAll('[data-star]'), function (b) {
     b.onclick = function (e) {
       e.stopPropagation(); var i = +b.dataset.star;
@@ -18662,7 +18970,9 @@ function render() {
   if (railRO) { railRO.disconnect(); railRO = null; }
   document.documentElement.classList.toggle('studying',
     route.name === 'review' || (route.name === 'unit' && route.tab === 'study'));
-  if (route.name === 'home') renderHome();
+  if (route.name === 'unit' && route.u === STAR_U && !starWords().length) renderList('生词本', '0 个词条', []);
+  else if (route.name === 'home') renderHome();
+  else if (route.name === 'group') renderGroup(route.id);
   else if (route.name === 'review') renderReview();
   else if (route.name === 'quiz') renderQuiz(null, route.scope === 'sel');
   else if (route.name === 'spell') renderSpell(null, true);
@@ -18676,8 +18986,6 @@ function render() {
     var hit = all.slice(0, SEARCH_CAP);
     renderList('“' + route.q + '” 的结果',
       all.length + ' 个词条' + (all.length > hit.length ? ' · 只列前 ' + hit.length + ' 个' : ''), hit, searchExcerpt);
-  } else if (route.name === 'star') {
-    renderList('生词本', Object.keys(store.star).length + ' 个词条', WORDS.filter(function (w) { return store.star[w.i]; }));
   }
   starCount();
 }
@@ -18692,11 +19000,24 @@ si.addEventListener('input', function () {
     go({ name: 'search', q: q });
   }, 180);
 });
-document.getElementById('openStar').onclick = function () { go({ name: 'star' }); };
+document.getElementById('openStar').onclick = function () { dropOrder(); go({ name: 'unit', u: STAR_U, tab: 'browse' }); };
 var modal = document.getElementById('setModal');
+/* 设置分成几个分类（第三十一次优化）：原来三十来项排成一长条，要翻很久才找得到 */
+function showPane(name) {
+  Array.prototype.forEach.call(modal.querySelectorAll('.set-tab'), function (t) {
+    t.setAttribute('aria-selected', t.dataset.pane === name);
+  });
+  Array.prototype.forEach.call(modal.querySelectorAll('.set-pane'), function (p) { p.hidden = p.dataset.pane !== name; });
+}
+Array.prototype.forEach.call(modal.querySelectorAll('.set-tab'), function (t) {
+  t.onclick = function () { showPane(t.dataset.pane); };
+});
 function openSettings(focus) {
   modal.hidden = false;
-  if (focus) { var f = document.getElementById(focus); if (f) { f.focus(); f.scrollIntoView({ block: 'center' }); } }
+  if (focus) {
+    var f = document.getElementById(focus);
+    if (f) { showPane(f.closest('.set-pane').dataset.pane); f.focus(); f.scrollIntoView({ block: 'center' }); }
+  }
 }
 document.getElementById('openSet').onclick = function () { openSettings(); };
 document.getElementById('closeSet').onclick = function () { modal.hidden = true; };
@@ -18803,6 +19124,25 @@ var addM = document.getElementById('addModal');
 document.getElementById('closeAdd').onclick = function () { addM.hidden = true; };
 addM.addEventListener('click', function (e) { if (e.target === addM) addM.hidden = true; });
 document.getElementById('addGo').onclick = addWord;
+var gpM = document.getElementById('groupModal');
+document.getElementById('closeGroup').onclick = function () { gpM.hidden = true; };
+gpM.addEventListener('click', function (e) { if (e.target === gpM) gpM.hidden = true; });
+document.getElementById('groupGo').onclick = saveGroup;
+document.getElementById('groupDrop').onclick = dropGroup;
+document.getElementById('groupName').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { e.preventDefault(); saveGroup(); }
+  else if (e.key === 'Escape') { e.stopPropagation(); gpM.hidden = true; }
+});
+document.getElementById('groupPick').addEventListener('click', function (e) {
+  if (!e.target.classList.contains('gp-all')) return;
+  e.preventDefault();                       // 按钮在 summary 里，别顺手把这一段收起来
+  var boxes = e.target.closest('.gp-sec').querySelectorAll('input');
+  var all = Array.prototype.every.call(boxes, function (b) { return b.checked; });
+  Array.prototype.forEach.call(boxes, function (b) { b.checked = !all; });
+  e.target.textContent = all ? '全选' : '全不选';
+  paintGroupCount();
+});
+document.getElementById('groupPick').addEventListener('change', paintGroupCount);
 var rnM = document.getElementById('renameModal');
 document.getElementById('closeRename').onclick = function () { rnM.hidden = true; };
 rnM.addEventListener('click', function (e) { if (e.target === rnM) rnM.hidden = true; });
@@ -18856,8 +19196,8 @@ document.addEventListener('keydown', function (e) {
   if (e.key === '/') { e.preventDefault(); si.focus(); return; }
   if (e.key === 'Escape') {
     /* 有弹窗先关弹窗；没有弹窗、又开着选择模式，就退出选择（第二十九次优化），已勾的词留着 */
-    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden;
-    modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; rnM.hidden = true;
+    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden || !gpM.hidden;
+    modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; rnM.hidden = true; gpM.hidden = true;
     var pt = !pop && picking && document.getElementById('pickToggle');
     if (pt) pt.click();
     return;
@@ -18881,7 +19221,8 @@ document.addEventListener('keydown', function (e) {
     return;
   }
   if (route.name !== 'unit' || route.tab !== 'study') return;
-  var ws = ordered(route.u), n = route.n || 0;
+  var ws = ordered(route.u), n = Math.min(route.n || 0, ws.length - 1);
+  if (!ws.length) { render(); return; }                 // 生词本里最后一个词刚被去掉星
   if (e.key === ' ') { e.preventDefault(); route.rev = !route.rev; renderStudy(route.u, n); }
   else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();

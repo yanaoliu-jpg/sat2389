@@ -34,153 +34,175 @@
 <main id="view"></main>
 
 <div class="modal" id="setModal" hidden>
-  <div class="modal-card" role="dialog" aria-modal="true" aria-label="设置">
-    <h2>设置</h2>
+  <div class="modal-card modal-set" role="dialog" aria-modal="true" aria-label="设置">
+    <div class="set-head"><h2>设置</h2></div>
+    <div class="set-body">
+      <div class="set-nav" role="tablist" aria-label="设置分类">
+        <button class="set-tab" role="tab" data-pane="look" aria-selected="true" type="button">外观</button>
+        <button class="set-tab" role="tab" data-pane="sound" aria-selected="false" type="button">发音</button>
+        <button class="set-tab" role="tab" data-pane="card" aria-selected="false" type="button">卡片</button>
+        <button class="set-tab" role="tab" data-pane="quiz" aria-selected="false" type="button">测验</button>
+        <button class="set-tab" role="tab" data-pane="ai" aria-selected="false" type="button">AI 例句</button>
+        <button class="set-tab" role="tab" data-pane="data" aria-selected="false" type="button">词表与数据</button>
+      </div>
+      <div class="set-panes">
+        <section class="set-pane" data-pane="look">
+          <div class="field">
+            <span>背景色调</span>
+            <div class="tone-row" id="toneSwatches"></div>
+          </div>
+          <label class="field">
+            <span>色相</span>
+            <input id="setHue" class="tone-hue" type="range" min="0" max="360" step="1" value="150">
+          </label>
+          <label class="field">
+            <span>浓淡</span>
+            <input id="setChroma" type="range" min="0" max="100" step="1" value="30">
+            <small class="hint">拉到最左是不带颜色的灰。深色模式跟着一起变。</small>
+          </label>
+          <label class="field">
+            <span>首页进度样式</span>
+            <select id="setUprog">
+              <option value="mosaic">色块（每 10 个词一格）</option>
+              <option value="bar">进度条</option>
+              <option value="ribbon">条带（每个词一段）</option>
+            </select>
+          </label>
+        </section>
 
-    <p class="sec">外观</p>
-    <div class="field">
-      <span>背景色调</span>
-      <div class="tone-row" id="toneSwatches"></div>
+        <section class="set-pane" data-pane="sound" hidden>
+          <label class="field">
+            <span>口音</span>
+            <select id="setAccent"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option></select>
+          </label>
+          <label class="field">
+            <span>单词发音</span>
+            <select id="setWsrc"><option value="yd">真人录音（牛津词典，需联网）</option><option value="sys">系统声音</option></select>
+            <small class="hint">牛津没收的词用有道，没网时用系统声音。</small>
+            <small class="hint" id="oxState"></small>
+          </label>
+          <label class="field">
+            <span>自动朗读单词</span>
+            <select id="setAuto">
+              <option value="reveal">显示释义时读（空格）</option>
+              <option value="enter">一换到新词就读</option>
+              <option value="off">不自动读</option>
+            </select>
+            <small class="hint">学习卡和整理错词用这一项；拼写检测照旧是答完才读。</small>
+          </label>
+          <label class="field">
+            <span>语速 <b id="rateVal">1.0</b></span>
+            <input id="setRate" type="range" min="0.5" max="1.3" step="0.05" value="0.95">
+          </label>
+          <label class="field">
+            <span>音量 <b id="volVal">100%</b></span>
+            <input id="setVol" type="range" min="0" max="1" step="0.05" value="1">
+          </label>
+          <label class="field">
+            <span>例句的声音</span>
+            <select id="setVoice"></select>
+            <small class="hint">例句用这台电脑自带的声音读。带「高清」的最接近真人。</small>
+          </label>
+          <div class="field">
+            <span>试听</span>
+            <div class="set-btns"><button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button></div>
+          </div>
+        </section>
+
+        <section class="set-pane" data-pane="card" hidden>
+          <label class="field-row">
+            <input id="setHint" type="checkbox" checked>
+            <span>没显示释义前，先给一句例句当提示</span>
+          </label>
+          <label class="field-row">
+            <input id="setHideZh" type="checkbox">
+            <span>浏览列表时先隐藏中文释义</span>
+          </label>
+          <label class="field-row">
+            <input id="setHideEx" type="checkbox">
+            <span>例句的中文翻译先蒙起来（点一下看）</span>
+          </label>
+          <label class="field">
+            <span>中文字号</span>
+            <select id="setZhSize">
+              <option value="s">小</option>
+              <option value="m">中 · 默认</option>
+              <option value="l">大</option>
+              <option value="xl">特大</option>
+            </select>
+            <small class="hint">学习、复习、测验、拼写卡片上的释义和译文。</small>
+          </label>
+        </section>
+
+        <section class="set-pane" data-pane="quiz" hidden>
+          <label class="field">
+            <span>每轮题数</span>
+            <select id="setQn">
+              <option value="10">10 题 · 快速一轮</option>
+              <option value="20">20 题 · 默认</option>
+              <option value="30">30 题</option>
+              <option value="50">50 题</option>
+              <option value="100">100 题</option>
+              <option value="200">200 题</option>
+              <option value="0">全部 · 不设上限</option>
+            </select>
+            <small class="hint">测验和拼写都按这个数。做完可以接着考没抽到的词，不会把刚做完的又抽一遍。</small>
+          </label>
+        </section>
+
+        <section class="set-pane" data-pane="ai" hidden>
+          <label class="field">
+            <span>例句长度</span>
+            <select id="setExLen">
+              <option value="short">短 · 10–15 词</option>
+              <option value="mid">中 · 16–24 词（和内置例句一致）</option>
+              <option value="long">长 · 25–35 词</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>DeepSeek API Key</span>
+            <input id="dsField" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false">
+            <small class="hint">在 platform.deepseek.com 申请。只存在这台设备的浏览器里，
+              直接发给 api.deepseek.com，不经过任何中间服务器。</small>
+          </label>
+          <label class="field">
+            <span>模型</span>
+            <select id="setDsModel">
+              <option value="deepseek-chat">deepseek-chat · 快，够用</option>
+              <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="set-pane" data-pane="data" hidden>
+          <div class="field">
+            <span>添加单词</span>
+            <div class="set-btns">
+              <button class="btn btn-ghost" id="openImp2" type="button">导入 Excel / PDF / HTML 词表</button>
+              <button class="btn btn-ghost" id="openAdd2" type="button">手动添加单词或词组</button>
+            </div>
+          </div>
+          <div class="field">
+            <span>复制词表</span>
+            <div class="set-btns">
+              <button class="btn btn-ghost" id="expShaky" type="button">复制待复习的词</button>
+              <button class="btn btn-ghost" id="expStar" type="button">复制生词本</button>
+            </div>
+            <small class="hint">Tab 分隔的纯文本，能直接粘回「导入词表」的文本框。</small>
+          </div>
+          <div class="field">
+            <span>发音表</span>
+            <div class="set-btns"><button class="btn btn-ghost" id="expPron" type="button">复制还没进发音表的词</button></div>
+            <small class="hint">平时用不到：新词加进来，网页会自己找录音。只有想给多音词分开两个读音时，才把复制的词交给 src/update_pron.py。</small>
+          </div>
+          <div class="field">
+            <span>学习进度</span>
+            <div class="set-btns"><button class="btn btn-ghost" id="resetProg" type="button">清空学习进度</button></div>
+          </div>
+        </section>
+      </div>
     </div>
-    <label class="field">
-      <span>色相</span>
-      <input id="setHue" class="tone-hue" type="range" min="0" max="360" step="1" value="150">
-    </label>
-    <label class="field">
-      <span>浓淡</span>
-      <input id="setChroma" type="range" min="0" max="100" step="1" value="30">
-      <small class="hint">拖色相可以选任意颜色，浓淡拉到最左是不带颜色的灰。深色模式跟着一起变。</small>
-    </label>
-    <label class="field">
-      <span>首页进度样式</span>
-      <select id="setUprog">
-        <option value="mosaic">色块（每 10 个词一格）</option>
-        <option value="bar">进度条</option>
-        <option value="ribbon">条带（每个词一段）</option>
-      </select>
-    </label>
-
-    <p class="sec">发音</p>
-    <label class="field">
-      <span>口音</span>
-      <select id="setAccent"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option></select>
-    </label>
-    <label class="field">
-      <span>语速 <b id="rateVal">1.0</b></span>
-      <input id="setRate" type="range" min="0.5" max="1.3" step="0.05" value="0.95">
-    </label>
-    <label class="field">
-      <span>音量 <b id="volVal">100%</b></span>
-      <input id="setVol" type="range" min="0" max="1" step="0.05" value="1">
-    </label>
-    <label class="field">
-      <span>声音</span>
-      <select id="setVoice"></select>
-      <small class="hint">已隐藏 Albert、Bubbles 等系统玩笑音色；带「高清」的是神经网络音色，最接近真人。
-        例句会按标点断成气口来读，音高逐句下沉，句尾放慢。</small>
-    </label>
-    <label class="field">
-      <span>单词发音</span>
-      <select id="setWsrc"><option value="yd">真人录音（牛津词典，需联网）</option><option value="sys">系统声音</option></select>
-      <small class="hint">真人录音只管单词和短语，例句还是用上面选的声音读。牛津没收的词用有道，没网时用系统声音。</small>
-      <small class="hint" id="oxState"></small>
-    </label>
-    <div class="field">
-      <button class="btn btn-ghost" id="tryVoice" type="button">试听一句</button>
-    </div>
-    <label class="field">
-      <span>自动朗读单词</span>
-      <select id="setAuto">
-        <option value="reveal">显示释义时读（空格）</option>
-        <option value="enter">一换到新词就读</option>
-        <option value="off">不自动读</option>
-      </select>
-      <small class="hint">学习卡和整理错词用这一项；拼写检测照旧是答完才读。</small>
-    </label>
-
-    <p class="sec">卡片</p>
-    <label class="field-row">
-      <input id="setHint" type="checkbox" checked>
-      <span>没显示释义前，先给一句例句当提示</span>
-    </label>
-    <label class="field-row">
-      <input id="setHideZh" type="checkbox">
-      <span>浏览列表时先隐藏中文释义</span>
-    </label>
-    <label class="field-row">
-      <input id="setHideEx" type="checkbox">
-      <span>例句的中文翻译先蒙起来（点一下看）</span>
-    </label>
-    <label class="field">
-      <span>卡片中文字号</span>
-      <select id="setZhSize">
-        <option value="s">小</option>
-        <option value="m">中 · 默认</option>
-        <option value="l">大</option>
-        <option value="xl">特大</option>
-      </select>
-      <small class="hint">学习、复习、测验、拼写的卡片上，中文释义和译文的字号。</small>
-    </label>
-
-    <p class="sec">测验 · 拼写</p>
-    <label class="field">
-      <span>每轮题数</span>
-      <select id="setQn">
-        <option value="10">10 题 · 快速一轮</option>
-        <option value="20">20 题 · 默认</option>
-        <option value="30">30 题</option>
-        <option value="50">50 题</option>
-        <option value="100">100 题</option>
-        <option value="200">200 题</option>
-        <option value="0">全部 · 不设上限</option>
-      </select>
-      <small class="hint">一轮做完，结算页会告诉你题库里还剩几个没抽到，可以接着考剩下的，
-        不会把刚做完的又抽一遍。选「全部」就一次考完这批词，没有上限。拼写检测每轮也按这个数。</small>
-    </label>
-
-    <p class="sec">AI 例句</p>
-    <label class="field">
-      <span>生成的例句长度</span>
-      <select id="setExLen">
-        <option value="short">短 · 10–15 词</option>
-        <option value="mid">中 · 16–24 词（和内置例句一致）</option>
-        <option value="long">长 · 25–35 词</option>
-      </select>
-    </label>
-      <label class="field">
-        <span>DeepSeek API Key</span>
-        <input id="dsField" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false">
-        <small class="hint">在 platform.deepseek.com 申请。只存在这台设备的浏览器里，
-          直接发给 api.deepseek.com，不经过任何中间服务器。</small>
-      </label>
-      <label class="field">
-        <span>模型</span>
-        <select id="setDsModel">
-          <option value="deepseek-chat">deepseek-chat · 快，够用</option>
-          <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
-        </select>
-      </label>
-
-    <p class="sec">词表</p>
-    <div class="field">
-      <button class="btn btn-ghost" id="openImp2" type="button">导入 Excel / PDF / HTML 词表</button>
-    </div>
-    <div class="field">
-      <button class="btn btn-ghost" id="openAdd2" type="button">手动添加单词或词组</button>
-    </div>
-    <div class="field exp-row">
-      <button class="btn btn-ghost" id="expShaky" type="button">复制待复习的词</button>
-      <button class="btn btn-ghost" id="expStar" type="button">复制生词本</button>
-      <small class="hint">Tab 分隔的纯文本，能直接粘回上面「导入词表」的文本框，也能存到别处。
-        复习页里也有「导出这批词」，导的是当前这一轮。</small>
-    </div>
-    <div class="field">
-      <button class="btn btn-ghost" id="expPron" type="button">复制还没进发音表的词</button>
-      <small class="hint">平时用不到这个按钮：新词加进来，网页会自己去牛津、朗文找录音，哪台电脑上都一样。只有想给多音词分开两个读音时，才把这里复制的词交给 src/update_pron.py。</small>
-    </div>
-
     <div class="modal-foot">
-      <button class="btn btn-ghost" id="resetProg" type="button">清空学习进度</button>
       <button class="btn" id="closeSet" type="button">完成</button>
     </div>
   </div>
@@ -256,6 +278,27 @@
     <div class="modal-foot">
       <button class="btn btn-ghost" id="closeRename" type="button">取消</button>
       <button class="btn" id="renameGo" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="groupModal" hidden>
+  <div class="modal-card modal-wide modal-group" role="dialog" aria-modal="true" aria-label="分组">
+    <h2 id="groupTitle">新建分组</h2>
+    <label class="field">
+      <span>分组名字</span>
+      <input id="groupName" type="text" autocomplete="off" maxlength="20" placeholder="比如：托福冲刺">
+    </label>
+    <p class="add-note" id="groupNote"></p>
+    <p class="gp-head"><span>勾选要放进来的单元</span><span id="groupCount"></span></p>
+    <div class="gp-pick" id="groupPick"></div>
+    <p class="hint">勾选别的分组里的单元，会把它移到这里。取消勾选的单元回到首页。</p>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="groupDrop" type="button">撤销这个分组</button>
+      <div class="foot-r">
+        <button class="btn btn-ghost" id="closeGroup" type="button">取消</button>
+        <button class="btn" id="groupGo" type="button">保存</button>
+      </div>
     </div>
   </div>
 </div>
