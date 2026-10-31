@@ -952,6 +952,12 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .set-pane>:last-child{border-bottom:0}
 .set-pane input[type=range]:not(.tone-hue){accent-color:var(--ink)}
 .set-btns{display:flex;flex-wrap:wrap;gap:8px}
+.au-now{display:grid;grid-template-columns:max-content 1fr;gap:5px 14px;margin:0 0 10px;padding:10px 12px;
+  border:1px solid var(--rule);border-radius:8px;background:var(--card-2);font-size:.78rem;line-height:1.45}
+.au-now[hidden]{display:none}
+.au-now dt{color:var(--ink-3)}
+.au-now dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.au-now dd.no{color:var(--amber)}
 .modal-set .modal-foot{margin:0;padding:14px 28px;border-top:1px solid var(--rule-2);justify-content:flex-end}
 @media (max-width:640px){
   .set-head{padding:16px 18px 12px}

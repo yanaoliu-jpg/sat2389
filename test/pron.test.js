@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { pronUrl, pronList, phraseClips, pronGuesses } = require('../pure.js');
+const { pronUrl, pronList, phraseClips, pronGuesses, audioSrcName } = require('../pure.js');
 
 const ROOT = path.join(__dirname, '..');
 const ctx = { window: {} };
@@ -87,6 +87,13 @@ test('牛津给 con / aux / nul 开头的文件名多加一个 x', function () {
   assert.strictEqual(pronUrl('auxiliary', '1', true), OX + 'uk_pron/x/xau/xauxi/xauxiliary__gb_1.mp3');
   assert.strictEqual(pronUrl('nullify', '1', false), OX + 'us_pron/x/xnu/xnull/xnullify__us_1.mp3');
   assert.strictEqual(pronUrl('coffee', '1', false), OX + 'us_pron/c/cof/coffe/coffee__us_1.mp3');
+});
+test('设置里按实际地址说出是哪一家的录音', function () {
+  assert.strictEqual(audioSrcName(pronUrl('coffee', '1', false)), '牛津真人录音');
+  assert.strictEqual(audioSrcName(pronUrl('x', '~uk/x', false)), '剑桥真人录音');
+  assert.strictEqual(audioSrcName(pronUrl('x', '^ameProns/x', false)), '朗文真人录音');
+  assert.strictEqual(audioSrcName(pronUrl('x', '@x-us', false)), '维基词典真人录音');
+  assert.strictEqual(audioSrcName('https://dict.youdao.com/dictvoice?type=2&audio=x'), '有道（部分词是机器合成）');
 });
 test('新词的地址按规律一个个试，先试最常见的', function () {
   const us = pronGuesses('kettle', false);

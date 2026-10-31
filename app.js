@@ -323,6 +323,64 @@ function oxResult(ok) {
 function paintOxState() {
   var el = document.getElementById('oxState');
   if (el) el.textContent = oxOff() ? '现在连不上牛津网站，单词暂时用有道的发音，有道部分词是机器合成的，可能读错。' : '';
+  paintAudio();
+}
+/* 设置里「现在用的音频」（第三十六次优化）：上面两行是按现在的设置和网络该用哪家，
+   「刚才读的」记的是真放出来的那一家，所以断了网、连不上牛津退到别家都看得到。 */
+var lastAudio = null;
+function sysName() { var v = currentVoice(); return '系统声音' + (v ? ' · ' + v.name : ''); }
+function noteAudio(text, name) {
+  var t = String(text).trim();
+  lastAudio = { text: t.length > 28 ? t.slice(0, 28) + '…' : t, name: name };
+  paintAudio();
+}
+function wordSrcNow() {
+  if (store.set.wsrc === 'sys') return sysName() + '（设置里选的）';
+  if (navigator.onLine === false) return sysName() + '（没有网络）';
+  if (oxOff()) return '有道（现在连不上牛津）';
+  return '牛津真人录音，牛津没收的词用别家';
+}
+function auRows(rows) {
+  return rows.map(function (r) {
+    return '<dt>' + esc(r[0]) + '</dt><dd' + (r[2] ? ' class="no"' : '') + '>' + esc(r[1]) + '</dd>';
+  }).join('');
+}
+function paintAudio() {
+  var el = document.getElementById('auNow');
+  if (!el) return;
+  el.innerHTML = auRows([
+    ['网络', navigator.onLine === false ? '没有网络' : '已联网', navigator.onLine === false],
+    ['单词', wordSrcNow()],
+    ['例句', sysName() + '（本机，不用联网）'],
+    ['刚才读的', lastAudio ? lastAudio.text + ' · ' + lastAudio.name : '还没读过']
+  ]);
+}
+window.addEventListener('online', paintAudio);
+window.addEventListener('offline', paintAudio);
+/* 「检测一下」真去取一次录音。地址加个时间戳，免得浏览器拿旧缓存冒充连得上 */
+function checkClip(url) {
+  var t0 = Date.now();
+  return probeClip(url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + t0).then(function (hit) {
+    return { ok: hit === true, s: ((Date.now() - t0) / 1000).toFixed(1) };
+  });
+}
+function checkRow(name, r) { return [name, r.ok ? '能用 · ' + r.s + ' 秒' : '连不上', !r.ok]; }
+function checkAudio() {
+  var el = document.getElementById('auChk'), b = document.getElementById('auTest');
+  var local = ['本机声音', (currentVoice() ? currentVoice().name + ' · ' : '') + '不用联网，随时能用'];
+  el.hidden = false;
+  if (navigator.onLine === false) {
+    el.innerHTML = auRows([['牛津录音', '没有网络', true], ['有道', '没有网络', true], local]);
+    return;
+  }
+  b.disabled = true;
+  el.innerHTML = auRows([['牛津录音', '检测中…'], ['有道', '检测中…'], local]);
+  var ox = pronList(window.PRON, 'abhorrence', accentGb())[0];
+  Promise.all([checkClip(ox.url), checkClip(ydUrl('hello'))]).then(function (r) {
+    b.disabled = false;
+    el.innerHTML = auRows([checkRow('牛津录音', r[0]), checkRow('有道', r[1]), local]);
+    if (r[0].ok) oxResult(true);
+  });
 }
 /* 录音要等一会儿才回来（第二十四次优化）：进一个词时顺手把这个词和下一个词的录音先取好，
    真要读的时候直接播，不再干等网络。留最近 12 个，回头再听也不用重取。 */
@@ -372,7 +430,11 @@ function speakClip(url, gain, mine, vol, rate, fallback, done2, wait) {
   a.volume = vol * gain;
   a.playbackRate = Math.max(0.5, Math.min(1.5, rate));
   try { a.currentTime = 0; } catch (e) {}
-  a.onplaying = function () { done = true; clearTimeout(t); if (done2) done2(true); };
+  a.onplaying = function () {
+    done = true; clearTimeout(t);
+    if (mine === sayToken) noteAudio(sayText, audioSrcName(url));
+    if (done2) done2(true);
+  };
   a.onerror = fail;
   ydAudio = a;
   var p = a.play();
@@ -388,12 +450,13 @@ function speakChain(c, n, mine, vol, rate, fallback) {   // 短语：一个词�
     };
   }, 6000);
 }
-var sayToken = 0;
+var sayToken = 0, sayText = '';
 /* 自动朗读什么时候读（第二十四次优化）：store.set.autoAt 'reveal' = 显示释义（空格）时读，
    'enter' = 一换到新词就读。只管学习卡和整理错词，拼写检测照旧答完才读。 */
 function autoNow(revealed) { return !!store.set.auto && (revealed || store.set.autoAt === 'enter'); }
 function speak(text, btn, pi) {              // pi：多音词读第几个读音，默认第一个
   var mine = ++sayToken;
+  sayText = text;
   stopYd();
   var vol0 = +store.set.vol;
   if (isNaN(vol0)) vol0 = 1;
@@ -431,6 +494,7 @@ function speakSys(text, mine) {
      keeps its trailing comma or period, which is what it listens to. */
   setTimeout(function () {              // Chrome drops a speak() issued inside cancel()
     if (mine !== sayToken) return;
+    noteAudio(text, sysName());
     groups.forEach(function (g, i) {
       var last = i === groups.length - 1;
       var u = new SpeechSynthesisUtterance(g);
@@ -3356,6 +3420,7 @@ Array.prototype.forEach.call(modal.querySelectorAll('.set-tab'), function (t) {
 });
 function openSettings(focus) {
   modal.hidden = false;
+  paintAudio();
   if (focus) {
     var f = document.getElementById(focus);
     if (f) { showPane(f.closest('.set-pane').dataset.pane); f.focus(); f.scrollIntoView({ block: 'center' }); }
@@ -3462,6 +3527,8 @@ if (est) est.onclick = function () {
 sd.onchange = function () { store.set.dskey = sd.value.trim(); save(); render(); };
 sdm.onchange = function () { store.set.dsmodel = sdm.value; save(); };
 document.getElementById('tryVoice').onclick = function () { speak(DEMO); };
+document.getElementById('auTest').onclick = checkAudio;
+modal.addEventListener('change', paintAudio);          // 改了单词发音、口音、例句的声音，马上跟着变
 document.getElementById('resetProg').onclick = function () {
   if (confirm('清空所有单元的学习进度和生词本？此操作不能撤销。')) {
     store.prog = {}; store.hist = {}; store.sel = {}; store.star = {}; save(); modal.hidden = true; dropOrder(); render();

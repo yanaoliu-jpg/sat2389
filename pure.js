@@ -254,6 +254,16 @@ function pronUrl(word, clip, gb) {
   if (/^(con|aux|nul|prn)/.test(stem)) stem = 'x' + stem;   // 这几个开头是 Windows 的保留名，牛津的文件名前面多一个 x
   return OX_MEDIA + dir + '/' + stem.charAt(0) + '/' + stem.slice(0, 3) + '/' + stem.slice(0, 5) + '/' + stem + '.mp3';
 }
+/* 设置里「现在用的音频」按实际播放的地址说是哪一家（第三十六次优化） */
+function audioSrcName(url) {
+  var u = String(url);
+  if (u.indexOf(OX_MEDIA) === 0) return '牛津真人录音';
+  if (u.indexOf(CAM_MEDIA) === 0) return '剑桥真人录音';
+  if (u.indexOf(LD_MEDIA) === 0) return '朗文真人录音';
+  if (u.indexOf(OWN_MEDIA) === 0) return '维基词典真人录音';
+  if (u.indexOf('dict.youdao.com') >= 0) return '有道（部分词是机器合成）';
+  return '其他录音';
+}
 /* 新词没有现成地址，按牛津的命名规律一个个试（第三十次优化）：有些词要到 _2 或 _1_rr 才有这个口音的录音，
    带连字符的词文件名是 far_fetched_1_us_1，不是双下划线 */
 function pronGuesses(word, gb) {
@@ -314,6 +324,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lcsMark: lcsMark, blankAt: blankAt,
     wordPat: wordPat, inflectRe: inflectRe, wordRe: wordRe,
     phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell,
+    audioSrcName: audioSrcName,
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,

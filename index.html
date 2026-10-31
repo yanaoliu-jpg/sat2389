@@ -71,6 +71,15 @@
         </section>
 
         <section class="set-pane" data-pane="sound" hidden>
+          <div class="field">
+            <span>现在用的音频</span>
+            <div>
+              <dl class="au-now" id="auNow"></dl>
+              <dl class="au-now" id="auChk" hidden></dl>
+              <div class="set-btns"><button class="btn btn-ghost" id="auTest" type="button">检测一下</button></div>
+              <small class="hint">「刚才读的」是实际放出来的声音，连不上时退到哪一家都看得到。</small>
+            </div>
+          </div>
           <label class="field">
             <span>口音</span>
             <select id="setAccent"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option></select>
