@@ -10,7 +10,7 @@
 → 生成 data/pron.js（src/build_pron.py）→ 跑测试 → 生成单文件版 → 提交推送。
 测试不过就停下，不会推送。
 """
-import concurrent.futures as cf, json, os, subprocess, sys, tempfile
+import concurrent.futures as cf, json, os, re, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -33,6 +33,10 @@ def main():
     for a in args:
         text = sys.stdin.read() if a == '-' else open(a, encoding='utf8').read()
         listed += [x.strip() for x in text.split('\n') if x.strip()]
+    junk = [x for x in listed if not re.fullmatch(r"[^\W\d_][\w'’ -]*", x) or len(x.split()) > 6]
+    for x in junk:
+        print('跳过，不像单词：', x, flush=True)     # 比如剪贴板里其实是命令本身
+    listed = [x for x in listed if x not in junk]
 
     meta_path = os.path.join(tempfile.gettempdir(), 'sat2389_words.json')
     run('node', os.path.join(HERE, 'dump_words.js'), meta_path)

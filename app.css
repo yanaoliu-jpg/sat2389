@@ -393,6 +393,9 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .stat-shaky:not(:disabled):hover span{color:var(--ink)}
 .sweeps{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px}
 .sweeps:empty{display:none}
+.rename-link{margin-left:10px;padding:0;border:0;background:none;font:inherit;letter-spacing:inherit;color:var(--ink-3);
+  text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.rename-link:hover{color:var(--ink)}
 .head-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .score-acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 

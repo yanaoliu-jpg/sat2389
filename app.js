@@ -20,7 +20,7 @@ var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
                 exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: 'deepseek-chat' };
-var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, set: {}, theme: '' };
+var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
 for (var dk in DEF_SET) if (!(dk in store.set)) store.set[dk] = DEF_SET[dk];
 if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort; v3 had one AI provider
@@ -43,6 +43,7 @@ if (!store.gen) store.gen = {};
 if (!store.custom) store.custom = [];
 if (!store.col) store.col = {};
 if (!store.pronx) store.pronx = {};
+if (!store.uname) store.uname = {};
 var dropRel = !!store.rel;               // 第四次优化 5：不再记「反复」，顺手把旧字段清掉
 if (dropRel) delete store.rel;
 /* hist used to be set by ANY 模糊. It now means "真的错过": 不认识, or 掌握之后又掉下来。
@@ -491,13 +492,14 @@ function homePool() {
   return out;
 }
 function unitMeta(u) { return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' }; }
+/* 单元改名（第二十九次优化）：内置单元的新名字存在 store.uname，单元本身不动，留空就回到原名；
+   导入和自建的单元本来就是自己起的名字，直接改 store.custom 里的 t */
+function unitName(u) { return store.uname[u] || unitMeta(u).t || ''; }
 function unitLabel(u) {                                  // unit 37 is the 错词本, not a book page
-  var m = unitMeta(u);
-  return m.t || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书 P' + u);
+  return unitName(u) || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书 P' + u);
 }
 function unitShort(u) {                                  // 搜索结果里的小标签，短一点
-  var m = unitMeta(u);
-  return m.t || ('UNIT ' + String(u).padStart(2, '0'));
+  return unitName(u) || ('UNIT ' + String(u).padStart(2, '0'));
 }
 /* 这个词是单元里的第几个：按单元自己的顺序（原书顺序／乱序单元写死的那份乱序），不随排序和颜色筛选变（第二十二次优化） */
 function unitSeq(u) {
@@ -708,7 +710,7 @@ function pickBarHtml() {
     (picking ? '✓ 选择中' : '选择') + '</button>' +
     (picking ? '<button class="chip" id="pickAll" type="button">全选</button>' +
                '<button class="chip" id="pickNone" type="button">全不选</button>' +
-               '<span class="pick-tip">按住往下拖可以连选，Shift 点一行选中间一段</span>' : '');
+               '<span class="pick-tip">按住往下拖可以连选，Shift 点一行选中间一段，按 Esc 退出选择</span>' : '');
 }
 function wirePickBar(list, redraw) {
   var t = document.getElementById('pickToggle');
@@ -911,13 +913,17 @@ function renderHome() {
 }
 
 /* ================= UNIT ================= */
+function unitBase(u) { return unitMeta(u).t || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书第 ' + u + ' 页'); }
+function unitEyebrow(u) {
+  return (store.uname[u] ? store.uname[u] + '（原来是 ' + unitBase(u) + '）' : unitBase(u)) + ' · ' + unitMeta(u).n + ' 词';
+}
 function unitHeader(u, tab) {
   var meta = unitMeta(u);
   var n = unitWords(u).filter(shaky).length;
   return '<button class="back" id="back" type="button">← 返回目录</button>' +
     '<div class="unit-head"><div>' +
-      '<p class="eyebrow">' + esc(meta.t || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书第 ' + u + ' 页')) +
-        ' · ' + meta.n + ' 词</p>' +
+      '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
+        '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
       '<h1>' + esc(meta.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(meta.b) + '</h1>' +
     '</div>' +
     '<div class="head-tools">' +
@@ -938,6 +944,8 @@ function wireHeader(u) {
     startReview(unitWords(u).filter(shaky), unitShort(u) + ' 错词',
       { name: 'unit', u: u, tab: 'browse' });
   };
+  var rn = document.getElementById('renameUnit');
+  if (rn) rn.onclick = function () { openRename(u); };
   var dr = document.getElementById('dropUnit');
   if (dr) dr.onclick = function () {
     if (!confirm('删掉这个导入的单元？里面的词和它们的进度都会一起没有。')) return;
@@ -1424,7 +1432,7 @@ function cardHtml(w, revealed, u) {
   var col = colOf(w.i);
   return '<div class="wcard ' + cls(w.i) + '" data-col="' + col + '">' +
     '<div class="stamp" id="stamp">已掌握</div>' +
-    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : (unitMeta(u).t || 'UNIT ' + String(u).padStart(2, '0'))) +
+    '<div class="w-no">NO. ' + w.i + ' · ' + esc(w.d ? '错词本 ' + w.d : unitShort(u)) +
       (seq ? '<span class="w-seq">第 ' + seq + (tot ? ' / ' + tot : '') + ' 个</span>' : '') +
       tags + '</div>' +
     '<div class="w-head"><h2 class="w-word' + (/\s/.test(w.w) ? ' phrase' : '') + '">' + esc(w.w) + '</h2>' +
@@ -1843,7 +1851,7 @@ function renderQuiz(u, sel) {
     if (mo) mo.onclick = function () { quiz = buildQuiz(key, pool, quiz.swept); renderQuiz(u, sel); };
     var sq = document.getElementById('sweepQuiz');
     if (sq) sq.onclick = function () {
-      startReview(missed, (sel ? '选中的词' : all ? '错词' : 'UNIT ' + String(u).padStart(2, '0')) + '测验错题', back);
+      startReview(missed, (sel ? '选中的词' : all ? '错词' : unitShort(u)) + '测验错题', back);
     };
     return;
   }
@@ -2861,6 +2869,31 @@ function paintMerge() {
 /* 面板可以加到「我加的词」，也可以加到某个导入的单元里；
    editing 有值时是在改某一条，不是新增。（第八次优化 3） */
 var addTarget = MANUAL_U, editing = null;
+var renaming = null;
+function openRename(u) {
+  var c = customUnit(u), inp = document.getElementById('renameIn');
+  renaming = u;
+  inp.value = unitName(u);
+  inp.placeholder = unitBase(u);
+  document.getElementById('renameNote').textContent = c
+    ? '只改名字，词和学习进度都不动。'
+    : '只改名字，词和学习进度都不动。留空保存就换回原名：' + unitBase(u);
+  document.getElementById('renameModal').hidden = false;
+  inp.focus(); inp.select();
+}
+function saveRename() {
+  var inp = document.getElementById('renameIn'), name = inp.value.trim(), c = customUnit(renaming);
+  if (c) {
+    if (!name) { inp.focus(); return; }
+    c.t = name;
+  } else if (!name || name === unitMeta(renaming).t) delete store.uname[renaming];
+  else store.uname[renaming] = name;
+  save(); mountCustom();
+  document.getElementById('renameModal').hidden = true;
+  /* 测验、拼写做到一半不能重画，这道题答过的样子会没了，只换标题那行字 */
+  if (route.tab === 'quiz' || route.tab === 'spell') document.getElementById('unitEyebrow').textContent = unitEyebrow(renaming);
+  else render();
+}
 function openAdd(u, word) {
   addTarget = u == null ? MANUAL_U : u;
   editing = word || null;
@@ -3205,6 +3238,14 @@ var addM = document.getElementById('addModal');
 document.getElementById('closeAdd').onclick = function () { addM.hidden = true; };
 addM.addEventListener('click', function (e) { if (e.target === addM) addM.hidden = true; });
 document.getElementById('addGo').onclick = addWord;
+var rnM = document.getElementById('renameModal');
+document.getElementById('closeRename').onclick = function () { rnM.hidden = true; };
+rnM.addEventListener('click', function (e) { if (e.target === rnM) rnM.hidden = true; });
+document.getElementById('renameGo').onclick = saveRename;
+document.getElementById('renameIn').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { e.preventDefault(); saveRename(); }
+  else if (e.key === 'Escape') { e.stopPropagation(); rnM.hidden = true; }
+});
 ['addW', 'addP', 'addZ'].forEach(function (id) {
   document.getElementById(id).addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { e.preventDefault(); addWord(); }
@@ -3248,7 +3289,14 @@ document.addEventListener('keydown', function (e) {
     return;
   }
   if (e.key === '/') { e.preventDefault(); si.focus(); return; }
-  if (e.key === 'Escape') { modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; return; }
+  if (e.key === 'Escape') {
+    /* 有弹窗先关弹窗；没有弹窗、又开着选择模式，就退出选择（第二十九次优化），已勾的词留着 */
+    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden;
+    modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; rnM.hidden = true;
+    var pt = !pop && picking && document.getElementById('pickToggle');
+    if (pt) pt.click();
+    return;
+  }
   if (route.name === 'quiz' || (route.name === 'unit' && route.tab === 'quiz')) { quizKey(e); return; }
   if (route.name === 'review' && route.order && !route.deck.length && !route.peek) {   // 全部过完的页面
     if (e.key === 'ArrowRight') { e.preventDefault(); cycleReview(1); }

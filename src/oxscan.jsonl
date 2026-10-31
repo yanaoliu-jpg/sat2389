@@ -800,7 +800,6 @@
 {"w":"cautious","e":[{"h":"cautious","pos":["adjective"],"gb":"uk_pron/c/cau/cauti/cautious__gb_2.mp3","gi":["/ˈkɔːʃəs/"],"us":"us_pron/c/cau/cauti/cautious__us_1.mp3","ui":["/ˈkɔːʃəs/"]}]}
 {"w":"cavern","e":[{"h":"cavern","pos":["noun"],"gb":"uk_pron/c/cav/caver/cavern__gb_2.mp3","gi":["/ˈkævən/"],"us":"us_pron/c/cav/caver/cavern__us_1.mp3","ui":["/ˈkævərn/"]}]}
 {"w":"cavity","e":[{"h":"cavity","pos":["noun"],"gb":"uk_pron/c/cav/cavit/cavity__gb_3.mp3","gi":["/ˈkævəti/"],"us":"us_pron/c/cav/cavit/cavity__us_1.mp3","ui":["/ˈkævəti/"]}]}
-{"w":"cd /Users/liuyanao/Desktop/SAT2300词汇整理/sat2300-web && pbpaste | python3 src/update_pron.py - --push","e":[]}
 {"w":"cease","e":[{"h":"cease","pos":["verb"],"gb":"uk_pron/c/cea/cease/cease__gb_2.mp3","gi":["/siːs/"],"us":"us_pron/c/cea/cease/cease__us_1.mp3","ui":["/siːs/","/siːs/","/siːs/","/ˈsiːsɪz/","/ˈsiːsɪz/","/siːst/","/siːst/","/siːst/","/siːst/","/ˈsiːsɪŋ/","/ˈsiːsɪŋ/"]}]}
 {"w":"celebrate","e":[{"h":"celebrate","pos":["verb"],"gb":"uk_pron/c/cel/celeb/celebrate__gb_1.mp3","gi":["/ˈselɪbreɪt/"],"us":"us_pron/c/cel/celeb/celebrate__us_1.mp3","ui":["/ˈselɪbreɪt/","/ˈselɪbreɪt/","/ˈselɪbreɪt/","/ˈselɪbreɪts/","/ˈselɪbreɪts/","/ˈselɪbreɪtɪd/","/ˈselɪbreɪtɪd/","/ˈselɪbreɪtɪd/","/ˈselɪbreɪtɪd/","/ˈselɪbreɪtɪŋ/","/ˈselɪbreɪtɪŋ/"]}]}
 {"w":"celebrity","e":[{"h":"celebrity","pos":["noun"],"gb":"uk_pron/c/cel/celeb/celebrity__gb_1.mp3","gi":["/səˈlebrəti/"],"us":"us_pron/c/cel/celeb/celebrity__us_1.mp3","ui":["/səˈlebrəti/"]}]}
