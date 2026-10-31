@@ -302,6 +302,12 @@ function phraseClips(table, text, gb) {
   return out;
 }
 
+/* 一批词的指纹（第三十二次优化）：只看有哪些词，不看顺序。
+   测验、拼写做到一半退出去再回来时靠它发现题库变没变；浏览页换个排序不算变。 */
+function poolSig(pool) {
+  return pool.map(function (w) { return w.i; }).sort(function (a, b) { return a - b; }).join(',');
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -310,6 +316,7 @@ if (typeof module !== 'undefined' && module.exports) {
     phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell,
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
-    pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses
+    pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
+    poolSig: poolSig
   };
 }

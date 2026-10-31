@@ -1958,7 +1958,7 @@ function buildQuiz(key, pool, swept) {
     return { w: w, cloze: cloze, src: src, sent: src ? blankOut(src.e, w.w) : '',
              opts: shuffle([w].concat(distractors(w, 3))) };
   });
-  return { key: key, qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], good: [], swept: done };
+  return { key: key, sig: poolSig(pool), qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], good: [], swept: done };
 }
 function renderQuiz(u, sel) {
   var all = u == null;
@@ -1986,7 +1986,9 @@ function renderQuiz(u, sel) {
     wire();
     return;
   }
-  if (!quiz || quiz.key !== key) quiz = buildQuiz(key, pool);
+  /* 做到一半退出去，错词、生词本或选中的词变了，就按新题库重新开始，不接着考旧题（第三十二次优化）。
+     结算页不算：「还有 N 个没抽到」本来就按现在的题库算，这一页标认识也不能把成绩冲掉 */
+  if (!quiz || quiz.key !== key || (!over && quiz.sig !== poolSig(pool))) quiz = buildQuiz(key, pool);
   if (quiz.at >= quiz.qs.length) {
     var missed = quiz.wrong.slice();
     var rest = pool.filter(function (w) { return !quiz.swept[w.i]; }).length;
@@ -2143,7 +2145,7 @@ function buildSpell(key, pool, swept) {
   var n = +store.set.qn || 0, ws = shuffle(left);
   if (n > 0) ws = ws.slice(0, Math.min(n, ws.length));
   ws.forEach(function (w) { done[w.i] = 1; });
-  return { key: key, ws: ws, at: 0, right: 0, hinted: 0, wrong: [], answered: false, hint: 0, swept: done };
+  return { key: key, sig: poolSig(pool), ws: ws, at: 0, right: 0, hinted: 0, wrong: [], answered: false, hint: 0, swept: done };
 }
 function normSp(t) {
   /* 先并空格再 trim，最后才削句末标点 —— 顺序反了的话，
@@ -2188,7 +2190,8 @@ function renderSpell(u, sel) {
     wire();
     return;
   }
-  if (!spell || spell.key !== key) spell = buildSpell(key, pool);
+  if (!spell || spell.key !== key ||
+      (spell.at < spell.ws.length && spell.sig !== poolSig(pool))) spell = buildSpell(key, pool);   // 跟测验一样，写到一半题库变了就重新开始
 
   if (spell.at >= spell.ws.length) {
     var miss = spell.wrong.slice();

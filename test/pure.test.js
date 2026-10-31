@@ -5,7 +5,7 @@
    填空定位都在评论里留了「第 N 次优化踩过的坑」，测试就照着那些坑写。 */
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { parseLine, parseTable, mergeRows, lcsMark, blankAt } = require('../pure.js');
+const { parseLine, parseTable, mergeRows, lcsMark, blankAt, poolSig } = require('../pure.js');
 
 test('parseLine：几种常见写法都认得出来', () => {
   assert.deepEqual(parseLine('1. abate /əˈbeɪt/ v.减弱'), { w: 'abate', p: 'əˈbeɪt', z: 'v.减弱' });
@@ -100,4 +100,15 @@ test('blankAt：严格变形找不到时，退回前缀式，接住 abatement �
   const m = blankAt('The judge granted a partial abatement of the fine.', 'abate');
   assert.ok(m);
   assert.equal(m[0], 'abate');   // 前缀式不卡后词界，挖到的只是 "abatement" 里打头的 "abate"
+});
+
+test('poolSig：同一批词换了顺序还是同一个题库（第三十二次优化）', () => {
+  assert.equal(poolSig([{ i: 3 }, { i: 10 }, { i: 2 }]), poolSig([{ i: 10 }, { i: 2 }, { i: 3 }]));
+});
+
+test('poolSig：多一个词、少一个词、换一个词都算题库变了', () => {
+  const sig = poolSig([{ i: 1 }, { i: 2 }, { i: 3 }]);
+  assert.notEqual(poolSig([{ i: 1 }, { i: 2 }, { i: 3 }, { i: 4 }]), sig);
+  assert.notEqual(poolSig([{ i: 1 }, { i: 2 }]), sig);
+  assert.notEqual(poolSig([{ i: 1 }, { i: 2 }, { i: 9 }]), sig);
 });
