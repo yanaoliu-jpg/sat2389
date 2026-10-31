@@ -36,6 +36,7 @@
   --ink:oklch(.24 calc(.03*var(--tc)) var(--th)); --ink-2:oklch(.48 calc(.05*var(--tc)) var(--th));
   --ink-3:oklch(.62 calc(.05*var(--tc)) var(--th)); --rule:oklch(.84 calc(.05*var(--tc)) var(--th));
   --rule-2:oklch(.89 calc(.04*var(--tc)) var(--th));
+  --ground-z:oklch(.915 calc(.075*var(--tc)) var(--th2));
 }
 @media (prefers-color-scheme: dark){
   :root[data-tone]:not([data-theme="light"]){
@@ -44,6 +45,7 @@
   --ink:oklch(.94 calc(.012*var(--tc)) var(--th)); --ink-2:oklch(.72 calc(.035*var(--tc)) var(--th));
   --ink-3:oklch(.57 calc(.035*var(--tc)) var(--th)); --rule:oklch(.33 calc(.04*var(--tc)) var(--th));
   --rule-2:oklch(.29 calc(.035*var(--tc)) var(--th));
+  --ground-z:oklch(.2 calc(.04*var(--tc)) var(--th2));
   }
 }
 :root[data-tone][data-theme="dark"]{
@@ -52,6 +54,7 @@
   --ink:oklch(.94 calc(.012*var(--tc)) var(--th)); --ink-2:oklch(.72 calc(.035*var(--tc)) var(--th));
   --ink-3:oklch(.57 calc(.035*var(--tc)) var(--th)); --rule:oklch(.33 calc(.04*var(--tc)) var(--th));
   --rule-2:oklch(.29 calc(.035*var(--tc)) var(--th));
+  --ground-z:oklch(.2 calc(.04*var(--tc)) var(--th2));
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -59,6 +62,13 @@ body{
   background:var(--ground); color:var(--ink); font-family:var(--han);
   font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
   min-height:100vh; overflow-x:hidden;
+}
+/* 渐变背景（第三十三次优化，app.js applyTone）：--th 起点、--th2 终点，只铺页面底色，卡片和文字还是按 --th 算。
+   顶栏和排序栏用同一张 fixed 的渐变才接得上，不然它们那层单色在渐变上是一道色带。
+   不认识 in oklch 的旧浏览器走不进 @supports，留着单色底 */
+@supports (background:linear-gradient(in oklch,red,blue)){
+  :root[data-grad] body,:root[data-grad] .topbar,:root[data-grad] .sortbar{
+    background:linear-gradient(160deg in oklch,var(--ground),var(--ground-z)) fixed}
 }
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2.5px solid var(--seal); outline-offset:2px; border-radius:4px}
@@ -678,14 +688,23 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 /* ---------- 3. 颜色分组 ---------- */
 :root{
   --c1:#c0362c; --c2:#c2701a; --c3:#94820f; --c4:#2f7d52; --c5:#3a6a9c; --c6:#7a4b8f;
+  /* 渐变三色（第三十三次优化）：a、b 是两端，深色模式只换这两个数。
+     两头各留 25% 纯色，答题卡上 6px 的小点才看得出两种颜色，不然糊成中间色，极光和蓝分不开；
+     末尾的 border-box 让渐变铺到半透明描边底下，不然描边那一圈会露出平铺回来的另一端颜色 */
+  --c7a:#c0362c; --c7b:#e08a1e; --c8a:#2f62a8; --c8b:#1f9aa8; --c9a:#2f8d62; --c9b:#7a4bb0;
+  --c7:linear-gradient(135deg,var(--c7a) 25%,var(--c7b) 75%) border-box;
+  --c8:linear-gradient(135deg,var(--c8a) 25%,var(--c8b) 75%) border-box;
+  --c9:linear-gradient(135deg,var(--c9a) 25%,var(--c9b) 75%) border-box;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
   --c1:#e4685b; --c2:#e0913f; --c3:#c9a036; --c4:#5cb98a; --c5:#68b6d4; --c6:#b487cf;
+  --c7a:#e4685b; --c7b:#f0a84a; --c8a:#5b93dc; --c8b:#55d0d6; --c9a:#5cc98f; --c9b:#b487e0;
   }
 }
 :root[data-theme="dark"]{
   --c1:#e4685b; --c2:#e0913f; --c3:#c9a036; --c4:#5cb98a; --c5:#68b6d4; --c6:#b487cf;
+  --c7a:#e4685b; --c7b:#f0a84a; --c8a:#5b93dc; --c8b:#55d0d6; --c9a:#5cc98f; --c9b:#b487e0;
 }
 .cdot{width:17px;height:17px;border-radius:99px;border:1px solid #0002;cursor:pointer;padding:0;
   line-height:1;transition:.14s}
@@ -693,6 +712,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .cdot.on{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink)}
 .cdot.c1{background:var(--c1)} .cdot.c2{background:var(--c2)} .cdot.c3{background:var(--c3)}
 .cdot.c4{background:var(--c4)} .cdot.c5{background:var(--c5)} .cdot.c6{background:var(--c6)}
+.cdot.c7{background:var(--c7)} .cdot.c8{background:var(--c8)} .cdot.c9{background:var(--c9)}
 .cdot.cnone{background:none;border:1px solid var(--rule);color:var(--ink-3);font-size:.72rem;
   font-family:var(--util)}
 .cdot.cnone:hover{border-color:var(--ink-2);color:var(--ink)}
@@ -700,11 +720,15 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .selbar-cols{padding-left:4px;border-left:1px solid var(--rule)}
 
 /* 行左边的颜色边条 */
-.row[data-col=""]{box-shadow:none}
-.row[data-col]:not([data-col=""]){box-shadow:inset 3px 0 0 var(--cc)}
+/* box-shadow 画不了渐变，第三十三次优化换成伪元素；.row.found 那道朱红边条闪的时候先让开 */
+.row[data-col]:not([data-col=""]){position:relative}
+.row[data-col]:not([data-col=""])::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--cc)}
+.row.found::before{opacity:0}
 .row[data-col="c1"]{--cc:var(--c1)} .row[data-col="c2"]{--cc:var(--c2)}
 .row[data-col="c3"]{--cc:var(--c3)} .row[data-col="c4"]{--cc:var(--c4)}
 .row[data-col="c5"]{--cc:var(--c5)} .row[data-col="c6"]{--cc:var(--c6)}
+.row[data-col="c7"]{--cc:var(--c7)} .row[data-col="c8"]{--cc:var(--c8)} .row[data-col="c9"]{--cc:var(--c9)}
 
 /* 单元里的分组条 */
 .colbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 18px;
@@ -714,6 +738,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .chip-col i{width:9px;height:9px;border-radius:99px;background:var(--cc);border:1px solid #0002}
 .chip-col.c1{--cc:var(--c1)} .chip-col.c2{--cc:var(--c2)} .chip-col.c3{--cc:var(--c3)}
 .chip-col.c4{--cc:var(--c4)} .chip-col.c5{--cc:var(--c5)} .chip-col.c6{--cc:var(--c6)}
+.chip-col.c7{--cc:var(--c7)} .chip-col.c8{--cc:var(--c8)} .chip-col.c9{--cc:var(--c9)}
 .chip-col.on i{box-shadow:0 0 0 1.5px var(--ground)}
 .col-tip{color:var(--ink-3);font-size:.72rem;line-height:1.6}
 
@@ -724,6 +749,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .col-b.on{border-style:solid;border-color:#0002}
 .col-b.on.c1{background:var(--c1)} .col-b.on.c2{background:var(--c2)} .col-b.on.c3{background:var(--c3)}
 .col-b.on.c4{background:var(--c4)} .col-b.on.c5{background:var(--c5)} .col-b.on.c6{background:var(--c6)}
+.col-b.on.c7{background:var(--c7)} .col-b.on.c8{background:var(--c8)} .col-b.on.c9{background:var(--c9)}
 .col-pop{display:flex;gap:8px;flex-wrap:wrap;width:max-content;max-width:100%;
   margin:12px 0 2px;padding:8px 13px;border:1px solid var(--rule);border-radius:99px;
   background:var(--card-2)}
@@ -733,6 +759,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .wcard[data-col="c1"]{--cc:var(--c1)} .wcard[data-col="c2"]{--cc:var(--c2)}
 .wcard[data-col="c3"]{--cc:var(--c3)} .wcard[data-col="c4"]{--cc:var(--c4)}
 .wcard[data-col="c5"]{--cc:var(--c5)} .wcard[data-col="c6"]{--cc:var(--c6)}
+.wcard[data-col="c7"]{--cc:var(--c7)} .wcard[data-col="c8"]{--cc:var(--c8)} .wcard[data-col="c9"]{--cc:var(--c9)}
 
 /* ---------- 1. 合并单元 ---------- */
 .btn-ghost.on{background:var(--ink);border-color:var(--ink);color:var(--ground)}
@@ -824,11 +851,13 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .rail-b[data-col="c1"]{--cc:var(--c1)} .rail-b[data-col="c2"]{--cc:var(--c2)}
 .rail-b[data-col="c3"]{--cc:var(--c3)} .rail-b[data-col="c4"]{--cc:var(--c4)}
 .rail-b[data-col="c5"]{--cc:var(--c5)} .rail-b[data-col="c6"]{--cc:var(--c6)}
+.rail-b[data-col="c7"]{--cc:var(--c7)} .rail-b[data-col="c8"]{--cc:var(--c8)} .rail-b[data-col="c9"]{--cc:var(--c9)}
 .rail-cols{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:9px}
 .rail-cols .cl{display:flex;align-items:center;gap:5px}
 .rail-cols .cl i{width:9px;height:9px;border-radius:99px;background:var(--cc);border:1px solid #0002}
 .rail-cols .cl.c1{--cc:var(--c1)} .rail-cols .cl.c2{--cc:var(--c2)} .rail-cols .cl.c3{--cc:var(--c3)}
 .rail-cols .cl.c4{--cc:var(--c4)} .rail-cols .cl.c5{--cc:var(--c5)} .rail-cols .cl.c6{--cc:var(--c6)}
+.rail-cols .cl.c7{--cc:var(--c7)} .rail-cols .cl.c8{--cc:var(--c8)} .rail-cols .cl.c9{--cc:var(--c9)}
 
 /* ---------- 6. 答题卡上圈选一段词 ---------- */
 .rail.picking .rail-grid{user-select:none}

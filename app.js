@@ -18,7 +18,7 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
-                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, chroma: 30, uprog: 'mosaic',
+                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: 'deepseek-chat' };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
@@ -103,13 +103,21 @@ function applyTheme() {
 /* 背景色调（第二十八次优化）：hue 是色相（0–360），null 就是原来那套青灰；chroma 是浓淡（0–100）。
    底色、卡片、线条、文字全由这两个数在 app.css 的 [data-tone] 里推出来，朱红不跟着变。 */
 var TONES = [['青灰', null, 30], ['雾蓝', 240, 35], ['海青', 200, 35], ['薄荷', 165, 40], ['苔绿', 125, 40],
-             ['米杏', 85, 35], ['蜜桃', 50, 35], ['玫瑰', 10, 30], ['藕紫', 320, 30], ['鸢尾', 285, 35], ['纸灰', 0, 0]];
+             ['米杏', 85, 35], ['蜜桃', 50, 35], ['玫瑰', 10, 30], ['藕紫', 320, 30], ['鸢尾', 285, 35], ['纸灰', 0, 0],
+             ['日落', 25, 60, 75], ['海洋', 255, 60, 195], ['极光', 155, 55, 300]];
+/* 第三十三次优化：第四个数是渐变的终点色相（store.set.hue2），没有就是单色 */
 function applyTone() {
-  var r = document.documentElement, h = store.set.hue;
+  var r = document.documentElement, h = store.set.hue, h2 = store.set.hue2;
   if (h === null || h === undefined) {
     r.removeAttribute('data-tone'); r.style.removeProperty('--th'); r.style.removeProperty('--tc');
+    h2 = null;
   } else {
     r.setAttribute('data-tone', ''); r.style.setProperty('--th', h); r.style.setProperty('--tc', store.set.chroma / 100);
+  }
+  if (h2 === null || h2 === undefined) {
+    r.removeAttribute('data-grad'); r.style.removeProperty('--th2');
+  } else {
+    r.setAttribute('data-grad', ''); r.style.setProperty('--th2', h2);
   }
 }
 function applyZh() {
@@ -549,7 +557,9 @@ function gen(w) { return store.gen[w.w] || []; }
    一个单元几百个词，一口气背不完。给词标个颜色，就能把一个单元切成几小批：
    标完之后浏览页上多一排颜色，点一下只看这一批，学习、测验、拼写都跟着只走这一批。
    颜色只是分组，跟「认识／不认识」两码事，互不影响。 */
-var COLORS = [['c1', '红'], ['c2', '橙'], ['c3', '黄'], ['c4', '绿'], ['c5', '蓝'], ['c6', '紫']];
+/* 后三个是渐变色（第三十三次优化），两端颜色在 app.css 的 --c7a、--c7b 这些变量里；快捷键 4–9 只管前六个 */
+var COLORS = [['c1', '红'], ['c2', '橙'], ['c3', '黄'], ['c4', '绿'], ['c5', '蓝'], ['c6', '紫'],
+              ['c7', '日落'], ['c8', '海洋'], ['c9', '极光']];
 function colOf(i) { return store.col[i] || ''; }
 function setCol(i, c) { if (c) store.col[i] = c; else delete store.col[i]; dropOrder(); }
 function colName(c) { var n = ''; COLORS.forEach(function (x) { if (x[0] === c) n = x[1]; }); return n; }
@@ -563,7 +573,7 @@ function colDots(cls, cur, keys) {
   return '<span class="' + cls + '">' +
     COLORS.map(function (c, n) {
       return '<button class="cdot ' + c[0] + (cur === c[0] ? ' on' : '') + '" data-col="' + c[0] +
-        '" type="button" title="标成' + c[1] + '色' + (keys ? '（按 ' + (n + 4) + '）' : '') +
+        '" type="button" title="标成' + c[1] + '色' + (keys && n < 6 ? '（按 ' + (n + 4) + '）' : '') +
         '" aria-label="标成' + c[1] + '色"></button>';
     }).join('') +
     '<button class="cdot cnone" data-col="" type="button" title="不标颜色' +
@@ -3314,6 +3324,14 @@ si.addEventListener('input', function () {
     go({ name: 'search', q: q });
   }, 180);
 });
+/* 点进一个词之后框里还留着搜索词，文字没变就不会有 input 事件，所以点回来时要自己回到结果页。
+   手机上点词不一定让框失焦，再点框就没有 focus，click 也要听 */
+function backToHits() {
+  var q = si.value.trim();
+  if (q && route.name !== 'search') go({ name: 'search', q: q });
+}
+si.addEventListener('focus', backToHits);
+si.addEventListener('click', backToHits);
 document.getElementById('openStar').onclick = function () { dropOrder(); go({ name: 'unit', u: STAR_U, tab: 'browse' }); };
 var modal = document.getElementById('setModal');
 /* 设置分成几个分类（第三十一次优化）：原来三十来项排成一长条，要翻很久才找得到 */
@@ -3354,6 +3372,7 @@ var tHue = document.getElementById('setHue'), tChroma = document.getElementById(
     tSw = document.getElementById('toneSwatches');
 tSw.innerHTML = TONES.map(function (t, n) {
   var bg = t[1] === null ? '#dde6de' : 'oklch(.88 ' + (t[2] * .0016).toFixed(3) + ' ' + t[1] + ')';
+  if (t[3] !== undefined) bg = 'linear-gradient(135deg,' + bg + ',oklch(.88 ' + (t[2] * .0016).toFixed(3) + ' ' + t[3] + '))';
   return '<button class="tone-sw" data-tone-n="' + n + '" type="button" style="background:' + bg + '" title="' + t[0] +
     '" aria-label="背景换成' + t[0] + '"></button>';
 }).join('');
@@ -3362,16 +3381,22 @@ function paintTone() {
   tHue.value = h === null || h === undefined ? 150 : h; tChroma.value = store.set.chroma;
   Array.prototype.forEach.call(tSw.children, function (b) {
     var t = TONES[+b.dataset.toneN];
-    b.classList.toggle('on', t[1] === h && (h === null || t[2] === store.set.chroma));
+    b.classList.toggle('on', t[1] === h && (h === null || t[2] === store.set.chroma) &&
+      (t[3] === undefined ? null : t[3]) === store.set.hue2);
   });
 }
 tSw.onclick = function (e) {
   var b = e.target.closest ? e.target.closest('.tone-sw') : null;
   if (!b) return;
   var t = TONES[+b.dataset.toneN];
-  store.set.hue = t[1]; store.set.chroma = t[2]; save(); applyTone(); paintTone();
+  store.set.hue = t[1]; store.set.hue2 = t[3] === undefined ? null : t[3]; store.set.chroma = t[2];
+  save(); applyTone(); paintTone();
 };
-tHue.oninput = tChroma.oninput = function () {
+/* 拖色相等于自己挑一个颜色，渐变收回成单色；拖浓淡只改深浅，渐变留着 */
+tHue.oninput = function () {
+  store.set.hue = +tHue.value; store.set.hue2 = null; store.set.chroma = +tChroma.value; applyTone(); paintTone();
+};
+tChroma.oninput = function () {
   store.set.hue = +tHue.value; store.set.chroma = +tChroma.value; applyTone(); paintTone();
 };
 tHue.onchange = tChroma.onchange = function () { save(); };
