@@ -2058,12 +2058,12 @@ function renderQuiz(u, sel) {
       return '<button class="opt" data-i="' + o.i + '" data-n="' + (n + 1) + '" type="button">' +
         '<span class="k">' + (n + 1) + '</span><span>' + esc(q.cloze ? o.w : o.z) + '</span></button>';
     }).join('') +
-      '<button class="opt opt-idk" id="idk" type="button">' +
-        '<span class="k">0</span><span>不会 · 直接看答案</span></button>' +
+      '<button class="opt opt-idk" id="idk" type="button"><span>不会 · 直接看答案</span></button>' +
     '</div>' +
     '<div id="quizAfter"></div>' +
     '<p class="quiz-foot">第 ' + (quiz.at + 1) + ' / ' + quiz.qs.length + ' 题 · 已答对 ' + quiz.right +
-      '　<span class="q-keys">按 <kbd>1</kbd>–<kbd>4</kbd> 选，<kbd>0</kbd> 不会</span></p></div>';
+      '　<span class="q-keys">按 <kbd>1</kbd>–<kbd>4</kbd> 选，<kbd>回车</kbd> 看答案</span></p></div>';
+  quiz.shownAt = Date.now();
   wire();
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) { b.onclick = function () { speak(b.dataset.say, b); }; });
 
@@ -2120,9 +2120,13 @@ function renderQuiz(u, sel) {
     b.onclick = function () { settle(b, +b.dataset.i === q.w.i ? 'right' : 'wrong'); };
   });
   /* 蒙一个也是 25% 的概率，蒙对了反而以为自己会了。
-     给一个「不会」，按下去直接看答案，记一次错过。（第八次优化 5） */
+     按回车直接看答案，记一次错过（第八次优化 5，第三十五次优化换成回车）。
+     手机上没有回车键，这个按钮只在触屏上显示。 */
   document.getElementById('idk').onclick = function () { settle(null, 'idk'); };
 }
+/* 回车看答案会记一次错过，所以按住回车、连按回车翻到新题时不算（第三十五次优化） */
+var REVEAL_GUARD = 300;
+function revealTooSoon(e, shownAt) { return e.repeat || Date.now() - shownAt < REVEAL_GUARD; }
 /* 测验里的键盘操作（第五次优化 4） */
 function quizKey(e) {
   if (!quiz) return false;
@@ -2135,9 +2139,13 @@ function quizKey(e) {
     var b = view.querySelector('.opt[data-n="' + e.key + '"]');
     if (b) { e.preventDefault(); b.click(); return true; }
   }
-  if (e.key === '0') {
-    var idk = document.getElementById('idk');
-    if (idk) { e.preventDefault(); idk.click(); return true; }
+  if (e.key === 'Enter') {
+    /* 焦点在别的按钮上（Tab 到选项）回车还是按那个按钮；喇叭点过之后焦点留在上面，不算 */
+    var fb = e.target.closest && e.target.closest('button,a');
+    if (fb && !fb.classList.contains('speak')) return false;
+    e.preventDefault();
+    if (!revealTooSoon(e, quiz.shownAt)) quiz.settle(null, 'idk');
+    return true;
   }
   return false;
 }
@@ -2253,11 +2261,10 @@ function renderSpell(u, sel) {
     '</p>' +
     '<p class="sp-shape">' + spShape(w.w, spell.hint) + '</p>' +
     '<div class="sp-box"><input id="spIn" type="text" autocomplete="off" autocapitalize="off" ' +
-      'autocorrect="off" spellcheck="false" placeholder="在这儿拼"></div>' +
+      'autocorrect="off" spellcheck="false" placeholder="在这儿拼，不会就直接回车"></div>' +
     '<div class="sp-acts">' +
       '<button class="btn" id="spGo" type="button">对答案 <span class="q-keys">回车</span></button>' +
       '<button class="chip" id="spHint" type="button">提示 · 露一个字母</button>' +
-      '<button class="chip" id="spIdk" type="button">不会 · 直接看</button>' +
     '</div>' +
     '<div id="spAfter"></div>' +
     '<p class="quiz-foot">第 ' + (spell.at + 1) + ' / ' + spell.ws.length + ' 个 · 已写对 ' + spell.right + '</p></div>';
@@ -2267,12 +2274,13 @@ function renderSpell(u, sel) {
   });
   ydPrefetch(w, spell.ws[spell.at + 1]);
 
-  var inp = document.getElementById('spIn');
+  var inp = document.getElementById('spIn'), shownAt = Date.now();
   function next() { spell.at++; spell.answered = false; spell.hint = 0; renderSpell(u, sel); }
-  function check(how) {
+  function check() {
     if (spell.answered) return;
     var typed = inp.value || '';
-    if (how !== 'idk' && !normSp(typed)) { inp.focus(); return; }
+    /* 框里是空的就是不会，直接看（第三十五次优化） */
+    var how = normSp(typed) ? 'go' : 'idk';
     spell.answered = true;
     var ok = how !== 'idk' && normSp(typed) === normSp(w.w);
     inp.disabled = true;
@@ -2310,10 +2318,12 @@ function renderSpell(u, sel) {
     nb.focus();
   }
   inp.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); check('go'); }
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (!normSp(inp.value) && revealTooSoon(e, shownAt)) return;
+    check();
   });
-  document.getElementById('spGo').onclick = function () { check('go'); };
-  document.getElementById('spIdk').onclick = function () { check('idk'); };
+  document.getElementById('spGo').onclick = check;
   document.getElementById('spHint').onclick = function () {
     if (spell.answered) return;
     spell.hint = Math.min(spell.hint + 1, w.w.length);
