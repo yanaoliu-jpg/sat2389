@@ -375,6 +375,22 @@ function cleanSense(o, word) {
   return { g: g, a: a, n: n.slice(0, 3) };
 }
 
+/* DeepSeek 官方把 deepseek-chat、deepseek-reasoner 列为停用，存过这两个名字的设置换成新的 */
+function dsModel(m) {
+  return !m || /^deepseek-(chat|reasoner)$/.test(m) ? 'deepseek-flash' : m;
+}
+/* 新模型默认开思考模式，这里不需要，关掉才和原来的 deepseek-chat 一样快，1500 也够用 */
+function dsBody(prompt, model, plain) {
+  var body = {
+    model: dsModel(model),
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 1500,
+    thinking: { type: 'disabled' }
+  };
+  if (!plain) body.response_format = { type: 'json_object' };
+  return body;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -386,6 +402,7 @@ if (typeof module !== 'undefined' && module.exports) {
     renumberCollidingCustom: renumberCollidingCustom,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
     poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
-    SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense
+    SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense,
+    dsModel: dsModel, dsBody: dsBody
   };
 }

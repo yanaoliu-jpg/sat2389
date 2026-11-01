@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { nearOrder, cleanSense, sensePrompt } = require('../pure.js');
+const { nearOrder, cleanSense, sensePrompt, dsModel, dsBody } = require('../pure.js');
 
 const win = {};
 const ctx = vm.createContext({ window: win });
@@ -105,4 +105,20 @@ test('sensePrompt：没有例句时不写例句这一行，范例里不出现要
   assert.ok(!p.includes('例句：'));
   assert.ok(!p.includes(SENSE.flimsy.g));
   assert.ok(p.includes(SENSE.terse.g));
+});
+
+test('dsModel：停用的旧名字和空值换成 deepseek-flash，其他的不动', function () {
+  ['deepseek-chat', 'deepseek-reasoner', '', undefined].forEach(function (m) {
+    assert.strictEqual(dsModel(m), 'deepseek-flash');
+  });
+  assert.strictEqual(dsModel('deepseek-v4-pro'), 'deepseek-v4-pro');
+});
+
+test('dsBody：关掉思考模式，按需要 JSON', function () {
+  const b = dsBody('问题', 'deepseek-chat');
+  assert.strictEqual(b.model, 'deepseek-flash');
+  assert.deepEqual(b.messages, [{ role: 'user', content: '问题' }]);
+  assert.deepEqual(b.thinking, { type: 'disabled' });
+  assert.deepEqual(b.response_format, { type: 'json_object' });
+  assert.ok(!('response_format' in dsBody('问题', 'deepseek-flash', true)));
 });

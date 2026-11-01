@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { SENSE_SHOTS, sensePrompt, cleanSense } = require('../pure.js');
+const { SENSE_SHOTS, sensePrompt, cleanSense, dsBody } = require('../pure.js');
 
 const KEY = process.env.DEEPSEEK_API_KEY;
 if (!KEY) { console.error('没有 DEEPSEEK_API_KEY。'); process.exit(1); }
@@ -26,12 +26,7 @@ async function ask(prompt, again) {
   const res = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: 'Bearer ' + KEY },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 1500,
-      response_format: { type: 'json_object' }
-    })
+    body: JSON.stringify(dsBody(prompt))
   });
   const j = await res.json();
   if (!res.ok) throw new Error((j.error && j.error.message) || 'HTTP ' + res.status);

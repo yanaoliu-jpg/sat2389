@@ -515,7 +515,7 @@ python3 sat2300-web/src/devserver.py 8777
 
 ## AI 例句（可选）
 
-词卡最下面的「生成一句例句」可以临时给某个词再造一句。设置 → AI 例句里填 DeepSeek API Key（`api.deepseek.com`），模型可选 deepseek-chat（默认）/ deepseek-reasoner。第二十八次优化删掉了 Anthropic 和 Artifact 里直接问 Claude 这两条路，存过的 Anthropic Key 打开时一并清掉。
+词卡最下面的「生成一句例句」可以临时给某个词再造一句。设置 → AI 例句里填 DeepSeek API Key（`api.deepseek.com`），模型可选 deepseek-flash（默认）/ deepseek-v4-pro。第三十九次优化后，DeepSeek 官方列为停用的 deepseek-chat、deepseek-reasoner 换成 deepseek-flash，存过旧名字的设置打开时自动换；新模型默认开思考模式，请求里关掉（`pure.js` 的 `dsBody`）。第二十八次优化删掉了 Anthropic 和 Artifact 里直接问 Claude 这两条路，存过的 Anthropic Key 打开时一并清掉。
 
 **例句长度**可调（第八次优化 4）：短 10–15 词 / 中 16–24 词（和内置例句一致，默认）/ 长 25–35 词。
 

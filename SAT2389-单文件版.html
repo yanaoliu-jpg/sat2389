@@ -1252,8 +1252,8 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
           <label class="field">
             <span>模型</span>
             <select id="setDsModel">
-              <option value="deepseek-chat">deepseek-chat · 快，够用</option>
-              <option value="deepseek-reasoner">deepseek-reasoner · 先想一想，慢一些</option>
+              <option value="deepseek-flash">deepseek-flash · 快，够用</option>
+              <option value="deepseek-v4-pro">deepseek-v4-pro · 价格约 4 倍</option>
             </select>
           </label>
         </section>
@@ -15882,6 +15882,22 @@ function cleanSense(o, word) {
   return { g: g, a: a, n: n.slice(0, 3) };
 }
 
+/* DeepSeek 官方把 deepseek-chat、deepseek-reasoner 列为停用，存过这两个名字的设置换成新的 */
+function dsModel(m) {
+  return !m || /^deepseek-(chat|reasoner)$/.test(m) ? 'deepseek-flash' : m;
+}
+/* 新模型默认开思考模式，这里不需要，关掉才和原来的 deepseek-chat 一样快，1500 也够用 */
+function dsBody(prompt, model, plain) {
+  var body = {
+    model: dsModel(model),
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 1500,
+    thinking: { type: 'disabled' }
+  };
+  if (!plain) body.response_format = { type: 'json_object' };
+  return body;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -15893,7 +15909,8 @@ if (typeof module !== 'undefined' && module.exports) {
     renumberCollidingCustom: renumberCollidingCustom,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
     poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
-    SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense
+    SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense,
+    dsModel: dsModel, dsBody: dsBody
   };
 }
 /* ===== SAT 2389 · 背单词 ===== */
@@ -15918,7 +15935,7 @@ var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20, qkind: 'mix', qagain: true,
                 exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
-                dskey: '', dsmodel: 'deepseek-chat' };
+                dskey: '', dsmodel: dsModel() };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, sense: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
 for (var dk in DEF_SET) if (!(dk in store.set)) store.set[dk] = DEF_SET[dk];
@@ -15927,6 +15944,7 @@ if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort
   if (store.set.accent !== 'en-US' && store.set.accent !== 'en-GB') store.set.accent = 'en-US';
 }
 delete store.set.prov; delete store.set.key; delete store.set.model;   // 第二十八次优化只留 DeepSeek，旧的 Anthropic Key 不留在本地
+store.set.dsmodel = dsModel(store.set.dsmodel);
 if (store.set.sort === 'once' || store.set.sort === 'fresh') store.set.sort = 'book';   // 第二十八次优化删了这两种排序
 if (!(store.pv >= 2)) {                  // levels used to be {1 模糊, 2 认识}; 不认识 stored nothing
   var moved = {};
@@ -18435,19 +18453,13 @@ function aiPrompt(w) {
    所以浏览器可以直连，不用中间服务器。json_object 模式要求提示词里出现 json 字样，
    aiPrompt 结尾那句「Return only JSON」正好满足。 */
 function askViaDeepSeek(prompt, plain) {
-  var body = {
-    model: store.set.dsmodel || 'deepseek-chat',
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 1500
-  };
-  if (!plain) body.response_format = { type: 'json_object' };
   return fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
       'authorization': 'Bearer ' + aiKey()
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(dsBody(prompt, store.set.dsmodel, plain))
   }).then(function (res) {
     return res.json().then(function (j) { return { ok: res.ok, j: j }; });
   }).then(function (out) {
@@ -19515,7 +19527,7 @@ paintTone();
 var sup = document.getElementById('setUprog');
 sup.value = store.set.uprog;
 sup.onchange = function () { store.set.uprog = sup.value; save(); render(); };
-sd.value = store.set.dskey || ''; sdm.value = store.set.dsmodel || 'deepseek-chat';
+sd.value = store.set.dskey || ''; sdm.value = store.set.dsmodel;
 document.getElementById('rateVal').textContent = (+store.set.rate).toFixed(2);
 document.getElementById('volVal').textContent = Math.round(store.set.vol * 100) + '%';
 var DEMO = 'The storm finally abated, and the crew began repairing the torn sails before dawn.';
