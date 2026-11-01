@@ -17,7 +17,7 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 /* ---------- storage ---------- */
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
-                hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20,
+                hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20, qkind: 'mix', qagain: true,
                 exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: 'deepseek-chat' };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
@@ -2009,6 +2009,22 @@ function clozeCands(w) {
   });
   return out;
 }
+/* 题型（第三十七次优化）：store.set.qkind。默认混合：释义题考认不认得，填空题考用不用得对，
+   SAT 考词汇就是填空的样子，两种换着来也比一直做一种记得牢。
+   有例句的词混合时一半机会出成填空；句子从「内置 + 生成 + 自己写的」里随机挑一句 ——
+   自己让 AI 生成的例句在词卡上看过一遍，再挖空考一次，正好是第二次见面。 */
+var QKINDS = [['mix', '混合'], ['mean', '释义'], ['cloze', '填空']];
+function rollKind(q) {
+  var cand = clozeCands(q.w), was = q.again;     // again：这是重考，指向答错的那道题
+  q.cloze = was ? againCloze(store.set.qkind, was.cloze, !!cand.length)
+                : wantCloze(store.set.qkind, !!cand.length, Math.random());
+  /* 重考尽量换一句，刚看过答案的那句不用想就填得出 */
+  var fresh = was && was.src ? cand.filter(function (c) { return c.e !== was.src.e; }) : cand;
+  if (!fresh.length) fresh = cand;
+  q.src = q.cloze ? fresh[Math.floor(Math.random() * fresh.length)] : null;
+  q.sent = q.src ? blankOut(q.src.e, q.w.w) : '';
+  return q;
+}
 /* 每轮题数（第六次优化 1）。
    默认还是 20：一轮两三分钟，正好是retrieval练习该有的长度，再长准确率就掉了。
    真正卡人的从来不是这个上限，而是「剩下的词考没考到」看不见 ——
@@ -2023,16 +2039,9 @@ function buildQuiz(key, pool, swept) {
   if (n > 0) ws = ws.slice(0, Math.min(n, ws.length));
   ws.forEach(function (w) { done[w.i] = 1; });
   var qs = ws.map(function (w) {
-    /* 有例句的词有一半机会出成填空题，两种题型混着考；
-       句子从「内置 + 生成 + 自己写的」里随机挑一句 —— 自己让 AI 生成的例句
-       在词卡上看过一遍，再挖空考一次，正好是第二次见面。 */
-    var cand = clozeCands(w);
-    var cloze = !!cand.length && Math.random() < 0.5;
-    var src = cloze ? cand[Math.floor(Math.random() * cand.length)] : null;
-    return { w: w, cloze: cloze, src: src, sent: src ? blankOut(src.e, w.w) : '',
-             opts: shuffle([w].concat(distractors(w, 3))) };
+    return rollKind({ w: w, opts: shuffle([w].concat(distractors(w, 3))) });
   });
-  return { key: key, sig: poolSig(pool), qs: qs, at: 0, right: 0, answered: false, waiting: false, wrong: [], good: [], swept: done };
+  return { key: key, sig: poolSig(pool), qs: qs, total: qs.length, at: 0, right: 0, fixed: 0, answered: false, waiting: false, wrong: [], good: [], swept: done };
 }
 function renderQuiz(u, sel) {
   var all = u == null;
@@ -2067,10 +2076,11 @@ function renderQuiz(u, sel) {
     var missed = quiz.wrong.slice();
     var rest = pool.filter(function (w) { return !quiz.swept[w.i]; }).length;
     var good = quiz.good.filter(function (w) { return lvl(w.i) !== 3; });
-    view.innerHTML = head + '<div class="quiz-wrap"><div class="score"><b>' + quiz.right + '/' + quiz.qs.length + '</b>' +
+    view.innerHTML = head + '<div class="quiz-wrap"><div class="score"><b>' + quiz.right + '/' + quiz.total + '</b>' +
       '<p class="lede" style="margin:14px auto 22px;text-align:center">' +
       (missed.length ? '错了 ' + missed.length + ' 个：' + missed.map(function (w) { return esc(w.w); }).join('、')
                      : (sel ? '这批词你已经拿得很稳了。' : '这批错词你已经拿得很稳了。')) +
+      (quiz.fixed ? '<br><span class="score-rest">其中 ' + quiz.fixed + ' 个隔几题再考时答对了。</span>' : '') +
       (rest ? '<br><span class="score-rest">题库里还有 ' + rest + ' 个这一趟没抽到。</span>' : '') + '</p>' +
       (quiz.marked ? '<p class="good-done">已把 ' + quiz.marked + ' 个词标成认识。</p>' : '') +
       (good.length ? '<div class="score-good"><p class="good-tip">答对的 ' + good.length + ' 个词还没算认识。确实会的留着，蒙对的点一下去掉。</p>' +
@@ -2110,13 +2120,20 @@ function renderQuiz(u, sel) {
     return;
   }
   var q = quiz.qs[quiz.at];
+  var kind = (q.again ? '再考一次' : q.cloze ? '填空' : '释义') + ' · ' + (q.cloze ? '哪个词填进去合适'
+    : store.set.qkind === 'cloze' ? '这个词没有能填空的例句' : '这个词是什么意思');
+  var seen = quiz.qs.slice(0, quiz.at + 1).filter(function (x) { return !x.again; }).length;   // 重考不算题号
   var stem = q.cloze
-    ? '<p class="q-kind">填空 · 哪个词填进去合适</p><p class="q-cloze">' + q.sent + '</p>'
-    : '<p class="q-kind">释义 · 这个词是什么意思</p><h2 class="q-stem">' + esc(q.w.w) + '</h2>' +
+    ? '<p class="q-cloze">' + q.sent + '</p>'
+    : '<h2 class="q-stem">' + esc(q.w.w) + '</h2>' +
       '<p class="q-sub">/' + esc(ipaOf(q.w)) + '　<button class="speak" data-say="' + esc(q.w.w) +
       '" type="button" aria-label="朗读" style="width:28px;height:28px;flex:0 0 28px;vertical-align:middle">' + SPK + '</button></p>';
   view.innerHTML = head + '<div class="quiz-wrap">' +
     '<div class="quiz-prog"><i style="width:' + (quiz.at / quiz.qs.length * 100) + '%"></i></div>' +
+    '<div class="q-top"><p class="q-kind">' + kind + '</p>' +
+      '<div class="q-kinds" role="group" aria-label="题型">' + QKINDS.map(function (k) {
+        return '<button data-qk="' + k[0] + '" type="button" aria-pressed="' + (store.set.qkind === k[0]) + '">' + k[1] + '</button>';
+      }).join('') + '</div></div>' +
     stem +
     '<div class="opts">' + q.opts.map(function (o, n) {
       return '<button class="opt" data-i="' + o.i + '" data-n="' + (n + 1) + '" type="button">' +
@@ -2125,11 +2142,25 @@ function renderQuiz(u, sel) {
       '<button class="opt opt-idk" id="idk" type="button"><span>不会 · 直接看答案</span></button>' +
     '</div>' +
     '<div id="quizAfter"></div>' +
-    '<p class="quiz-foot">第 ' + (quiz.at + 1) + ' / ' + quiz.qs.length + ' 题 · 已答对 ' + quiz.right +
+    '<p class="quiz-foot">第 ' + seen + ' / ' + quiz.total + ' 题' + (q.again ? ' · 再考' : '') + ' · 已答对 ' + quiz.right +
       '　<span class="q-keys">按 <kbd>1</kbd>–<kbd>4</kbd> 选，<kbd>回车</kbd> 看答案</span></p></div>';
   quiz.shownAt = Date.now();
   wire();
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) { b.onclick = function () { speak(b.dataset.say, b); }; });
+  var after = quiz.qs[quiz.at + 1];
+  ydPrefetch(q.w, after && after.w);
+  /* 中途换题型不重开：这一轮的词不变，只重抽还没答的题。这道已经答了就留着，下一题才生效 */
+  Array.prototype.forEach.call(view.querySelectorAll('[data-qk]'), function (b) {
+    b.onclick = function () {
+      if (store.set.qkind === b.dataset.qk) return;
+      store.set.qkind = b.dataset.qk; save();
+      for (var n = quiz.at + (quiz.answered ? 1 : 0); n < quiz.qs.length; n++) rollKind(quiz.qs[n]);
+      if (!quiz.answered) { renderQuiz(u, sel); return; }
+      Array.prototype.forEach.call(view.querySelectorAll('[data-qk]'), function (x) {
+        x.setAttribute('aria-pressed', x === b);
+      });
+    };
+  });
 
   function next() { quiz.at++; quiz.answered = false; quiz.waiting = false; renderQuiz(u, sel); }
   quiz.next = next;
@@ -2143,10 +2174,16 @@ function renderQuiz(u, sel) {
         if (+x.dataset.i === q.w.i) { x.classList.add('right'); x.insertAdjacentHTML('beforeend', '<span class="mark">✓</span>'); }
       });
       /* 答对不改状态（第三十一次优化）：四选一蒙对也算对，要不要标成认识留到结算页自己定 */
-      if (ok) { quiz.right++; quiz.good.push(q.w); }
+      /* 重考不计成绩（第三十八次优化）：错过就是错过，再考对了也还是不认识，结算页只多记一笔 */
+      if (ok) { if (q.again) quiz.fixed++; else { quiz.right++; quiz.good.push(q.w); } }
       else {
         if (how === 'wrong') { b.classList.add('wrong'); b.insertAdjacentHTML('beforeend', '<span class="mark">✕</span>'); }
-        setLvl(q.w.i, 1); quiz.wrong.push(q.w);
+        setLvl(q.w.i, 1);
+        if (!q.again) {
+          quiz.wrong.push(q.w);
+          if (store.set.qagain) quiz.qs.splice(againAt(quiz.at, quiz.qs.length), 0,
+            rollKind({ again: q, w: q.w, opts: shuffle([q.w].concat(distractors(q.w, 3))) }));
+        }
       }
       /* 释义题答对就翻篇；答错要停下来看（第五次优化 3）。
          填空题即使选对了也停 —— 从句子里猜出该填哪个词，跟知道这个词什么意思
@@ -2159,7 +2196,7 @@ function renderQuiz(u, sel) {
       document.getElementById('quizAfter').innerHTML =
         '<div class="q-explain' + (ok ? ' good' : '') + '">' +
           '<p class="qx-tag' + (ok ? ' ok' : '') + '">' +
-            (how === 'idk' ? '不会 · 那就看一眼' : ok ? '选对了 · 顺手把意思过一眼' : '这个词记一下') + '</p>' +
+            (how === 'idk' ? '不会 · 那就看一眼' : ok ? (q.again ? '这次对了' : '选对了') + ' · 顺手把意思过一眼' : '这个词记一下') + '</p>' +
           '<div class="qx-head"><b>' + esc(q.w.w) + '</b>' +
             (ipaOf(q.w) ? '<span class="qx-ipa">/' + esc(ipaOf(q.w)) + '/</span>' : '') +
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
@@ -2178,6 +2215,9 @@ function renderQuiz(u, sel) {
       });
       document.getElementById('qNext').onclick = next;
       document.getElementById('qNext').focus();
+      /* 答案亮出来就读一遍（第三十七次优化），跟拼写检测一样听「自动朗读单词」的开关。
+         释义题答对 480ms 就翻篇，走不到这里，也来不及读 */
+      if (store.set.auto) speak(q.w.w, view.querySelector('#quizAfter .speak'));
   }
   quiz.settle = settle;
   Array.prototype.forEach.call(view.querySelectorAll('.opt[data-i]'), function (b) {
@@ -2204,9 +2244,9 @@ function quizKey(e) {
     if (b) { e.preventDefault(); b.click(); return true; }
   }
   if (e.key === 'Enter') {
-    /* 焦点在别的按钮上（Tab 到选项）回车还是按那个按钮；喇叭点过之后焦点留在上面，不算 */
+    /* 焦点在别的按钮上（Tab 到选项）回车还是按那个按钮；喇叭和题型点过之后焦点留在上面，不算 */
     var fb = e.target.closest && e.target.closest('button,a');
-    if (fb && !fb.classList.contains('speak')) return false;
+    if (fb && !fb.classList.contains('speak') && !fb.dataset.qk) return false;
     e.preventDefault();
     if (!revealTooSoon(e, quiz.shownAt)) quiz.settle(null, 'idk');
     return true;
@@ -3433,13 +3473,14 @@ var sa = document.getElementById('setAccent'), sr = document.getElementById('set
     sv = document.getElementById('setVoice'), su = document.getElementById('setAuto'),
     sh = document.getElementById('setHideZh'), sl = document.getElementById('setVol'),
     sn = document.getElementById('setHint'), sx = document.getElementById('setHideEx'),
+    sag = document.getElementById('setAgain'),
     sd = document.getElementById('dsField'),
     sdm = document.getElementById('setDsModel'), sqn = document.getElementById('setQn'),
     sxl = document.getElementById('setExLen'), szs = document.getElementById('setZhSize'),
     sws = document.getElementById('setWsrc');
 sa.value = store.set.accent; sr.value = store.set.rate; su.value = store.set.auto ? (store.set.autoAt === 'enter' ? 'enter' : 'reveal') : 'off';
 sh.checked = !!store.set.hideZh; sl.value = store.set.vol; sn.checked = !!store.set.hint;
-sx.checked = !!store.set.hideEx; sqn.value = String(store.set.qn);
+sx.checked = !!store.set.hideEx; sqn.value = String(store.set.qn); sag.checked = !!store.set.qagain;
 sxl.value = store.set.exlen || 'mid';
 szs.value = store.set.zhSize || 'm';
 sws.value = store.set.wsrc || 'yd';
@@ -3504,6 +3545,7 @@ sws.onchange = function () { store.set.wsrc = sws.value; save(); speak('serendip
 sn.onchange = function () { store.set.hint = sn.checked; save(); render(); };
 sh.onchange = function () { store.set.hideZh = sh.checked; save(); render(); };
 sx.onchange = function () { store.set.hideEx = sx.checked; save(); render(); };
+sag.onchange = function () { store.set.qagain = sag.checked; save(); };   // 只管之后答错的词，这一轮已经排上的重考留着
 sqn.onchange = function () { store.set.qn = +sqn.value; save(); quiz = null; };
 sxl.onchange = function () { store.set.exlen = sxl.value; save(); };
 szs.onchange = function () { store.set.zhSize = szs.value; save(); applyZh(); };

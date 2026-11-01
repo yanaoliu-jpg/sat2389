@@ -552,6 +552,18 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 /* ---------- 3 · 4 · 6. 测验 ---------- */
 .q-kind{font-family:var(--util);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
   color:var(--ink-3);text-align:center;margin:0 0 14px}
+.q-top{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:14px}
+.q-top .q-kind{grid-column:2;margin:0}
+.q-kinds{grid-column:3;justify-self:end;display:inline-flex;background:var(--card-2);
+  border:1px solid var(--rule);border-radius:99px;padding:2px}
+.q-kinds button{font-family:var(--util);font-size:.72rem;background:none;border:0;border-radius:99px;
+  padding:3px 10px;cursor:pointer;color:var(--ink-3)}
+.q-kinds button:hover{color:var(--ink)}
+.q-kinds button[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+@media (max-width:620px){
+  .q-top{grid-template-columns:1fr;justify-items:center}
+  .q-top .q-kind,.q-kinds{grid-column:1;justify-self:center}
+}
 .q-cloze{font-family:var(--display);font-size:clamp(1.15rem,2.6vw,1.5rem);line-height:1.62;
   text-align:center;margin:0 auto 26px;max-width:52ch}
 .blank{display:inline-block;min-width:5.5ch;border-bottom:2.5px solid var(--seal);

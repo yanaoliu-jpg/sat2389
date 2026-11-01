@@ -318,6 +318,22 @@ function poolSig(pool) {
   return pool.map(function (w) { return w.i; }).sort(function (a, b) { return a - b; }).join(',');
 }
 
+/* 这道题出成填空吗（第三十七次优化）：kind 'cloze' 只考填空，'mean' 只考释义，其它按混合，一半一半。
+   没有挖得出空的例句就只能出释义题，「只考填空」也一样，不然这个词就考不到了。 */
+function wantCloze(kind, hasCand, r) {
+  if (!hasCand) return false;
+  return kind === 'cloze' ? true : kind === 'mean' ? false : r < 0.5;
+}
+
+/* 答错的词隔 4 题再考一次（第三十八次优化）。混合时换成另一种题型，换个角度再想一遍；
+   只考一种就不换，那是自己选的。 */
+var AGAIN_GAP = 4;
+function againCloze(kind, wasCloze, hasCand) {
+  if (!hasCand) return false;
+  return kind === 'cloze' ? true : kind === 'mean' ? false : !wasCloze;
+}
+function againAt(at, len) { return Math.min(at + 1 + AGAIN_GAP, len); }
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -328,6 +344,6 @@ if (typeof module !== 'undefined' && module.exports) {
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
-    poolSig: poolSig
+    poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt
   };
 }

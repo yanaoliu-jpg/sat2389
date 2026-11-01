@@ -5,7 +5,7 @@
    填空定位都在评论里留了「第 N 次优化踩过的坑」，测试就照着那些坑写。 */
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { parseLine, parseTable, mergeRows, lcsMark, blankAt, poolSig } = require('../pure.js');
+const { parseLine, parseTable, mergeRows, lcsMark, blankAt, poolSig, wantCloze, againCloze, againAt } = require('../pure.js');
 
 test('parseLine：几种常见写法都认得出来', () => {
   assert.deepEqual(parseLine('1. abate /əˈbeɪt/ v.减弱'), { w: 'abate', p: 'əˈbeɪt', z: 'v.减弱' });
@@ -111,4 +111,45 @@ test('poolSig：多一个词、少一个词、换一个词都算题库变了', (
   assert.notEqual(poolSig([{ i: 1 }, { i: 2 }, { i: 3 }, { i: 4 }]), sig);
   assert.notEqual(poolSig([{ i: 1 }, { i: 2 }]), sig);
   assert.notEqual(poolSig([{ i: 1 }, { i: 2 }, { i: 9 }]), sig);
+});
+
+test('wantCloze：只考哪种就只出哪种，混合按随机数一半一半（第三十七次优化）', () => {
+  assert.equal(wantCloze('cloze', true, 0.9), true);
+  assert.equal(wantCloze('mean', true, 0.1), false);
+  assert.equal(wantCloze('mix', true, 0.1), true);
+  assert.equal(wantCloze('mix', true, 0.9), false);
+});
+
+test('wantCloze：没有能挖空的例句就出释义题，「只考填空」也一样', () => {
+  assert.equal(wantCloze('cloze', false, 0.1), false);
+  assert.equal(wantCloze('mix', false, 0.1), false);
+});
+
+test('wantCloze：老存档没有题型设置时按混合', () => {
+  assert.equal(wantCloze(undefined, true, 0.1), true);
+  assert.equal(wantCloze(undefined, true, 0.9), false);
+});
+
+test('againCloze：混合时重考换成另一种题型（第三十八次优化）', () => {
+  assert.equal(againCloze('mix', true, true), false);
+  assert.equal(againCloze('mix', false, true), true);
+});
+
+test('againCloze：只考一种时重考也不换题型', () => {
+  assert.equal(againCloze('cloze', true, true), true);
+  assert.equal(againCloze('mean', false, true), false);
+});
+
+test('againCloze：没有能挖空的例句，重考只能是释义题', () => {
+  assert.equal(againCloze('mix', false, false), false);
+  assert.equal(againCloze('cloze', false, false), false);
+});
+
+test('againAt：隔 4 题插回去', () => {
+  assert.equal(againAt(2, 20), 7);
+});
+
+test('againAt：后面不够 4 题就排到最后', () => {
+  assert.equal(againAt(17, 20), 20);
+  assert.equal(againAt(19, 20), 20);
 });

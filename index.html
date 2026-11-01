@@ -97,7 +97,7 @@
               <option value="enter">一换到新词就读</option>
               <option value="off">不自动读</option>
             </select>
-            <small class="hint">学习卡和整理错词用这一项；拼写检测照旧是答完才读。</small>
+            <small class="hint">学习卡和整理错词用这一项；测验和拼写是答完才读，选「不自动读」就都不读。</small>
           </label>
           <label class="field">
             <span>语速 <b id="rateVal">1.0</b></span>
@@ -156,6 +156,10 @@
               <option value="0">全部 · 不设上限</option>
             </select>
             <small class="hint">测验和拼写都按这个数。做完可以接着考没抽到的词，不会把刚做完的又抽一遍。</small>
+          </label>
+          <label class="field-row">
+            <input id="setAgain" type="checkbox" checked>
+            <span>答错的词隔 4 题再考一次（混合时换题型），关掉就只在结算页重过</span>
           </label>
         </section>
 
