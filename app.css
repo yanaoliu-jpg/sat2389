@@ -441,6 +441,37 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .root{margin:0;font-size:.96rem;line-height:1.75;color:var(--ink-2);font-family:var(--han)}
 .root i{font-style:normal;color:var(--seal);padding:0 5px;font-weight:600}
 .root u{text-decoration:none;color:var(--ink-3);font-size:.86em}
+/* ---------- 讲透 ----------
+   简单说法放最前面，字最大：一眼先有个感觉，再读大白话，最后才比近义词 */
+.sense-a{margin:0;font-family:var(--display);font-size:1.32rem;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
+.sense-a span{color:var(--seal);margin-right:.32em}
+.sense-g{margin:7px 0 0;font-size:1rem;line-height:1.75;color:var(--ink-2);font-family:var(--han)}
+.sense-list{margin-top:13px;border-top:1px solid var(--rule-2)}
+.sense-n{display:grid;grid-template-columns:8.5em minmax(0,1fr);column-gap:14px;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--rule-2);font-size:.92rem;line-height:1.7;color:var(--ink-2);font-family:var(--han)}
+.sense-n:last-child{border-bottom:0;padding-bottom:0}
+.near-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 7px;min-width:0}
+.near-w{appearance:none;background:none;border:0;padding:0;font-family:var(--display);font-size:1.08rem;font-weight:600;
+  color:var(--ink);overflow-wrap:anywhere;text-align:left}
+button.near-w{cursor:pointer;border-bottom:1px dashed var(--ink-3)}
+button.near-w:hover{color:var(--seal);border-bottom-color:var(--seal)}
+button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--seal);outline-offset:2px;border-radius:2px}
+.near-known{font-family:var(--util);font-size:.68rem;color:var(--seal)}
+.near-peek{grid-column:2;margin:5px 0 0;font-size:.88rem;color:var(--ink-3)}
+.near-peek span{margin-right:8px}
+.sense-foot{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:12px 0 0;
+  font-family:var(--util);font-size:.74rem;color:var(--ink-3)}
+.sense-link{appearance:none;background:none;border:0;padding:0;font:inherit;color:var(--ink-2);cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px}
+.sense-link:hover{color:var(--seal)}
+.sense-link[disabled]{opacity:.5;cursor:default}
+.sense-ask{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:12px}
+.sense-ask .btn-gen{margin-top:0}
+.sense-ask .gen-note,.sense-foot .gen-note{margin-left:0}
+@media (max-width:560px){
+  .sense-n{grid-template-columns:minmax(0,1fr)}
+  .near-peek{grid-column:1}
+}
 
 /* ---------- 释义前的例句提示 ---------- */
 .hintblk{border-top:none;padding-top:14px;margin-top:14px}
@@ -920,6 +951,10 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   .wcard .w-zh .pos{font-size:.86rem}
   .wcard .blk-l{font-size:.8rem}
   .wcard .root{font-size:1.15rem}
+  .wcard .sense-a{font-size:1.6rem}
+  .wcard .sense-g{font-size:1.12rem}
+  .wcard .sense-n{font-size:1.02rem}
+  .wcard .near-w{font-size:1.2rem}
   .wcard .ex-en{font-size:1.38rem}
   .wcard .ex-gen .ex-en{font-size:1.3rem}
   .wcard .ex-zh{font-size:calc(1.12rem * var(--zh-scale))}

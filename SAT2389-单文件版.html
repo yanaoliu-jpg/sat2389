@@ -453,6 +453,37 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .root{margin:0;font-size:.96rem;line-height:1.75;color:var(--ink-2);font-family:var(--han)}
 .root i{font-style:normal;color:var(--seal);padding:0 5px;font-weight:600}
 .root u{text-decoration:none;color:var(--ink-3);font-size:.86em}
+/* ---------- 讲透 ----------
+   简单说法放最前面，字最大：一眼先有个感觉，再读大白话，最后才比近义词 */
+.sense-a{margin:0;font-family:var(--display);font-size:1.32rem;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
+.sense-a span{color:var(--seal);margin-right:.32em}
+.sense-g{margin:7px 0 0;font-size:1rem;line-height:1.75;color:var(--ink-2);font-family:var(--han)}
+.sense-list{margin-top:13px;border-top:1px solid var(--rule-2)}
+.sense-n{display:grid;grid-template-columns:8.5em minmax(0,1fr);column-gap:14px;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--rule-2);font-size:.92rem;line-height:1.7;color:var(--ink-2);font-family:var(--han)}
+.sense-n:last-child{border-bottom:0;padding-bottom:0}
+.near-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 7px;min-width:0}
+.near-w{appearance:none;background:none;border:0;padding:0;font-family:var(--display);font-size:1.08rem;font-weight:600;
+  color:var(--ink);overflow-wrap:anywhere;text-align:left}
+button.near-w{cursor:pointer;border-bottom:1px dashed var(--ink-3)}
+button.near-w:hover{color:var(--seal);border-bottom-color:var(--seal)}
+button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--seal);outline-offset:2px;border-radius:2px}
+.near-known{font-family:var(--util);font-size:.68rem;color:var(--seal)}
+.near-peek{grid-column:2;margin:5px 0 0;font-size:.88rem;color:var(--ink-3)}
+.near-peek span{margin-right:8px}
+.sense-foot{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:12px 0 0;
+  font-family:var(--util);font-size:.74rem;color:var(--ink-3)}
+.sense-link{appearance:none;background:none;border:0;padding:0;font:inherit;color:var(--ink-2);cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px}
+.sense-link:hover{color:var(--seal)}
+.sense-link[disabled]{opacity:.5;cursor:default}
+.sense-ask{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:12px}
+.sense-ask .btn-gen{margin-top:0}
+.sense-ask .gen-note,.sense-foot .gen-note{margin-left:0}
+@media (max-width:560px){
+  .sense-n{grid-template-columns:minmax(0,1fr)}
+  .near-peek{grid-column:1}
+}
 
 /* ---------- 释义前的例句提示 ---------- */
 .hintblk{border-top:none;padding-top:14px;margin-top:14px}
@@ -932,6 +963,10 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   .wcard .w-zh .pos{font-size:.86rem}
   .wcard .blk-l{font-size:.8rem}
   .wcard .root{font-size:1.15rem}
+  .wcard .sense-a{font-size:1.6rem}
+  .wcard .sense-g{font-size:1.12rem}
+  .wcard .sense-n{font-size:1.02rem}
+  .wcard .near-w{font-size:1.2rem}
   .wcard .ex-en{font-size:1.38rem}
   .wcard .ex-gen .ex-en{font-size:1.3rem}
   .wcard .ex-zh{font-size:calc(1.12rem * var(--zh-scale))}
@@ -15430,6 +15465,39 @@ window.IELTS_RICH={
 10638:{"w":"majority","e":"The majority of respondents favoured the plan.","t":"**大多数**受访者赞成该计划。"},
 10639:{"w":"ratio","e":"The ratio of boys to girls was 3:2.","t":"男女**比例**为 3:2。"},
 };
+/* 「讲透」样板（第三十九次优化）：按单词取，g 大白话，a 已经会的简单说法，n 和近义词的区别 [词, 说明]。 */
+window.SAT_SENSE={
+"abate":{"g":"猛烈的东西慢慢弱下去，常说风暴、疼痛、怒气、噪音。","a":"die down","n":[["mitigate","人主动去减轻坏影响；abate 多半是它自己弱下去"]]},
+"mitigate":{"g":"坏事躲不掉，想办法让后果轻一点，常说损失、风险、影响。","a":"make less bad","n":[["alleviate","多说疼痛、压力这类难受的感觉；mitigate 多说后果和风险"],["ameliorate","让状况真的变好；mitigate 只是让坏处小一点"]]},
+"alleviate":{"g":"让疼痛、压力、困难变轻一些，让人好受点。","a":"ease","n":[["mitigate","多说损失、风险这类后果；alleviate 多说人感受到的难受"],["abate","它自己弱下去；alleviate 是有东西把难受减轻了"]]},
+"mollify":{"g":"有人受了委屈或动了气，用好话或让步把情绪抚平。","a":"calm sb. down","n":[["placate","重点是让不满的人不再闹，常靠让步；mollify 重点是抚平情绪"]]},
+"placate":{"g":"用让步或安抚让不满的人消气，不再闹下去。","a":"calm sb. down","n":[["mollify","重点是抚平受伤的情绪或刚起的火气；placate 重点是把对方的不满摆平"]]},
+"ameliorate":{"g":"把本来不好的状况改善一些，常说条件、短缺、贫困，比 improve 正式。","a":"make better","n":[["mitigate","只让坏处小一点，不一定变好"],["exacerbate","正相反：把坏事弄得更糟"]]},
+"exacerbate":{"g":"本来就不好的事被弄得更糟，常说矛盾、病情、短缺。","a":"make worse","n":[["ameliorate","正相反：把坏状况改善"]]},
+"aberration":{"g":"偏离常态的一次例外：这事不代表整体，也本不该这样。","a":"exception","n":[["anomaly","偏中性，只说和规律对不上，常用于科学和数据；aberration 常带「本不该这样」的意味"]]},
+"anomaly":{"g":"和已知规律或预期对不上的现象，常说数据、轨道、实验结果。","a":"something odd","n":[["aberration","多说行为或事件偏离常态，带「本不该这样」的意味；anomaly 偏中性"]]},
+"tenuous":{"g":"站不住脚，一扯就断，常说联系、证据、论点，也说局面不稳。","a":"shaky","n":[["flimsy","也说具体的东西不结实；tenuous 更正式，多说抽象的联系，常搭 link、connection"]]},
+"flimsy":{"g":"又薄又不结实；说借口、证据时，就是一戳就破。","a":"weak","n":[["tenuous","更正式，多说抽象的联系和把握，不说具体的东西"]]},
+"ephemeral":{"g":"存在时间极短，转眼就没了，常说名声、潮流、涨幅。","a":"short-lived","n":[["transient","中性，只说待不久，也能说流动的人；ephemeral 更强调转眼成空"],["evanescent","重点是渐渐消散的过程，更书面"]]},
+"transient":{"g":"只是暂时的，待一阵就走，常说症状、现象，也说流动人口。","a":"temporary","n":[["ephemeral","更强调转眼成空，常说名声、潮流"]]},
+"evanescent":{"g":"像雾气一样慢慢淡去、消失，多见于书面描写，常说光线、颜色、印象。","a":"fading","n":[["ephemeral","重点是存在时间短；evanescent 重点是渐渐消散的样子"]]},
+"laconic":{"g":"话极少，几个字就打发，常说一个人的说话风格，有种冷淡或酷的感觉。","a":"of few words","n":[["terse","多说某一次的回复，短得有点生硬；laconic 多说一贯话少"],["succinct","褒义，短而且把要点讲到了"]]},
+"terse":{"g":"短到有点生硬，常说回复或语气，可能显得冷淡甚至不高兴。","a":"short and sharp","n":[["succinct","褒义，重点是精炼，没有生硬的感觉"],["laconic","多说一个人一贯话少"]]},
+"succinct":{"g":"用很少的话把要点讲清楚，是褒义词，常说摘要、解释。","a":"short and clear","n":[["terse","也短，但可能显得生硬、不客气"],["laconic","说人话少，不保证讲清楚"]]},
+"spurious":{"g":"看着是真的，其实是假的或没有依据，常说相关性、证据、说法。","a":"fake","n":[["specious","专说论点：听着有理，其实不成立"],["fallacious","专说推理：逻辑上有错"]]},
+"specious":{"g":"乍听有道理，细想不成立，常说论点、理由，带点骗人的意味。","a":"seems right, isn't","n":[["fallacious","重点是逻辑有错，不管听着像不像对的"],["spurious","重点是东西本身是假的"]]},
+"fallacious":{"g":"推理或前提出了错，结论不可靠，常说论证、推理。","a":"based on bad logic","n":[["specious","重点是听着很有理，迷惑人"],["spurious","重点是东西本身是假的，不是推理问题"]]},
+"disparage":{"g":"说话贬低别人或别的做法，说它不值一提，比较正式。","a":"put down","n":[["belittle","重点是把人或成就说得很渺小，更常说对人；disparage 常说做法和价值"]]},
+"belittle":{"g":"故意把别人或别人的成就说得很渺小，好像不算什么。","a":"make sb. feel small","n":[["disparage","更正式，常说贬低做法和价值"]]},
+"capricious":{"g":"说变就变，没理由也没规律，常说决定、权力、天气、市场。","a":"unpredictable","n":[["fickle","多说喜好和忠诚说换就换"],["mercurial","多说人的情绪变得飞快"]]},
+"fickle":{"g":"喜好和忠诚说变就变，常说恋人、粉丝、观众，也说运气。","a":"quick to change","n":[["capricious","强调毫无缘由，常说决定和权力"],["mercurial","多说情绪和性情"]]},
+"mercurial":{"g":"情绪或性格变得飞快，一会儿一个样，常说人，有时带聪明活泼的意味。","a":"moody","n":[["capricious","多说决定和事情没有规律"],["fickle","多说喜好和忠诚"]]},
+"recalcitrant":{"g":"不听管教、拒不配合，常说人，也说不听使唤的东西。","a":"won't obey","n":[["intransigent","专说立场上寸步不让，常见于谈判"],["obdurate","任你怎么劝都不动，带点冷硬"]]},
+"intransigent":{"g":"死守立场，一点不肯妥协，常说谈判方、政党、政府。","a":"won't compromise","n":[["recalcitrant","重点是不服管、不配合"],["obdurate","重点是铁了心，劝不动"]]},
+"obdurate":{"g":"任你怎么劝、怎么求都不动，铁了心，带点冷硬。","a":"stubborn","n":[["intransigent","重点是谈判和立场上不让步"],["recalcitrant","重点是不服管、不配合"]]},
+"enervate":{"g":"把人的体力和精力慢慢抽干，常说酷热、疾病。别看成 energize，意思几乎相反。","a":"wear out","n":[["debilitate","更重，常说疾病或伤让身体严重衰弱"]]},
+"sanguine":{"g":"对前景很乐观，情况不妙也不慌，常说 sanguine about，和「血红色」基本无关。","a":"hopeful","n":[["optimistic","日常用词；sanguine 更书面，常带「这种乐观未必有根据」"]]}
+};
 /* 有道单词录音的音量表（第二十四次优化），由 src/measure_yd.py 生成：
    每个数是要压低多少 dB，把偏响的录音压到 -21 LUFS。
    1 = 英音，2 = 美音；d1 / d2 是没列出的词用的值（中位数）。 */
@@ -15773,6 +15841,47 @@ function againCloze(kind, wasCloze, hasCand) {
 }
 function againAt(at, len) { return Math.min(at + 1 + AGAIN_GAP, len); }
 
+/* 讲透里的近义词（第三十九次优化）：认识的排前面，新词挂在会的词上才记得住 */
+function nearOrder(near, known) {
+  return near.filter(function (x) { return known(x[0]); })
+    .concat(near.filter(function (x) { return !known(x[0]); }));
+}
+
+/* 没有内置讲透的词，点按钮才问 DeepSeek（第三十九次优化）。
+   SENSE_SHOTS 是当范例的手写词，app.js 和 src/try_sense.js 共用这份提示词。 */
+var SENSE_SHOTS = ['mitigate', 'terse', 'sanguine'];
+function sensePrompt(w, shots) {
+  var examples = shots.filter(function (x) { return x[0] !== w.w; }).map(function (x) {
+    return JSON.stringify({ word: x[0], g: x[1].g, a: x[1].a, n: x[1].n });
+  });
+  return '你在给准备 SAT 的中国学生讲一个英文单词。学生看了中文释义和例句，还是不明白这个词到底什么感觉，你要讲到他明白。\n\n' +
+    '单词：' + w.w + '\n词典释义：' + w.z + '\n' + (w.e ? '例句：' + w.e + '\n' : '') +
+    '\n词典释义可能列了很多义项，以' + (w.e ? '例句里用的义项' : '这个词现在最常用的义项') + '为准，别的义项不用提。\n' +
+    (w.e ? '例句只用来判断是哪个义项。你讲的是这个词，不是这句话：不要复述例句的情节，不要用例句里的人和事，例句里形容这个词的话也不算它的意思。\n' : '') +
+    '\n写三样：\n' +
+    '- g：大白话，60 字以内。说清这个词描述什么情形、带什么感觉、在各种文章里常用来说什么。要写出它独有的地方，换成近义词就说不通。不要重复词典释义，不要写「指……」这种词典腔。\n' +
+    '- a：学生已经会的简单英文说法，1 到 3 个常见词，词性和用法要和这个词一样，比如「使变糟」要写 make worse，不写 get worse。不能是这个词本身，也不能比它难。\n' +
+    '- n：1 到 2 个最容易和它混淆的词，格式是 [词, 区别]。不能是这个词的变形。区别 40 字以内，要说清怎么选，不要只说「意思相近」。确实没有容易混淆的词就给空数组。\n' +
+    '\n拿不准的用法和搭配不要写，不要编造。文字里不要用英文双引号，要引用就用「」。\n' +
+    '\n范例：\n' + examples.join('\n') + '\n' +
+    '\n只返回 JSON：{"g": "大白话", "a": "简单说法", "n": [["词", "区别"]]}';
+}
+/* 模型的返回不一定规整：缺大白话或简单说法算失败，近义词里的坏条目只去掉，不算失败 */
+function cleanSense(o, word) {
+  function str(x) { return typeof x === 'string' ? x.trim() : ''; }
+  function stem(x) {
+    return String(x).toLowerCase().replace(/(ing|ed|es|s|d)$/, '').replace(/e$/, '')
+      .replace(/([^aeiou])\1$/, '$1').replace(/i$/, 'y');
+  }
+  if (!o) return null;
+  var g = str(o.g), a = str(o.a), key = stem(word);
+  if (!g || !a || stem(a) === key) return null;
+  var n = (Array.isArray(o.n) ? o.n : []).map(function (x) {
+    return Array.isArray(x) ? [str(x[0]), str(x[1])] : ['', ''];
+  }).filter(function (x) { return x[0] && x[1] && stem(x[0]) !== key; });
+  return { g: g, a: a, n: n.slice(0, 3) };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -15783,7 +15892,8 @@ if (typeof module !== 'undefined' && module.exports) {
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
-    poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt
+    poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
+    SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense
   };
 }
 /* ===== SAT 2389 · 背单词 ===== */
@@ -15793,6 +15903,7 @@ if (typeof module !== 'undefined' && module.exports) {
 var WORDS = (window.SAT_WORDS || []).slice();
 var UNITS = (window.SAT_UNITS || []).slice();
 var RICH  = window.SAT_RICH  || {};
+var SENSE = window.SAT_SENSE || {};
 /* 雅思词自己的例句（第十九次优化），按词条编号 i 取。条目里带着 w，rich() 要编号和单词都对得上才用：
    第二十次优化以前自己导入的词编号是从 10000 往上排的，会撞上雅思的 10001–10639。现在新词从
    CUSTOM_ID_FLOOR 起排、老数据加载时也已经换过号，这道核对留着当保险。 */
@@ -15808,7 +15919,7 @@ var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20, qkind: 'mix', qagain: true,
                 exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: 'deepseek-chat' };
-var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
+var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, sense: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
 for (var dk in DEF_SET) if (!(dk in store.set)) store.set[dk] = DEF_SET[dk];
 if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort; v3 had one AI provider
@@ -15828,6 +15939,7 @@ if (store.pv !== 3) {                    // 第二十二次优化取消了「模
 }
 if (!store.sel) store.sel = {};
 if (!store.gen) store.gen = {};
+if (!store.sense) store.sense = {};
 if (!store.custom) store.custom = [];
 if (!store.col) store.col = {};
 if (!store.pronx) store.pronx = {};
@@ -16404,6 +16516,68 @@ function rich(w) {
   return (o && o.w === w.w) ? o : (RICH[w.w] || null);
 }
 function gen(w) { return store.gen[w.w] || []; }
+
+/* 讲透（第三十九次优化）：原书释义常常讲不清这个词到底什么感觉，这里给大白话、一个已经会的说法、
+   和近义词的区别。只在显示释义之后出现。近义词点开就地看意思，不跳走，不打断这一轮。
+   手写的内置在 data/sense.js；其余的词点「讲透这个词」才问 DeepSeek，存在 store.sense。 */
+var senseBusy = {};                          // 正在问的词，换到别的词再回来也不会重复问
+function senseOf(w) { return SENSE[w.w] || store.sense[w.w] || null; }
+function wordNamed(name) {
+  return WORDS.filter(function (x) { return x.w === name; })[0] || null;
+}
+function isKnown(name) {
+  var o = wordNamed(name);
+  return !!o && lvl(o.i) === 3;
+}
+function senseHtml(w) {
+  var s = senseOf(w), key = ' data-sense="' + esc(w.w) + '"';
+  var busy = senseBusy[w.w] ? ' disabled' : '';
+  var note = '<span class="gen-note" id="senseNote">' + (busy ? '正在问 DeepSeek…' : '') + '</span>';
+  if (!s) {
+    return '<div class="sense-ask"' + key + '><button class="btn btn-ghost btn-gen" id="senseGen" type="button"' + busy +
+      ' title="用设置里的 DeepSeek Key 生成大白话和近义词的区别">讲透这个词</button>' + note + '</div>';
+  }
+  var near = nearOrder(s.n, isKnown).map(function (x) {
+    var o = wordNamed(x[0]);
+    return '<div class="sense-n"><span class="near-head">' +
+      (o ? '<button class="near-w" data-near="' + o.i + '" type="button">' + esc(x[0]) + '</button>'
+         : '<b class="near-w">' + esc(x[0]) + '</b>') +
+      (isKnown(x[0]) ? '<span class="near-known">认识</span>' : '') + '</span>' +
+      '<span class="near-note">' + esc(x[1]) + '</span></div>';
+  }).join('');
+  return '<div class="blk sense"' + key + '><p class="blk-l">讲透</p>' +
+    '<p class="sense-a"><span>≈</span>' + esc(s.a) + '</p><p class="sense-g">' + esc(s.g) + '</p>' +
+    (near ? '<div class="sense-list">' + near + '</div>' : '') +
+    (SENSE[w.w] ? '' : '<p class="sense-foot"><span>DeepSeek 生成，可能有错</span>' +
+      '<button class="sense-link" id="senseGen" type="button"' + busy + '>重新生成</button>' +
+      '<button class="sense-link" id="senseDel" type="button">删掉</button>' + note + '</p>') +
+    '</div>';
+}
+function senseEl(w) {
+  var el = view.querySelector('[data-sense]');
+  return el && el.dataset.sense === w.w ? el : null;
+}
+/* 只换这一块，不重画整张卡片：页面不跳，也不会再读一遍单词 */
+function redrawSense(w) {
+  var el = senseEl(w);
+  if (el) { el.outerHTML = senseHtml(w); wireSense(w); }
+}
+function wireSense(w) {
+  Array.prototype.forEach.call(view.querySelectorAll('[data-near]'), function (b) {
+    b.onclick = function () {
+      var row = b.closest('.sense-n'), open = row.querySelector('.near-peek');
+      b.blur();                                  // 焦点留在这里的话，空格会再点一次，不是翻下一个词
+      if (open) { open.remove(); return; }
+      var o = WORDS.filter(function (x) { return x.i === +b.dataset.near; })[0], r = rich(o);
+      row.insertAdjacentHTML('beforeend', '<p class="near-peek">' + (o.p ? '<span>/' + esc(o.p) + '/</span>' : '') +
+        esc(r && r.z ? r.z : o.z) + '</p>');
+      speak(o.w, b);
+    };
+  });
+  var g = document.getElementById('senseGen'), d = document.getElementById('senseDel');
+  if (g) g.onclick = function () { g.blur(); generateSense(w); };
+  if (d) d.onclick = function () { d.blur(); delete store.sense[w.w]; save(); redrawSense(w); };
+}
 
 /* ---------- 颜色分组（第十次优化 3） ----------
    一个单元几百个词，一口气背不完。给词标个颜色，就能把一个单元切成几小批：
@@ -17427,6 +17601,7 @@ function cardHtml(w, revealed, u) {
   } else {
     body = '<div class="w-zh">' + zhHtml(r && r.z ? r.z : w.z) +
       (r && r.z ? '<div class="fix">原书作：' + esc(w.z) + '　<span>此处按通行释义订正</span></div>' : '') + '</div>';
+    body += senseHtml(w);
     if (r && r.r) {
       body += '<div class="blk"><p class="blk-l">词根</p><p class="root">' + rootHtml(r.r) + '</p></div>';
     }
@@ -17468,6 +17643,7 @@ function wireCard(w, redraw) {
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) {
     b.onclick = function () { speak(b.dataset.say, b, +b.dataset.pi || 0); };
   });
+  wireSense(w);
   Array.prototype.forEach.call(view.querySelectorAll('[data-star]'), function (b) {
     b.onclick = function () {
       var i = +b.dataset.star;
@@ -18315,6 +18491,37 @@ function generateExample(w, redraw) {
     say('生成失败：' + aiErr(err), 1);
   });
 }
+function generateSense(w) {
+  function say(msg, bad) {
+    var note = document.getElementById('senseNote');
+    if (note) { note.textContent = msg; note.className = 'gen-note' + (bad ? ' bad' : ''); }
+  }
+  if (senseBusy[w.w]) return;
+  if (!aiReady()) {
+    say('先到设置里填 DeepSeek API Key。', 1);
+    openSettings('dsField');
+    return;
+  }
+  var r = rich(w), prompt = sensePrompt({ w: w.w, z: (r && r.z) || w.z, e: r && r.e },
+    SENSE_SHOTS.map(function (name) { return [name, SENSE[name]]; }));
+  senseBusy[w.w] = 1;
+  redrawSense(w);
+  /* 试跑时 60 次里有 2 次返回坏的 JSON，自动重问一次 */
+  askViaDeepSeek(prompt).catch(function (err) {
+    if (err instanceof SyntaxError) return askViaDeepSeek(prompt);
+    throw err;
+  }).then(function (obj) {
+    var s = cleanSense(obj, w.w);
+    if (!s) throw new Error('返回的内容不完整，再试一次。');
+    delete senseBusy[w.w];
+    store.sense[w.w] = s;
+    save(); redrawSense(w);
+  }).catch(function (err) {
+    delete senseBusy[w.w];
+    redrawSense(w);
+    say('生成失败：' + aiErr(err), 1);
+  });
+}
 
 /* ================= 自己加例句（第九次优化 1）=================
    两条路：直接写一句；或者把读到的一整段话粘进来，
@@ -19031,9 +19238,8 @@ function dropWord(i) {
   delete store.prog[i]; delete store.hist[i]; delete store.sel[i]; delete store.star[i];
   delete store.col[i];
   /* 例句是按拼写存的：只有当别处再没有同名词条时才连例句一起删 */
-  if (w && store.gen[w.w]) {
-    var alsoElsewhere = WORDS.some(function (x) { return x.i !== i && x.w === w.w; });
-    if (!alsoElsewhere) delete store.gen[w.w];
+  if (w && !WORDS.some(function (x) { return x.i !== i && x.w === w.w; })) {
+    delete store.gen[w.w]; delete store.sense[w.w];
   }
   if (!c.words.length) store.custom = store.custom.filter(function (x) { return x.u !== c.u; });
   save(); mountCustom(); dropOrder(); render();
@@ -19050,6 +19256,7 @@ function addWord() {
     var old = editing.w;
     editing.w = wv; editing.p = pv; editing.z = zv;
     if (old !== wv && store.gen[old]) { store.gen[wv] = store.gen[old]; delete store.gen[old]; }
+    if (old !== wv) delete store.sense[old];      // 讲透是讲这个拼写的，换了词就不对了
     save(); mountCustom(); dropOrder(); render();
     document.getElementById('addModal').hidden = true;
     return;

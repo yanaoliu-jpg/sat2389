@@ -29,7 +29,7 @@ parts = ["<title>SAT 2389 背单词</title>", FONTS,
          "<style>\n" + read("app.css") + "</style>",
          body.strip(),
          "<script>\n" + "".join(read("data", f) for f in
-             ("units.js", "words.js", "extra.js", "shuffle.js", "toefl.js", "ielts.js", "rich.js", "toefl_rich.js", "ielts_rich.js", "ydgain.js", "pron.js")) + read("pure.js") + read("app.js") + "</script>"]
+             ("units.js", "words.js", "extra.js", "shuffle.js", "toefl.js", "ielts.js", "rich.js", "toefl_rich.js", "ielts_rich.js", "sense.js", "ydgain.js", "pron.js")) + read("pure.js") + read("app.js") + "</script>"]
 doc = "\n".join(parts)
 
 if not fragment:

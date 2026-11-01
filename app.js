@@ -5,6 +5,7 @@
 var WORDS = (window.SAT_WORDS || []).slice();
 var UNITS = (window.SAT_UNITS || []).slice();
 var RICH  = window.SAT_RICH  || {};
+var SENSE = window.SAT_SENSE || {};
 /* 雅思词自己的例句（第十九次优化），按词条编号 i 取。条目里带着 w，rich() 要编号和单词都对得上才用：
    第二十次优化以前自己导入的词编号是从 10000 往上排的，会撞上雅思的 10001–10639。现在新词从
    CUSTOM_ID_FLOOR 起排、老数据加载时也已经换过号，这道核对留着当保险。 */
@@ -20,7 +21,7 @@ var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20, qkind: 'mix', qagain: true,
                 exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: 'deepseek-chat' };
-var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
+var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, sense: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
 for (var dk in DEF_SET) if (!(dk in store.set)) store.set[dk] = DEF_SET[dk];
 if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort; v3 had one AI provider
@@ -40,6 +41,7 @@ if (store.pv !== 3) {                    // 第二十二次优化取消了「模
 }
 if (!store.sel) store.sel = {};
 if (!store.gen) store.gen = {};
+if (!store.sense) store.sense = {};
 if (!store.custom) store.custom = [];
 if (!store.col) store.col = {};
 if (!store.pronx) store.pronx = {};
@@ -616,6 +618,68 @@ function rich(w) {
   return (o && o.w === w.w) ? o : (RICH[w.w] || null);
 }
 function gen(w) { return store.gen[w.w] || []; }
+
+/* 讲透（第三十九次优化）：原书释义常常讲不清这个词到底什么感觉，这里给大白话、一个已经会的说法、
+   和近义词的区别。只在显示释义之后出现。近义词点开就地看意思，不跳走，不打断这一轮。
+   手写的内置在 data/sense.js；其余的词点「讲透这个词」才问 DeepSeek，存在 store.sense。 */
+var senseBusy = {};                          // 正在问的词，换到别的词再回来也不会重复问
+function senseOf(w) { return SENSE[w.w] || store.sense[w.w] || null; }
+function wordNamed(name) {
+  return WORDS.filter(function (x) { return x.w === name; })[0] || null;
+}
+function isKnown(name) {
+  var o = wordNamed(name);
+  return !!o && lvl(o.i) === 3;
+}
+function senseHtml(w) {
+  var s = senseOf(w), key = ' data-sense="' + esc(w.w) + '"';
+  var busy = senseBusy[w.w] ? ' disabled' : '';
+  var note = '<span class="gen-note" id="senseNote">' + (busy ? '正在问 DeepSeek…' : '') + '</span>';
+  if (!s) {
+    return '<div class="sense-ask"' + key + '><button class="btn btn-ghost btn-gen" id="senseGen" type="button"' + busy +
+      ' title="用设置里的 DeepSeek Key 生成大白话和近义词的区别">讲透这个词</button>' + note + '</div>';
+  }
+  var near = nearOrder(s.n, isKnown).map(function (x) {
+    var o = wordNamed(x[0]);
+    return '<div class="sense-n"><span class="near-head">' +
+      (o ? '<button class="near-w" data-near="' + o.i + '" type="button">' + esc(x[0]) + '</button>'
+         : '<b class="near-w">' + esc(x[0]) + '</b>') +
+      (isKnown(x[0]) ? '<span class="near-known">认识</span>' : '') + '</span>' +
+      '<span class="near-note">' + esc(x[1]) + '</span></div>';
+  }).join('');
+  return '<div class="blk sense"' + key + '><p class="blk-l">讲透</p>' +
+    '<p class="sense-a"><span>≈</span>' + esc(s.a) + '</p><p class="sense-g">' + esc(s.g) + '</p>' +
+    (near ? '<div class="sense-list">' + near + '</div>' : '') +
+    (SENSE[w.w] ? '' : '<p class="sense-foot"><span>DeepSeek 生成，可能有错</span>' +
+      '<button class="sense-link" id="senseGen" type="button"' + busy + '>重新生成</button>' +
+      '<button class="sense-link" id="senseDel" type="button">删掉</button>' + note + '</p>') +
+    '</div>';
+}
+function senseEl(w) {
+  var el = view.querySelector('[data-sense]');
+  return el && el.dataset.sense === w.w ? el : null;
+}
+/* 只换这一块，不重画整张卡片：页面不跳，也不会再读一遍单词 */
+function redrawSense(w) {
+  var el = senseEl(w);
+  if (el) { el.outerHTML = senseHtml(w); wireSense(w); }
+}
+function wireSense(w) {
+  Array.prototype.forEach.call(view.querySelectorAll('[data-near]'), function (b) {
+    b.onclick = function () {
+      var row = b.closest('.sense-n'), open = row.querySelector('.near-peek');
+      b.blur();                                  // 焦点留在这里的话，空格会再点一次，不是翻下一个词
+      if (open) { open.remove(); return; }
+      var o = WORDS.filter(function (x) { return x.i === +b.dataset.near; })[0], r = rich(o);
+      row.insertAdjacentHTML('beforeend', '<p class="near-peek">' + (o.p ? '<span>/' + esc(o.p) + '/</span>' : '') +
+        esc(r && r.z ? r.z : o.z) + '</p>');
+      speak(o.w, b);
+    };
+  });
+  var g = document.getElementById('senseGen'), d = document.getElementById('senseDel');
+  if (g) g.onclick = function () { g.blur(); generateSense(w); };
+  if (d) d.onclick = function () { d.blur(); delete store.sense[w.w]; save(); redrawSense(w); };
+}
 
 /* ---------- 颜色分组（第十次优化 3） ----------
    一个单元几百个词，一口气背不完。给词标个颜色，就能把一个单元切成几小批：
@@ -1639,6 +1703,7 @@ function cardHtml(w, revealed, u) {
   } else {
     body = '<div class="w-zh">' + zhHtml(r && r.z ? r.z : w.z) +
       (r && r.z ? '<div class="fix">原书作：' + esc(w.z) + '　<span>此处按通行释义订正</span></div>' : '') + '</div>';
+    body += senseHtml(w);
     if (r && r.r) {
       body += '<div class="blk"><p class="blk-l">词根</p><p class="root">' + rootHtml(r.r) + '</p></div>';
     }
@@ -1680,6 +1745,7 @@ function wireCard(w, redraw) {
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) {
     b.onclick = function () { speak(b.dataset.say, b, +b.dataset.pi || 0); };
   });
+  wireSense(w);
   Array.prototype.forEach.call(view.querySelectorAll('[data-star]'), function (b) {
     b.onclick = function () {
       var i = +b.dataset.star;
@@ -2527,6 +2593,37 @@ function generateExample(w, redraw) {
     say('生成失败：' + aiErr(err), 1);
   });
 }
+function generateSense(w) {
+  function say(msg, bad) {
+    var note = document.getElementById('senseNote');
+    if (note) { note.textContent = msg; note.className = 'gen-note' + (bad ? ' bad' : ''); }
+  }
+  if (senseBusy[w.w]) return;
+  if (!aiReady()) {
+    say('先到设置里填 DeepSeek API Key。', 1);
+    openSettings('dsField');
+    return;
+  }
+  var r = rich(w), prompt = sensePrompt({ w: w.w, z: (r && r.z) || w.z, e: r && r.e },
+    SENSE_SHOTS.map(function (name) { return [name, SENSE[name]]; }));
+  senseBusy[w.w] = 1;
+  redrawSense(w);
+  /* 试跑时 60 次里有 2 次返回坏的 JSON，自动重问一次 */
+  askViaDeepSeek(prompt).catch(function (err) {
+    if (err instanceof SyntaxError) return askViaDeepSeek(prompt);
+    throw err;
+  }).then(function (obj) {
+    var s = cleanSense(obj, w.w);
+    if (!s) throw new Error('返回的内容不完整，再试一次。');
+    delete senseBusy[w.w];
+    store.sense[w.w] = s;
+    save(); redrawSense(w);
+  }).catch(function (err) {
+    delete senseBusy[w.w];
+    redrawSense(w);
+    say('生成失败：' + aiErr(err), 1);
+  });
+}
 
 /* ================= 自己加例句（第九次优化 1）=================
    两条路：直接写一句；或者把读到的一整段话粘进来，
@@ -3243,9 +3340,8 @@ function dropWord(i) {
   delete store.prog[i]; delete store.hist[i]; delete store.sel[i]; delete store.star[i];
   delete store.col[i];
   /* 例句是按拼写存的：只有当别处再没有同名词条时才连例句一起删 */
-  if (w && store.gen[w.w]) {
-    var alsoElsewhere = WORDS.some(function (x) { return x.i !== i && x.w === w.w; });
-    if (!alsoElsewhere) delete store.gen[w.w];
+  if (w && !WORDS.some(function (x) { return x.i !== i && x.w === w.w; })) {
+    delete store.gen[w.w]; delete store.sense[w.w];
   }
   if (!c.words.length) store.custom = store.custom.filter(function (x) { return x.u !== c.u; });
   save(); mountCustom(); dropOrder(); render();
@@ -3262,6 +3358,7 @@ function addWord() {
     var old = editing.w;
     editing.w = wv; editing.p = pv; editing.z = zv;
     if (old !== wv && store.gen[old]) { store.gen[wv] = store.gen[old]; delete store.gen[old]; }
+    if (old !== wv) delete store.sense[old];      // 讲透是讲这个拼写的，换了词就不对了
     save(); mountCustom(); dropOrder(); render();
     document.getElementById('addModal').hidden = true;
     return;

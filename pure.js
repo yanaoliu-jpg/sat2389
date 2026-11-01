@@ -334,6 +334,47 @@ function againCloze(kind, wasCloze, hasCand) {
 }
 function againAt(at, len) { return Math.min(at + 1 + AGAIN_GAP, len); }
 
+/* 讲透里的近义词（第三十九次优化）：认识的排前面，新词挂在会的词上才记得住 */
+function nearOrder(near, known) {
+  return near.filter(function (x) { return known(x[0]); })
+    .concat(near.filter(function (x) { return !known(x[0]); }));
+}
+
+/* 没有内置讲透的词，点按钮才问 DeepSeek（第三十九次优化）。
+   SENSE_SHOTS 是当范例的手写词，app.js 和 src/try_sense.js 共用这份提示词。 */
+var SENSE_SHOTS = ['mitigate', 'terse', 'sanguine'];
+function sensePrompt(w, shots) {
+  var examples = shots.filter(function (x) { return x[0] !== w.w; }).map(function (x) {
+    return JSON.stringify({ word: x[0], g: x[1].g, a: x[1].a, n: x[1].n });
+  });
+  return '你在给准备 SAT 的中国学生讲一个英文单词。学生看了中文释义和例句，还是不明白这个词到底什么感觉，你要讲到他明白。\n\n' +
+    '单词：' + w.w + '\n词典释义：' + w.z + '\n' + (w.e ? '例句：' + w.e + '\n' : '') +
+    '\n词典释义可能列了很多义项，以' + (w.e ? '例句里用的义项' : '这个词现在最常用的义项') + '为准，别的义项不用提。\n' +
+    (w.e ? '例句只用来判断是哪个义项。你讲的是这个词，不是这句话：不要复述例句的情节，不要用例句里的人和事，例句里形容这个词的话也不算它的意思。\n' : '') +
+    '\n写三样：\n' +
+    '- g：大白话，60 字以内。说清这个词描述什么情形、带什么感觉、在各种文章里常用来说什么。要写出它独有的地方，换成近义词就说不通。不要重复词典释义，不要写「指……」这种词典腔。\n' +
+    '- a：学生已经会的简单英文说法，1 到 3 个常见词，词性和用法要和这个词一样，比如「使变糟」要写 make worse，不写 get worse。不能是这个词本身，也不能比它难。\n' +
+    '- n：1 到 2 个最容易和它混淆的词，格式是 [词, 区别]。不能是这个词的变形。区别 40 字以内，要说清怎么选，不要只说「意思相近」。确实没有容易混淆的词就给空数组。\n' +
+    '\n拿不准的用法和搭配不要写，不要编造。文字里不要用英文双引号，要引用就用「」。\n' +
+    '\n范例：\n' + examples.join('\n') + '\n' +
+    '\n只返回 JSON：{"g": "大白话", "a": "简单说法", "n": [["词", "区别"]]}';
+}
+/* 模型的返回不一定规整：缺大白话或简单说法算失败，近义词里的坏条目只去掉，不算失败 */
+function cleanSense(o, word) {
+  function str(x) { return typeof x === 'string' ? x.trim() : ''; }
+  function stem(x) {
+    return String(x).toLowerCase().replace(/(ing|ed|es|s|d)$/, '').replace(/e$/, '')
+      .replace(/([^aeiou])\1$/, '$1').replace(/i$/, 'y');
+  }
+  if (!o) return null;
+  var g = str(o.g), a = str(o.a), key = stem(word);
+  if (!g || !a || stem(a) === key) return null;
+  var n = (Array.isArray(o.n) ? o.n : []).map(function (x) {
+    return Array.isArray(x) ? [str(x[0]), str(x[1])] : ['', ''];
+  }).filter(function (x) { return x[0] && x[1] && stem(x[0]) !== key; });
+  return { g: g, a: a, n: n.slice(0, 3) };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
@@ -344,6 +385,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
-    poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt
+    poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
+    SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense
   };
 }
