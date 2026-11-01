@@ -641,10 +641,8 @@ function senseHtml(w) {
       ' title="用设置里的 DeepSeek Key 生成大白话和近义词的区别">讲透这个词</button>' + note + '</div>';
   }
   var near = nearOrder(s.n, isKnown).map(function (x) {
-    var o = wordNamed(x[0]);
     return '<div class="sense-n"><span class="near-head">' +
-      (o ? '<button class="near-w" data-near="' + o.i + '" type="button">' + esc(x[0]) + '</button>'
-         : '<b class="near-w">' + esc(x[0]) + '</b>') +
+      '<button class="near-w" data-near="' + esc(x[0]) + '" data-zh="' + esc(x[2] || '') + '" type="button">' + esc(x[0]) + '</button>' +
       (isKnown(x[0]) ? '<span class="near-known">认识</span>' : '') + '</span>' +
       '<span class="near-note">' + esc(x[1]) + '</span></div>';
   }).join('');
@@ -671,10 +669,11 @@ function wireSense(w) {
       var row = b.closest('.sense-n'), open = row.querySelector('.near-peek');
       b.blur();                                  // 焦点留在这里的话，空格会再点一次，不是翻下一个词
       if (open) { open.remove(); return; }
-      var o = WORDS.filter(function (x) { return x.i === +b.dataset.near; })[0], r = rich(o);
-      row.insertAdjacentHTML('beforeend', '<p class="near-peek">' + (o.p ? '<span>/' + esc(o.p) + '/</span>' : '') +
-        esc(r && r.z ? r.z : o.z) + '</p>');
-      speak(o.w, b);
+      /* 词表里有的用词表的音标和释义，没有的用 DeepSeek 写的中文意思 */
+      var o = wordNamed(b.dataset.near), r = o && rich(o), zh = o ? (r && r.z ? r.z : o.z) : b.dataset.zh;
+      if (zh) row.insertAdjacentHTML('beforeend', '<p class="near-peek">' + (o && o.p ? '<span>/' + esc(o.p) + '/</span>' : '') +
+        esc(zh) + '</p>');
+      speak(b.dataset.near, b);
     };
   });
   var g = document.getElementById('senseGen'), d = document.getElementById('senseDel');
@@ -2257,7 +2256,7 @@ function renderQuiz(u, sel) {
          是两件事，很可能只是记住了这句话（第六次优化 2）。 */
       if (ok && !q.cloze) { setTimeout(next, 480); return; }
       quiz.waiting = true;
-      var r = rich(q.w);
+      var r = rich(q.w), s = ok ? null : senseOf(q.w);    // 答错才加「≈ 简单说法」，只用已有的，这里不问 DeepSeek
       /* 刚才读的是哪句就回放哪句（把空填上），没有的话给内置例句 */
       var ex = q.src || (r && r.e ? { e: r.e, t: r.t, from: 'book' } : null);
       document.getElementById('quizAfter').innerHTML =
@@ -2269,6 +2268,7 @@ function renderQuiz(u, sel) {
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
           '</div>' +
           '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : q.w.z) + '</p>' +
+          (s ? '<p class="qx-sense"><span>≈</span>' + esc(s.a) + '</p>' : '') +
           (r && r.r ? '<p class="root qx-root">' + rootHtml(r.r) + '</p>' : '') +
           (ex ? '<p class="qx-ex">' + bold(ex.e, q.w.w) +
                   (ex.from === 'book' ? '' : '<span class="qx-from">' +

@@ -1,7 +1,7 @@
-/* 「讲透」样板（第三十九次优化）：按单词取，g 大白话，a 已经会的简单说法，n 和近义词的区别 [词, 说明]。 */
+/* 「讲透」样板（第三十九次优化）：按单词取，g 大白话，a 已经会的简单说法，n 和近义词的区别 [词, 说明]，当范例给 DeepSeek 看的词多一项中文意思。 */
 window.SAT_SENSE={
 "abate":{"g":"猛烈的东西慢慢弱下去，常说风暴、疼痛、怒气、噪音。","a":"die down","n":[["mitigate","人主动去减轻坏影响；abate 多半是它自己弱下去"]]},
-"mitigate":{"g":"坏事躲不掉，想办法让后果轻一点，常说损失、风险、影响。","a":"make less bad","n":[["alleviate","多说疼痛、压力这类难受的感觉；mitigate 多说后果和风险"],["ameliorate","让状况真的变好；mitigate 只是让坏处小一点"]]},
+"mitigate":{"g":"坏事躲不掉，想办法让后果轻一点，常说损失、风险、影响。","a":"make less bad","n":[["alleviate","多说疼痛、压力这类难受的感觉；mitigate 多说后果和风险","减轻"],["ameliorate","让状况真的变好；mitigate 只是让坏处小一点","改善"]]},
 "alleviate":{"g":"让疼痛、压力、困难变轻一些，让人好受点。","a":"ease","n":[["mitigate","多说损失、风险这类后果；alleviate 多说人感受到的难受"],["abate","它自己弱下去；alleviate 是有东西把难受减轻了"]]},
 "mollify":{"g":"有人受了委屈或动了气，用好话或让步把情绪抚平。","a":"calm sb. down","n":[["placate","重点是让不满的人不再闹，常靠让步；mollify 重点是抚平情绪"]]},
 "placate":{"g":"用让步或安抚让不满的人消气，不再闹下去。","a":"calm sb. down","n":[["mollify","重点是抚平受伤的情绪或刚起的火气；placate 重点是把对方的不满摆平"]]},
@@ -15,7 +15,7 @@ window.SAT_SENSE={
 "transient":{"g":"只是暂时的，待一阵就走，常说症状、现象，也说流动人口。","a":"temporary","n":[["ephemeral","更强调转眼成空，常说名声、潮流"]]},
 "evanescent":{"g":"像雾气一样慢慢淡去、消失，多见于书面描写，常说光线、颜色、印象。","a":"fading","n":[["ephemeral","重点是存在时间短；evanescent 重点是渐渐消散的样子"]]},
 "laconic":{"g":"话极少，几个字就打发，常说一个人的说话风格，有种冷淡或酷的感觉。","a":"of few words","n":[["terse","多说某一次的回复，短得有点生硬；laconic 多说一贯话少"],["succinct","褒义，短而且把要点讲到了"]]},
-"terse":{"g":"短到有点生硬，常说回复或语气，可能显得冷淡甚至不高兴。","a":"short and sharp","n":[["succinct","褒义，重点是精炼，没有生硬的感觉"],["laconic","多说一个人一贯话少"]]},
+"terse":{"g":"短到有点生硬，常说回复或语气，可能显得冷淡甚至不高兴。","a":"short and sharp","n":[["succinct","褒义，重点是精炼，没有生硬的感觉","简明扼要的"],["laconic","多说一个人一贯话少","话少的"]]},
 "succinct":{"g":"用很少的话把要点讲清楚，是褒义词，常说摘要、解释。","a":"short and clear","n":[["terse","也短，但可能显得生硬、不客气"],["laconic","说人话少，不保证讲清楚"]]},
 "spurious":{"g":"看着是真的，其实是假的或没有依据，常说相关性、证据、说法。","a":"fake","n":[["specious","专说论点：听着有理，其实不成立"],["fallacious","专说推理：逻辑上有错"]]},
 "specious":{"g":"乍听有道理，细想不成立，常说论点、理由，带点骗人的意味。","a":"seems right, isn't","n":[["fallacious","重点是逻辑有错，不管听着像不像对的"],["spurious","重点是东西本身是假的"]]},
@@ -29,5 +29,5 @@ window.SAT_SENSE={
 "intransigent":{"g":"死守立场，一点不肯妥协，常说谈判方、政党、政府。","a":"won't compromise","n":[["recalcitrant","重点是不服管、不配合"],["obdurate","重点是铁了心，劝不动"]]},
 "obdurate":{"g":"任你怎么劝、怎么求都不动，铁了心，带点冷硬。","a":"stubborn","n":[["intransigent","重点是谈判和立场上不让步"],["recalcitrant","重点是不服管、不配合"]]},
 "enervate":{"g":"把人的体力和精力慢慢抽干，常说酷热、疾病。别看成 energize，意思几乎相反。","a":"wear out","n":[["debilitate","更重，常说疾病或伤让身体严重衰弱"]]},
-"sanguine":{"g":"对前景很乐观，情况不妙也不慌，常说 sanguine about，和「血红色」基本无关。","a":"hopeful","n":[["optimistic","日常用词；sanguine 更书面，常带「这种乐观未必有根据」"]]}
+"sanguine":{"g":"对前景很乐观，情况不妙也不慌，常说 sanguine about，和「血红色」基本无关。","a":"hopeful","n":[["optimistic","日常用词；sanguine 更书面，常带「这种乐观未必有根据」","乐观的"]]}
 };

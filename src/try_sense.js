@@ -43,7 +43,7 @@ async function ask(prompt, again) {
 
 function block(who, s) {
   return '**' + who + '** ≈ ' + s.a + '\n\n' + s.g + '\n\n' +
-    s.n.map(function (x) { return '- ' + x[0] + '：' + x[1]; }).join('\n') + '\n';
+    s.n.map(function (x) { return '- ' + x[0] + (x[2] ? '（' + x[2] + '）' : '') + '：' + x[1]; }).join('\n') + '\n';
 }
 
 async function one(word) {

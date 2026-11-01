@@ -354,10 +354,10 @@ function sensePrompt(w, shots) {
     '\n写三样：\n' +
     '- g：大白话，60 字以内。说清这个词描述什么情形、带什么感觉、在各种文章里常用来说什么。要写出它独有的地方，换成近义词就说不通。不要重复词典释义，不要写「指……」这种词典腔。\n' +
     '- a：学生已经会的简单英文说法，1 到 3 个常见词，词性和用法要和这个词一样，比如「使变糟」要写 make worse，不写 get worse。不能是这个词本身，也不能比它难。\n' +
-    '- n：1 到 2 个最容易和它混淆的词，格式是 [词, 区别]。不能是这个词的变形。区别 40 字以内，要说清怎么选，不要只说「意思相近」。确实没有容易混淆的词就给空数组。\n' +
+    '- n：1 到 2 个最容易和它混淆的词，格式是 [词, 区别, 中文意思]。不能是这个词的变形。区别 40 字以内，要说清怎么选，不要只说「意思相近」。中文意思 8 字以内，是那个词最常用的意思。确实没有容易混淆的词就给空数组。\n' +
     '\n拿不准的用法和搭配不要写，不要编造。文字里不要用英文双引号，要引用就用「」。\n' +
     '\n范例：\n' + examples.join('\n') + '\n' +
-    '\n只返回 JSON：{"g": "大白话", "a": "简单说法", "n": [["词", "区别"]]}';
+    '\n只返回 JSON：{"g": "大白话", "a": "简单说法", "n": [["词", "区别", "中文意思"]]}';
 }
 /* 模型的返回不一定规整：缺大白话或简单说法算失败，近义词里的坏条目只去掉，不算失败 */
 function cleanSense(o, word) {
@@ -370,8 +370,10 @@ function cleanSense(o, word) {
   var g = str(o.g), a = str(o.a), key = stem(word);
   if (!g || !a || stem(a) === key) return null;
   var n = (Array.isArray(o.n) ? o.n : []).map(function (x) {
-    return Array.isArray(x) ? [str(x[0]), str(x[1])] : ['', ''];
-  }).filter(function (x) { return x[0] && x[1] && stem(x[0]) !== key; });
+    return Array.isArray(x) ? [str(x[0]), str(x[1]), str(x[2])] : ['', '', ''];
+  }).filter(function (x) { return x[0] && x[1] && stem(x[0]) !== key; }).map(function (x) {
+    return x[2] ? x : x.slice(0, 2);
+  });
   return { g: g, a: a, n: n.slice(0, 3) };
 }
 

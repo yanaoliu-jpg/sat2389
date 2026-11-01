@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { nearOrder, cleanSense, sensePrompt, dsModel, dsBody } = require('../pure.js');
+const { nearOrder, SENSE_SHOTS, cleanSense, sensePrompt, dsModel, dsBody } = require('../pure.js');
 
 const win = {};
 const ctx = vm.createContext({ window: win });
@@ -121,4 +121,22 @@ test('dsBody：关掉思考模式，按需要 JSON', function () {
   assert.deepEqual(b.thinking, { type: 'disabled' });
   assert.deepEqual(b.response_format, { type: 'json_object' });
   assert.ok(!('response_format' in dsBody('问题', 'deepseek-flash', true)));
+});
+
+test('cleanSense：留下近义词的中文意思，没写的就是两项', function () {
+  const n = cleanSense({ g: 'x', a: 'y', n: [['subside', '说明', ' 平息 '], ['ebb', '说明', '  '], ['wane', '说明']] }, 'abate').n;
+  assert.deepEqual(n, [['subside', '说明', '平息'], ['ebb', '说明'], ['wane', '说明']]);
+});
+
+test('sensePrompt：要近义词的中文意思，返回格式里也写明', function () {
+  const p = sensePrompt({ w: 'tenuous', z: 'a.细的' }, []);
+  ['格式是 [词, 区别, 中文意思]', '["词", "区别", "中文意思"]'].forEach(function (s) {
+    assert.ok(p.includes(s), '提示词里要有 ' + s);
+  });
+});
+
+test('讲透：当范例的手写词都写了近义词的中文意思', function () {
+  SENSE_SHOTS.forEach(function (k) {
+    SENSE[k].n.forEach(function (x) { assert.ok(x[2], k + ' 的 ' + x[0] + ' 要有中文意思'); });
+  });
 });

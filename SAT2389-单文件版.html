@@ -627,6 +627,8 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 .qx-zh{margin:9px 0 0;font-size:1rem}
 .qx-zh .pos{font-family:var(--util);font-size:.72rem;color:var(--seal);border:1px solid var(--seal-soft);
   background:var(--seal-soft);border-radius:5px;padding:1px 6px;margin-right:7px}
+.qx-sense{margin:7px 0 0;font-family:var(--display);font-size:1.12rem;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
+.qx-sense span{color:var(--seal);margin-right:.32em}
 .qx-root{margin-top:9px;font-size:.88rem}
 .qx-ex{font-family:var(--display);font-size:1.02rem;line-height:1.55;margin:12px 0 0;
   padding-top:12px;border-top:1px solid var(--rule-2)}
@@ -15465,10 +15467,10 @@ window.IELTS_RICH={
 10638:{"w":"majority","e":"The majority of respondents favoured the plan.","t":"**大多数**受访者赞成该计划。"},
 10639:{"w":"ratio","e":"The ratio of boys to girls was 3:2.","t":"男女**比例**为 3:2。"},
 };
-/* 「讲透」样板（第三十九次优化）：按单词取，g 大白话，a 已经会的简单说法，n 和近义词的区别 [词, 说明]。 */
+/* 「讲透」样板（第三十九次优化）：按单词取，g 大白话，a 已经会的简单说法，n 和近义词的区别 [词, 说明]，当范例给 DeepSeek 看的词多一项中文意思。 */
 window.SAT_SENSE={
 "abate":{"g":"猛烈的东西慢慢弱下去，常说风暴、疼痛、怒气、噪音。","a":"die down","n":[["mitigate","人主动去减轻坏影响；abate 多半是它自己弱下去"]]},
-"mitigate":{"g":"坏事躲不掉，想办法让后果轻一点，常说损失、风险、影响。","a":"make less bad","n":[["alleviate","多说疼痛、压力这类难受的感觉；mitigate 多说后果和风险"],["ameliorate","让状况真的变好；mitigate 只是让坏处小一点"]]},
+"mitigate":{"g":"坏事躲不掉，想办法让后果轻一点，常说损失、风险、影响。","a":"make less bad","n":[["alleviate","多说疼痛、压力这类难受的感觉；mitigate 多说后果和风险","减轻"],["ameliorate","让状况真的变好；mitigate 只是让坏处小一点","改善"]]},
 "alleviate":{"g":"让疼痛、压力、困难变轻一些，让人好受点。","a":"ease","n":[["mitigate","多说损失、风险这类后果；alleviate 多说人感受到的难受"],["abate","它自己弱下去；alleviate 是有东西把难受减轻了"]]},
 "mollify":{"g":"有人受了委屈或动了气，用好话或让步把情绪抚平。","a":"calm sb. down","n":[["placate","重点是让不满的人不再闹，常靠让步；mollify 重点是抚平情绪"]]},
 "placate":{"g":"用让步或安抚让不满的人消气，不再闹下去。","a":"calm sb. down","n":[["mollify","重点是抚平受伤的情绪或刚起的火气；placate 重点是把对方的不满摆平"]]},
@@ -15482,7 +15484,7 @@ window.SAT_SENSE={
 "transient":{"g":"只是暂时的，待一阵就走，常说症状、现象，也说流动人口。","a":"temporary","n":[["ephemeral","更强调转眼成空，常说名声、潮流"]]},
 "evanescent":{"g":"像雾气一样慢慢淡去、消失，多见于书面描写，常说光线、颜色、印象。","a":"fading","n":[["ephemeral","重点是存在时间短；evanescent 重点是渐渐消散的样子"]]},
 "laconic":{"g":"话极少，几个字就打发，常说一个人的说话风格，有种冷淡或酷的感觉。","a":"of few words","n":[["terse","多说某一次的回复，短得有点生硬；laconic 多说一贯话少"],["succinct","褒义，短而且把要点讲到了"]]},
-"terse":{"g":"短到有点生硬，常说回复或语气，可能显得冷淡甚至不高兴。","a":"short and sharp","n":[["succinct","褒义，重点是精炼，没有生硬的感觉"],["laconic","多说一个人一贯话少"]]},
+"terse":{"g":"短到有点生硬，常说回复或语气，可能显得冷淡甚至不高兴。","a":"short and sharp","n":[["succinct","褒义，重点是精炼，没有生硬的感觉","简明扼要的"],["laconic","多说一个人一贯话少","话少的"]]},
 "succinct":{"g":"用很少的话把要点讲清楚，是褒义词，常说摘要、解释。","a":"short and clear","n":[["terse","也短，但可能显得生硬、不客气"],["laconic","说人话少，不保证讲清楚"]]},
 "spurious":{"g":"看着是真的，其实是假的或没有依据，常说相关性、证据、说法。","a":"fake","n":[["specious","专说论点：听着有理，其实不成立"],["fallacious","专说推理：逻辑上有错"]]},
 "specious":{"g":"乍听有道理，细想不成立，常说论点、理由，带点骗人的意味。","a":"seems right, isn't","n":[["fallacious","重点是逻辑有错，不管听着像不像对的"],["spurious","重点是东西本身是假的"]]},
@@ -15496,7 +15498,7 @@ window.SAT_SENSE={
 "intransigent":{"g":"死守立场，一点不肯妥协，常说谈判方、政党、政府。","a":"won't compromise","n":[["recalcitrant","重点是不服管、不配合"],["obdurate","重点是铁了心，劝不动"]]},
 "obdurate":{"g":"任你怎么劝、怎么求都不动，铁了心，带点冷硬。","a":"stubborn","n":[["intransigent","重点是谈判和立场上不让步"],["recalcitrant","重点是不服管、不配合"]]},
 "enervate":{"g":"把人的体力和精力慢慢抽干，常说酷热、疾病。别看成 energize，意思几乎相反。","a":"wear out","n":[["debilitate","更重，常说疾病或伤让身体严重衰弱"]]},
-"sanguine":{"g":"对前景很乐观，情况不妙也不慌，常说 sanguine about，和「血红色」基本无关。","a":"hopeful","n":[["optimistic","日常用词；sanguine 更书面，常带「这种乐观未必有根据」"]]}
+"sanguine":{"g":"对前景很乐观，情况不妙也不慌，常说 sanguine about，和「血红色」基本无关。","a":"hopeful","n":[["optimistic","日常用词；sanguine 更书面，常带「这种乐观未必有根据」","乐观的"]]}
 };
 /* 有道单词录音的音量表（第二十四次优化），由 src/measure_yd.py 生成：
    每个数是要压低多少 dB，把偏响的录音压到 -21 LUFS。
@@ -15861,10 +15863,10 @@ function sensePrompt(w, shots) {
     '\n写三样：\n' +
     '- g：大白话，60 字以内。说清这个词描述什么情形、带什么感觉、在各种文章里常用来说什么。要写出它独有的地方，换成近义词就说不通。不要重复词典释义，不要写「指……」这种词典腔。\n' +
     '- a：学生已经会的简单英文说法，1 到 3 个常见词，词性和用法要和这个词一样，比如「使变糟」要写 make worse，不写 get worse。不能是这个词本身，也不能比它难。\n' +
-    '- n：1 到 2 个最容易和它混淆的词，格式是 [词, 区别]。不能是这个词的变形。区别 40 字以内，要说清怎么选，不要只说「意思相近」。确实没有容易混淆的词就给空数组。\n' +
+    '- n：1 到 2 个最容易和它混淆的词，格式是 [词, 区别, 中文意思]。不能是这个词的变形。区别 40 字以内，要说清怎么选，不要只说「意思相近」。中文意思 8 字以内，是那个词最常用的意思。确实没有容易混淆的词就给空数组。\n' +
     '\n拿不准的用法和搭配不要写，不要编造。文字里不要用英文双引号，要引用就用「」。\n' +
     '\n范例：\n' + examples.join('\n') + '\n' +
-    '\n只返回 JSON：{"g": "大白话", "a": "简单说法", "n": [["词", "区别"]]}';
+    '\n只返回 JSON：{"g": "大白话", "a": "简单说法", "n": [["词", "区别", "中文意思"]]}';
 }
 /* 模型的返回不一定规整：缺大白话或简单说法算失败，近义词里的坏条目只去掉，不算失败 */
 function cleanSense(o, word) {
@@ -15877,8 +15879,10 @@ function cleanSense(o, word) {
   var g = str(o.g), a = str(o.a), key = stem(word);
   if (!g || !a || stem(a) === key) return null;
   var n = (Array.isArray(o.n) ? o.n : []).map(function (x) {
-    return Array.isArray(x) ? [str(x[0]), str(x[1])] : ['', ''];
-  }).filter(function (x) { return x[0] && x[1] && stem(x[0]) !== key; });
+    return Array.isArray(x) ? [str(x[0]), str(x[1]), str(x[2])] : ['', '', ''];
+  }).filter(function (x) { return x[0] && x[1] && stem(x[0]) !== key; }).map(function (x) {
+    return x[2] ? x : x.slice(0, 2);
+  });
   return { g: g, a: a, n: n.slice(0, 3) };
 }
 
@@ -16556,10 +16560,8 @@ function senseHtml(w) {
       ' title="用设置里的 DeepSeek Key 生成大白话和近义词的区别">讲透这个词</button>' + note + '</div>';
   }
   var near = nearOrder(s.n, isKnown).map(function (x) {
-    var o = wordNamed(x[0]);
     return '<div class="sense-n"><span class="near-head">' +
-      (o ? '<button class="near-w" data-near="' + o.i + '" type="button">' + esc(x[0]) + '</button>'
-         : '<b class="near-w">' + esc(x[0]) + '</b>') +
+      '<button class="near-w" data-near="' + esc(x[0]) + '" data-zh="' + esc(x[2] || '') + '" type="button">' + esc(x[0]) + '</button>' +
       (isKnown(x[0]) ? '<span class="near-known">认识</span>' : '') + '</span>' +
       '<span class="near-note">' + esc(x[1]) + '</span></div>';
   }).join('');
@@ -16586,10 +16588,11 @@ function wireSense(w) {
       var row = b.closest('.sense-n'), open = row.querySelector('.near-peek');
       b.blur();                                  // 焦点留在这里的话，空格会再点一次，不是翻下一个词
       if (open) { open.remove(); return; }
-      var o = WORDS.filter(function (x) { return x.i === +b.dataset.near; })[0], r = rich(o);
-      row.insertAdjacentHTML('beforeend', '<p class="near-peek">' + (o.p ? '<span>/' + esc(o.p) + '/</span>' : '') +
-        esc(r && r.z ? r.z : o.z) + '</p>');
-      speak(o.w, b);
+      /* 词表里有的用词表的音标和释义，没有的用 DeepSeek 写的中文意思 */
+      var o = wordNamed(b.dataset.near), r = o && rich(o), zh = o ? (r && r.z ? r.z : o.z) : b.dataset.zh;
+      if (zh) row.insertAdjacentHTML('beforeend', '<p class="near-peek">' + (o && o.p ? '<span>/' + esc(o.p) + '/</span>' : '') +
+        esc(zh) + '</p>');
+      speak(b.dataset.near, b);
     };
   });
   var g = document.getElementById('senseGen'), d = document.getElementById('senseDel');
@@ -18172,7 +18175,7 @@ function renderQuiz(u, sel) {
          是两件事，很可能只是记住了这句话（第六次优化 2）。 */
       if (ok && !q.cloze) { setTimeout(next, 480); return; }
       quiz.waiting = true;
-      var r = rich(q.w);
+      var r = rich(q.w), s = ok ? null : senseOf(q.w);    // 答错才加「≈ 简单说法」，只用已有的，这里不问 DeepSeek
       /* 刚才读的是哪句就回放哪句（把空填上），没有的话给内置例句 */
       var ex = q.src || (r && r.e ? { e: r.e, t: r.t, from: 'book' } : null);
       document.getElementById('quizAfter').innerHTML =
@@ -18184,6 +18187,7 @@ function renderQuiz(u, sel) {
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
           '</div>' +
           '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : q.w.z) + '</p>' +
+          (s ? '<p class="qx-sense"><span>≈</span>' + esc(s.a) + '</p>' : '') +
           (r && r.r ? '<p class="root qx-root">' + rootHtml(r.r) + '</p>' : '') +
           (ex ? '<p class="qx-ex">' + bold(ex.e, q.w.w) +
                   (ex.from === 'book' ? '' : '<span class="qx-from">' +
