@@ -542,14 +542,15 @@ function paintLvl(el, i) {                 // 只换一行／一个点的颜色�
   el.classList.remove('k', 'f', 'x');
   if (cls(i)) el.classList.add(cls(i));
 }
-/* 浏览页一行上的「不会」：点一下归到不认识，再点一下撤回到标之前（第二十五次优化）。
+/* 浏览页一行上的「不会」：点一下归到不认识（第二十五次优化），再点一下就是会了，标成认识，
+   答题卡上由蓝变红，不再退回未学变白（第四十次优化）。
    认识的词标错了也能撤干净，连带记上的那次「错过」一起退掉。 */
 var rowMiss = {};                          // i → 标之前的等级，只留到关页面
 function toggleMiss(i) {
   if (lvl(i) !== 1) { rowMiss[i] = lvl(i); setLvl(i, 1); return; }
-  var p = rowMiss[i] || 0;
+  var p = rowMiss[i];
   delete rowMiss[i];
-  setLvl(i, p);
+  setLvl(i, 3);
   if (p === 3 && store.hist[i]) {
     if (--store.hist[i] <= 0) delete store.hist[i];
     save();
@@ -1488,7 +1489,7 @@ function renderBrowse(u) {
             '<button data-del2="' + w.i + '" type="button" title="删掉这个词">×</button></span>'
         : canMiss
         ? '<span class="row-acts"><button class="row-miss' + (lvl(w.i) === 1 ? ' on' : '') + '" data-miss="' + w.i +
-            '" type="button" title="归到不认识，再点一下撤回">不会</button>' + star + '</span>'
+            '" type="button" title="归到不认识，再点一下标成认识">不会</button>' + star + '</span>'
         : star) +
       '</div>';
   }).join('');
