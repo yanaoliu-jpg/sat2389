@@ -17119,8 +17119,23 @@ function renderHome() {
 
 /* ================= UNIT ================= */
 function unitBase(u) { return unitMeta(u).t || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书第 ' + u + ' 页'); }
+/* 改过名的单元，大标题换成新名字，「首词 — 末词」退到上面那行小字里（第四十一次优化）。
+   导入的单元本来叫「导入 · 文件名」、自建的叫「我加的词」，这两种还算没改过名，标题照旧是首词 — 末词。 */
+function unitTitle(u) {
+  if (store.uname[u]) return store.uname[u];
+  var c = customUnit(u);
+  if (!c || !c.t || /^导入 · /.test(c.t) || (c.manual && c.t === '我加的词')) return '';
+  return c.t;
+}
+function unitSpan(u) { var m = unitMeta(u); return m.a ? m.a + ' — ' + m.b : ''; }
 function unitEyebrow(u) {
-  return (store.uname[u] ? store.uname[u] + '（原来是 ' + unitBase(u) + '）' : unitBase(u)) + ' · ' + unitMeta(u).n + ' 词';
+  var n = unitMeta(u).n + ' 词';
+  if (!unitTitle(u)) return unitBase(u) + ' · ' + n;
+  return (store.uname[u] ? '原来是 ' + unitBase(u) + ' · ' : '') + (unitSpan(u) ? unitSpan(u) + ' · ' : '') + n;
+}
+function unitH1(u) {
+  var t = unitTitle(u), m = unitMeta(u);
+  return t ? esc(t) : esc(m.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(m.b);
 }
 function unitHeader(u, tab) {
   var meta = unitMeta(u), g = groupOf(u), star = u === STAR_U;
@@ -17130,7 +17145,7 @@ function unitHeader(u, tab) {
       (star ? '<p class="eyebrow">' + meta.n + ' 个词</p><h1>生词本</h1>'
         : '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
             '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
-          '<h1>' + esc(meta.a) + ' <span style="color:var(--ink-3);font-weight:400">—</span> ' + esc(meta.b) + '</h1>') +
+          '<h1 id="unitTitle">' + unitH1(u) + '</h1>') +
     '</div>' +
     '<div class="head-tools">' +
       (meta.imported ? '<button class="btn btn-ghost" id="dropUnit" type="button">删掉这个单元</button>' : '') +
@@ -19209,8 +19224,10 @@ function saveRename() {
   save(); mountCustom();
   document.getElementById('renameModal').hidden = true;
   /* 测验、拼写做到一半不能重画，这道题答过的样子会没了，只换标题那行字 */
-  if (route.tab === 'quiz' || route.tab === 'spell') document.getElementById('unitEyebrow').textContent = unitEyebrow(renaming);
-  else render();
+  if (route.tab === 'quiz' || route.tab === 'spell') {
+    document.getElementById('unitEyebrow').textContent = unitEyebrow(renaming);
+    document.getElementById('unitTitle').innerHTML = unitH1(renaming);
+  } else render();
 }
 function openAdd(u, word) {
   addTarget = u == null ? MANUAL_U : u;
