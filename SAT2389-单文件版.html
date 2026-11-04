@@ -150,7 +150,6 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .stat b{display:block;font-size:1.65rem;font-weight:500;line-height:1.1;font-variant-numeric:tabular-nums}
 .stat span{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
 .stat-known b{color:var(--seal)}
-.shelf{margin:10px 0 16px}
 .unit-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
 .unit-card{
   position:relative;text-align:left;background:var(--card);border:1px solid var(--rule);
@@ -16058,7 +16057,7 @@ WORDS.forEach(function (w) {   // 词根是词本身的，换了例句也还适�
 var LS = 'sat2389.v1';
 var DEF_SET = { v: 4, accent: 'en-US', rate: 0.95, vol: 1, voice: '', auto: true,
                 hideZh: false, hideEx: false, hint: true, sort: 'book', qn: 20, qkind: 'mix', qagain: true,
-                exlen: 'mid', zhSize: 'm', shuf: false, wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
+                exlen: 'mid', zhSize: 'm', wsrc: 'yd', autoAt: 'reveal', hue: null, hue2: null, chroma: 30, uprog: 'mosaic',
                 dskey: '', dsmodel: dsModel() };
 var store = { prog: {}, hist: {}, star: {}, sel: {}, gen: {}, sense: {}, col: {}, custom: [], pronx: {}, uname: {}, set: {}, theme: '' };
 try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); for (var k in o) store[k] = o[k]; } } catch (e) {}
@@ -16067,7 +16066,7 @@ if (store.set.v !== 4) {                 // v1 kept en-GB; v2 had no volume/sort
   store.set.v = 4;
   if (store.set.accent !== 'en-US' && store.set.accent !== 'en-GB') store.set.accent = 'en-US';
 }
-delete store.set.prov; delete store.set.key; delete store.set.model;   // 第二十八次优化只留 DeepSeek，旧的 Anthropic Key 不留在本地
+delete store.set.prov; delete store.set.key; delete store.set.model; delete store.set.shuf;   // 第二十八次优化只留 DeepSeek，旧的 Anthropic Key 不留在本地
 store.set.dsmodel = dsModel(store.set.dsmodel);
 if (store.set.sort === 'once' || store.set.sort === 'fresh') store.set.sort = 'book';   // 第二十八次优化删了这两种排序
 if (!(store.pv >= 2)) {                  // levels used to be {1 模糊, 2 认识}; 不认识 stored nothing
@@ -16632,16 +16631,6 @@ function unitWords(u) {
   WORDS.forEach(function (w) { at[w.i] = w; });
   return ids.map(function (i) { return at[i]; }).filter(Boolean);
 }
-/* 首页眼下那一套的词：原版是全部词条，乱序版是乱序单元里的词（PDF 有几个词印了两遍，去重）。
-   首页的已掌握 / 待复习 / 整理错词 / 测验错词都按它算 */
-function homePool() {
-  if (!store.set.shuf) return WORDS;
-  var seen = {}, out = [];
-  UNITS.forEach(function (x) {
-    if (x.ids) unitWords(x.u).forEach(function (w) { if (!seen[w.i]) { seen[w.i] = 1; out.push(w); } });
-  });
-  return out;
-}
 function unitMeta(u) {
   if (u === STAR_U) return { u: u, n: starWords().length, a: '', b: '', t: '生词本' };
   return UNITS.filter(function (x) { return x.u === u; })[0] || { n: 0, a: '', b: '' };
@@ -17034,10 +17023,28 @@ function defaultGroups() {
     return UNITS.filter(function (x) { return x.u >= a && x.u <= b && !x.imported; }).map(function (x) { return x.u; });
   }
   return [{ id: 'sat', name: 'SAT 词汇', us: pick(1, 37) },
+          { id: 'shuf', name: SHUF_NAME, us: pick(3001, 3999) },
           { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
           { id: 'ielts', name: '雅思核心词汇', us: pick(2001, 2008) }];
 }
-if (!store.groups) store.groups = defaultGroups();
+/* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
+   开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
+   以后撤销或改了这个组就不再动。乱序单元已经在哪个组里的不挪。 */
+var SHUF_NAME = 'SAT2300单词乱序版';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; save(); }
+if (store.sg !== 1) {
+  try {
+    var inG = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG[u] = 1; }); });
+    var shufUs = UNITS.filter(function (x) { return x.ids && !inG[x.u]; }).map(function (x) { return x.u; });
+    if (shufUs.length) {
+      var at = 0;
+      store.groups.forEach(function (g, k) { if (g.id === 'sat') at = k + 1; });
+      store.groups.splice(at, 0, { id: 'shuf', name: SHUF_NAME, us: shufUs });
+    }
+  } catch (e) {}
+  store.sg = 1; save();
+}
 function groupOf(u) { return store.groups.filter(function (g) { return g.us.indexOf(u) >= 0; })[0] || null; }
 function groupById(id) { return store.groups.filter(function (g) { return g.id === id; })[0] || null; }
 function groupUnits(g) { return UNITS.filter(function (x) { return g.us.indexOf(x.u) >= 0; }); }
@@ -17158,40 +17165,29 @@ function dropGroup() {
 
 /* ================= HOME ================= */
 function renderHome() {
-  var pool = homePool(), all = tally(pool);
+  var pool = WORDS, all = tally(pool);
   var mine = { units: 0, words: 0 };
   UNITS.forEach(function (x) { if (x.imported) { mine.units++; mine.words += x.n; } });
   var toefl = { units: 0, words: 0 };            // u 1001-1048：新东方《绿宝书》托福词汇（第十二次优化 2）
   UNITS.forEach(function (x) { if (x.u >= 1001 && x.u <= 1048) { toefl.units++; toefl.words += x.n; } });
-  /* 首页一次只摆一套单元（第二十一次优化）：原版是原书、错词本、托福、雅思和自己导入的那些；
-     乱序版是带 ids 的单元。标题下面的开关切换，记在 store.set.shuf */
-  var shuf = !!store.set.shuf;
-  var shown = UNITS.filter(function (x) { return shuf ? !!x.ids : !x.ids; });
+  /* 乱序版单元第四十六次优化起是首页的一个分组（SHUF_NAME），不再单独一套；
+     总词条照旧数 WORDS —— 乱序单元只是指向原书词条，不会重复算 */
+  var shown = UNITS;
   /* 合并时要挑的是单元，分组收起来，全摊开 */
   var loose = merging ? shown : shown.filter(function (x) { return !groupOf(x.u); });
-  var groups = merging ? [] : store.groups.filter(function (g) {
-    var us = groupUnits(g);
-    return us.length ? us.some(function (x) { return !!x.ids === shuf; }) : !shuf;
-  });
+  var groups = merging ? [] : store.groups;
   var cards = loose.map(unitCardHtml).join('');
   view.innerHTML =
     '<div class="home-head"><div>' +
-      '<p class="eyebrow">' + (shuf ? '乱序版 · ' : '') + shown.length + ' 个单元 · ' + pool.length + ' 个词条</p>' +
+      '<p class="eyebrow">' + shown.length + ' 个单元 · ' + pool.length + ' 个词条</p>' +
       '<h1>我的词库。</h1>' +
-      '<div class="tabs shelf" role="tablist" aria-label="首页摆哪一套单元">' +
-        '<button role="tab" data-shelf="0" type="button" aria-selected="' + !shuf + '">原版</button>' +
-        '<button role="tab" data-shelf="1" type="button" aria-selected="' + shuf + '">乱序版</button>' +
-      '</div>' +
-      (shuf
-        ? '<p class="lede">照《2300 高密度便携版》分单元：那份 PDF 竖着的每一列是一个单元，从 a 到 z 都有；' +
-            '单元里的词打乱过一次、顺序固定，想每次换个顺序就在单元里点「随机」。' +
-            '学习进度跟原版共用 —— 在这里标了认识，原版里同一个词也算认识。</p>'
-        : '<p class="lede">底子是《SAT词汇2300打印版》的 2389 个词条（原书每页 68 词就是一个单元），' +
+      ('<p class="lede">底子是《SAT词汇2300打印版》的 2389 个词条（原书每页 68 词就是一个单元），' +
             '外加一个「错词本」单元；另外收了新东方《绿宝书》托福词汇全本，' +
             toefl.units + ' 个 List、' + toefl.words + ' 个词条，一 List 一个单元' +
             (mine.units ? '；再往后是你自己攒的 ' + mine.units + ' 个单元、' + mine.words + ' 个词条 —— 导入的词表、手动加的词、背过和复习过的都收在这里'
                         : '。往后凡是你背过、复习过的词，导进来或手动加进来，都会排在后面') +
-            '。每张词卡有音标、发音、例句，难词还附了词根。</p>') +
+            '。每张词卡有音标、发音、例句，难词还附了词根。' +
+            '「' + SHUF_NAME + '」照《2300 高密度便携版》竖着一列一个单元、顺序打乱，学习进度跟原书共用。</p>') +
     '</div><div class="stat-row">' +
       '<div class="stat stat-known"><b>' + all.known + '</b><span>已掌握</span></div>' +
       '<button class="stat stat-shaky" id="allShaky" type="button"' + (all.shaky ? '' : ' disabled') +
@@ -17202,12 +17198,11 @@ function renderHome() {
       (all.shaky ? '<button class="btn" id="sweepAll" type="button">整理错词 · ' + all.shaky + ' 个重过一遍</button>' : '') +
       (all.shaky ? '<button class="btn btn-ghost" id="quizAll" type="button">测验错词 · ' + qCount(all.shaky) + ' 题</button>' : '') +
       (selCount() ? '<button class="btn btn-ghost" id="quizSel" type="button">测验选中的词 · ' + selCount() + ' 个</button>' : '') +
-      (shuf ? '' :                                  // 导入、手动加、合并都落在原版那一套里
-        '<button class="btn btn-ghost" id="openImp" type="button">导入词表</button>' +
-        '<button class="btn btn-ghost" id="openAdd" type="button">手动添加</button>' +
-        (store.custom.length >= 2
-          ? '<button class="btn btn-ghost' + (merging ? ' on' : '') + '" id="mergeOn" type="button">' +
-            (merging ? '✓ 挑要合并的单元' : '合并单元') + '</button>' : '')) +
+      '<button class="btn btn-ghost" id="openImp" type="button">导入词表</button>' +
+      '<button class="btn btn-ghost" id="openAdd" type="button">手动添加</button>' +
+      (store.custom.length >= 2
+        ? '<button class="btn btn-ghost' + (merging ? ' on' : '') + '" id="mergeOn" type="button">' +
+          (merging ? '✓ 挑要合并的单元' : '合并单元') + '</button>' : '') +
       (merging ? '' : '<button class="btn btn-ghost" id="newGroup" type="button">新建分组</button>') +
     '</div>' +
     (groups.length ? '<div class="group-grid">' + groups.map(groupCardHtml).join('') + '</div>' : '') +
@@ -17232,15 +17227,6 @@ function renderHome() {
   });
   wireGroupCards();
   var ng = document.getElementById('newGroup'); if (ng) ng.onclick = function () { openGroup(null); };
-  Array.prototype.forEach.call(view.querySelectorAll('[data-shelf]'), function (b) {
-    b.onclick = function () {
-      var want = b.dataset.shelf === '1';
-      if (want === shuf) return;
-      store.set.shuf = want; save();
-      merging = false; mergeSel = {}; mergeTitle = ''; mergeMsg = '';   // 合并只管原版里的单元，换一套就收起来
-      renderHome();
-    };
-  });
   var mo = document.getElementById('mergeOn');
   if (mo) mo.onclick = function () {
     merging = !merging;
@@ -17248,7 +17234,7 @@ function renderHome() {
     renderHome();
   };
   wireMerge();
-  function sweep() { startReview(pool.filter(shaky), shuf ? '乱序版错词' : '全部错词', { name: 'home' }); }
+  function sweep() { startReview(pool.filter(shaky), '全部错词', { name: 'home' }); }
   var sb = document.getElementById('sweepAll'); if (sb) sb.onclick = sweep;
   var as = document.getElementById('allShaky'); if (as && all.shaky) as.onclick = sweep;
   var qa = document.getElementById('quizAll');
@@ -17257,7 +17243,7 @@ function renderHome() {
   if (qs) qs.onclick = function () { quiz = null; go({ name: 'quiz', scope: 'sel' }); };
   /* 首页原来还有「曾错过的词」入口，第四十五次优化删了：名单只进不出，复习时标认识也不会离开，
      越攒越多（用户那里攒到 434 个），清不完就没法当复习清单用。词卡上的「曾错过」小标还在。 */
-  var oi = document.getElementById('openImp'); if (oi) oi.onclick = openImport;   // 乱序版里不摆这两个
+  var oi = document.getElementById('openImp'); if (oi) oi.onclick = openImport;
   /* 得裹一层：openAdd(u, word) 第一个参数是单元号，直接当 onclick 会把
      MouseEvent 当成单元号传进去 —— addTarget 变成一个事件对象，
      点「添加」就只会说「这个单元不在了」。（第八次优化给 openAdd 加参数时漏掉的） */
@@ -18084,7 +18070,7 @@ function quizPool(u, sel) {
   if (sel) return selWords();
   if (u === STAR_U) return ordered(u);        // 生词本是自己挑的词，全都考，不只考标了不认识的
   /* 单元里正筛着某个颜色，就只考这一批 —— ordered() 已经把筛选算进去了 */
-  return (u == null ? homePool() : ordered(u)).filter(shaky);
+  return (u == null ? WORDS : ordered(u)).filter(shaky);
 }
 
 /* ---- 干扰项按相似度挑（第五次优化 6） ----
@@ -18195,14 +18181,13 @@ function buildQuiz(key, pool, swept) {
 }
 function renderQuiz(u, sel) {
   var all = u == null;
-  var shuf = all && !sel && !!store.set.shuf;       // 从乱序版首页点进来的，只考乱序版里的错词
-  var key = sel ? 'sel' : all ? (shuf ? 'all-shuf' : 'all') : 'u' + u;
+  var key = sel ? 'sel' : all ? 'all' : 'u' + u;
   var pool = quizPool(all ? null : u, sel);
   var head = all
     ? '<button class="back" id="back" type="button">← 返回目录</button>' +
       '<div class="unit-head"><div><p class="eyebrow">' +
-        (sel ? '只考自己勾出来的那一批' : '只考' + (shuf ? '乱序版' : '') + '「整理错词」里的词') + '</p><h1>' +
-        (sel ? '选中测验' : shuf ? '乱序版错词测验' : '错词测验') + '</h1></div></div>'
+        (sel ? '只考自己勾出来的那一批' : '只考「整理错词」里的词') + '</p><h1>' +
+        (sel ? '选中测验' : '错词测验') + '</h1></div></div>'
     : unitHeader(u, 'quiz');
   function wire() {
     if (all) document.getElementById('back').onclick = function () { go({ name: 'home' }); };
