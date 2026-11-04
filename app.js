@@ -76,13 +76,36 @@ if (store.iv !== 1) {
     store.iv = 1;
   } catch (e) {}                         // 迁移出岔子也不能挡着应用起不来：保持原样，下次再试
 }
+/* 第四十四次优化（用户要的）：导入的「SAT重点词汇冲刺表_2026年8月」810 条，原表前 540 条是「高频单词」、
+   后 270 条是「高频搭配」，一次性拆成「SAT高频词汇表·词汇」和「SAT高频词汇表·短语」两个单元。
+   认法不看单元名（改过名也认得）：首词 exploiting、末词 works away、第 541 条起全是短语。
+   词条编号不变，进度、星标、颜色、选中都跟着词走；原单元在哪个分组，短语单元也放进去，紧跟在后面。 */
+var unitSplit = 0;
+if (store.sv !== 1) {
+  try {
+    store.custom.forEach(function (c) {
+      var ws = c.words || [];
+      if (unitSplit || c.manual || ws.length < 2 || ws[0].w !== 'exploiting' ||
+          ws[ws.length - 1].w !== 'works away' || phraseStart(ws) !== 540) return;
+      var nu = 101;
+      store.custom.forEach(function (x) { if (x.u >= nu) nu = x.u + 1; });
+      unitSplit = c.u;
+      store.custom = splitCustomUnit(store.custom, c.u, 540, 'SAT高频词汇表·词汇', 'SAT高频词汇表·短语', nu);
+      (store.groups || []).forEach(function (g) {
+        var k = g.us.indexOf(c.u);
+        if (k >= 0) g.us.splice(k + 1, 0, nu);
+      });
+      store.sv = 1;                      // 拆过才记：别的设备以后才导入这张表，下次打开照样拆；拆过以后再合回去就不再动
+    });
+  } catch (e) {}
+}
 var save = (function () {
   var t = null;
   return function () { clearTimeout(t); t = setTimeout(function () {
     try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {}
   }, 200); };
 })();
-if (dropRel || idMoved || histReset) save();
+if (dropRel || idMoved || histReset || unitSplit) save();
 
 /* ---------- imported units ---------- */
 function mountCustom() {
@@ -2060,6 +2083,8 @@ function similarity(a, b) {
   while (i < m && A.lw.charAt(i) === B.lw.charAt(i)) i++;
   s += Math.min(i, 5) * 0.6;                     // 拼写开头相同：abstruse / abstract
   if (a.u === b.u) s += 0.4;                     // 原书同一页出现过
+  /* 短语配短语、单词配单词（第四十四次优化）：问 insight into，选项里冒出个单词，一眼就排除了 */
+  if (isPhrase(a.w) === isPhrase(b.w)) s += 2;
   return s;
 }
 function shuffle(a) {

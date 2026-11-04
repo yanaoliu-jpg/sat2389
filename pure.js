@@ -272,6 +272,41 @@ function renumberCollidingCustom(st, builtinWords) {
   return out;
 }
 
+/* 拆单元（第四十四次优化）：一张导入的表前面是单词、后面是短语（词组、搭配），拆成两个单元背。
+   带空格的就是短语。phraseStart 只认「前面全是单词、后面全是短语」这一种排法，返回第一个短语的下标，
+   不是这种排法（没有短语、全是短语、中间夹着）返回 -1。 */
+function isPhrase(w) { return /\s/.test(String(w).trim()); }
+function phraseStart(words) {
+  var k = -1, j;
+  for (j = 0; j < words.length; j++) if (isPhrase(words[j].w)) { k = j; break; }
+  if (k <= 0) return -1;
+  for (j = k; j < words.length; j++) if (!isPhrase(words[j].w)) return -1;
+  return k;
+}
+/* 把 custom 里单元 u 从第 at 个词（下标）起拆开：前一半留在原单元、改名 t1，
+   后一半成新单元 newU、名字 t2，紧跟在原单元后面（首页按这个顺序摆）。
+   词条编号 i 不变 —— 进度、星标、颜色、选中都按 i 存，所以全都跟着词走，不用搬。
+   不改传进来的东西；找不到 u 或 at 不在 1..n-1 之间，原样返回一份拷贝。 */
+function splitCustomUnit(custom, u, at, t1, t2, newU) {
+  var out = [];
+  custom.forEach(function (c) {
+    if (c.u !== u || !(at > 0 && at < c.words.length)) { out.push(c); return; }
+    var a = {}, b = {};
+    for (var k in c) { a[k] = c[k]; b[k] = c[k]; }
+    a.t = t1; a.words = c.words.slice(0, at);
+    b.u = newU; b.t = t2;
+    delete b.manual;
+    b.words = c.words.slice(at).map(function (w) {
+      var nw = {};
+      for (var q in w) nw[q] = w[q];
+      nw.u = newU;
+      return nw;
+    });
+    out.push(a, b);
+  });
+  return out;
+}
+
 /* 牛津发音表（第二十八次优化，data/pron.js，src/build_pron.py 生成）：
    table = { d: [英音默认压几 dB, 美音默认压几 dB], w: { 词: [[词性, 英音录音, 英音音标, 美音录音, 美音音标, 英音压几 dB, 美音压几 dB], …] } }
    录音写成尾号（"1" = 词__gb_1）省地址里重复的词，写不成尾号的才写文件名，目录能从文件名推出来；
@@ -442,6 +477,7 @@ if (typeof module !== 'undefined' && module.exports) {
     audioSrcName: audioSrcName,
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
+    isPhrase: isPhrase, phraseStart: phraseStart, splitCustomUnit: splitCustomUnit,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
     poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
     SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense,

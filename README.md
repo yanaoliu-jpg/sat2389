@@ -94,6 +94,12 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - 讲透卡还没内容时写着「讲透」和一句说明，下面是「讲透这个词」按钮；生成以后换成讲透本身。侧栏窄，近义词和区别改成上下排。
 - 代码：`app.js` 的 `quizSense` 包一层 `.q-side`，`settle()` 把它放在 `.q-explain` 后面；答题时的外框多了 `q-run` 这个类（拼写和结算页不受影响）；样式在 `app.css` 的 `.q-side` 和两条 `.q-run` 媒体查询。
 
+第四十四次优化（2026-11-04）：**导入的「SAT重点词汇冲刺表_2026年8月」拆成两个单元**（用户要的）。原表（`../../SAT国哥/SAT重点词汇冲刺表_2026年8月.html`）前 540 条是「高频单词」、后 270 条是「高频搭配」，导入时并成了一个 810 词的单元。现在打开网页时一次性拆开：第 1–540 个叫「**SAT高频词汇表·词汇**」（exploiting — well-behaved），第 541–810 个叫「**SAT高频词汇表·短语**」（hesitancy about — works away），短语单元紧跟在词汇单元后面，原单元在哪个分组，短语单元也进同一个组。
+- 认法不看单元名：首词 exploiting、末词 works away、第 541 条起全是带空格的短语，才拆。拆过记 `store.sv = 1`，以后不再动（再合并回去也不会又被拆开）；别的设备以后才导入这张表，下次打开照样拆。
+- 词条编号不变，所以认识 / 不认识 / 曾错过 / 星标 / 颜色 / 选中、讲透、生成的例句都跟着词走，什么都不丢。
+- 测验干扰项**短语配短语、单词配单词**（`app.js` 的 `similarity` 加 2 分）：原来问 insight into，选项里混着单词，一眼就能排除。所有单元都受益，托福、雅思表里的词组也一样。
+- 代码：`pure.js` 的 `isPhrase`、`phraseStart`（前面全是单词、后面全是短语时给出分界）、`splitCustomUnit`（不改传进来的东西），测试在 `test/split.test.js`；迁移在 `app.js` 开头 `renumberCollidingCustom` 那段后面。
+
 ## 打开方式
 
 **发给别人就用这个网址：** https://yanaoliu-jpg.github.io/sat2389/

@@ -15825,6 +15825,41 @@ function renumberCollidingCustom(st, builtinWords) {
   return out;
 }
 
+/* 拆单元（第四十四次优化）：一张导入的表前面是单词、后面是短语（词组、搭配），拆成两个单元背。
+   带空格的就是短语。phraseStart 只认「前面全是单词、后面全是短语」这一种排法，返回第一个短语的下标，
+   不是这种排法（没有短语、全是短语、中间夹着）返回 -1。 */
+function isPhrase(w) { return /\s/.test(String(w).trim()); }
+function phraseStart(words) {
+  var k = -1, j;
+  for (j = 0; j < words.length; j++) if (isPhrase(words[j].w)) { k = j; break; }
+  if (k <= 0) return -1;
+  for (j = k; j < words.length; j++) if (!isPhrase(words[j].w)) return -1;
+  return k;
+}
+/* 把 custom 里单元 u 从第 at 个词（下标）起拆开：前一半留在原单元、改名 t1，
+   后一半成新单元 newU、名字 t2，紧跟在原单元后面（首页按这个顺序摆）。
+   词条编号 i 不变 —— 进度、星标、颜色、选中都按 i 存，所以全都跟着词走，不用搬。
+   不改传进来的东西；找不到 u 或 at 不在 1..n-1 之间，原样返回一份拷贝。 */
+function splitCustomUnit(custom, u, at, t1, t2, newU) {
+  var out = [];
+  custom.forEach(function (c) {
+    if (c.u !== u || !(at > 0 && at < c.words.length)) { out.push(c); return; }
+    var a = {}, b = {};
+    for (var k in c) { a[k] = c[k]; b[k] = c[k]; }
+    a.t = t1; a.words = c.words.slice(0, at);
+    b.u = newU; b.t = t2;
+    delete b.manual;
+    b.words = c.words.slice(at).map(function (w) {
+      var nw = {};
+      for (var q in w) nw[q] = w[q];
+      nw.u = newU;
+      return nw;
+    });
+    out.push(a, b);
+  });
+  return out;
+}
+
 /* 牛津发音表（第二十八次优化，data/pron.js，src/build_pron.py 生成）：
    table = { d: [英音默认压几 dB, 美音默认压几 dB], w: { 词: [[词性, 英音录音, 英音音标, 美音录音, 美音音标, 英音压几 dB, 美音压几 dB], …] } }
    录音写成尾号（"1" = 词__gb_1）省地址里重复的词，写不成尾号的才写文件名，目录能从文件名推出来；
@@ -15995,6 +16030,7 @@ if (typeof module !== 'undefined' && module.exports) {
     audioSrcName: audioSrcName,
     CUSTOM_ID_FLOOR: CUSTOM_ID_FLOOR, nextCustomId: nextCustomId,
     renumberCollidingCustom: renumberCollidingCustom,
+    isPhrase: isPhrase, phraseStart: phraseStart, splitCustomUnit: splitCustomUnit,
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
     poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
     SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense,
@@ -16079,13 +16115,36 @@ if (store.iv !== 1) {
     store.iv = 1;
   } catch (e) {}                         // 迁移出岔子也不能挡着应用起不来：保持原样，下次再试
 }
+/* 第四十四次优化（用户要的）：导入的「SAT重点词汇冲刺表_2026年8月」810 条，原表前 540 条是「高频单词」、
+   后 270 条是「高频搭配」，一次性拆成「SAT高频词汇表·词汇」和「SAT高频词汇表·短语」两个单元。
+   认法不看单元名（改过名也认得）：首词 exploiting、末词 works away、第 541 条起全是短语。
+   词条编号不变，进度、星标、颜色、选中都跟着词走；原单元在哪个分组，短语单元也放进去，紧跟在后面。 */
+var unitSplit = 0;
+if (store.sv !== 1) {
+  try {
+    store.custom.forEach(function (c) {
+      var ws = c.words || [];
+      if (unitSplit || c.manual || ws.length < 2 || ws[0].w !== 'exploiting' ||
+          ws[ws.length - 1].w !== 'works away' || phraseStart(ws) !== 540) return;
+      var nu = 101;
+      store.custom.forEach(function (x) { if (x.u >= nu) nu = x.u + 1; });
+      unitSplit = c.u;
+      store.custom = splitCustomUnit(store.custom, c.u, 540, 'SAT高频词汇表·词汇', 'SAT高频词汇表·短语', nu);
+      (store.groups || []).forEach(function (g) {
+        var k = g.us.indexOf(c.u);
+        if (k >= 0) g.us.splice(k + 1, 0, nu);
+      });
+      store.sv = 1;                      // 拆过才记：别的设备以后才导入这张表，下次打开照样拆；拆过以后再合回去就不再动
+    });
+  } catch (e) {}
+}
 var save = (function () {
   var t = null;
   return function () { clearTimeout(t); t = setTimeout(function () {
     try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {}
   }, 200); };
 })();
-if (dropRel || idMoved || histReset) save();
+if (dropRel || idMoved || histReset || unitSplit) save();
 
 /* ---------- imported units ---------- */
 function mountCustom() {
@@ -18063,6 +18122,8 @@ function similarity(a, b) {
   while (i < m && A.lw.charAt(i) === B.lw.charAt(i)) i++;
   s += Math.min(i, 5) * 0.6;                     // 拼写开头相同：abstruse / abstract
   if (a.u === b.u) s += 0.4;                     // 原书同一页出现过
+  /* 短语配短语、单词配单词（第四十四次优化）：问 insight into，选项里冒出个单词，一眼就排除了 */
+  if (isPhrase(a.w) === isPhrase(b.w)) s += 2;
   return s;
 }
 function shuffle(a) {
