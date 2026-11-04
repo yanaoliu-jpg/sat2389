@@ -630,10 +630,10 @@ function posInUnit(u, i) {
 }
 function shaky(w) { var l = lvl(w.i); return l === 1 || l === 2; }   // 需要再过一遍的
 function tally(list) {
-  var t = { known: 0, shaky: 0, fresh: 0, once: 0 };
+  var t = { known: 0, shaky: 0, fresh: 0 };
   list.forEach(function (w) {
     var l = lvl(w.i);
-    if (l === 3) { t.known++; if (everShaky(w.i)) t.once++; }
+    if (l === 3) t.known++;
     else if (l) t.shaky++; else t.fresh++;
   });
   return t;
@@ -1162,7 +1162,6 @@ function renderHome() {
     '<div class="sweeps">' +
       (all.shaky ? '<button class="btn" id="sweepAll" type="button">整理错词 · ' + all.shaky + ' 个重过一遍</button>' : '') +
       (all.shaky ? '<button class="btn btn-ghost" id="quizAll" type="button">测验错词 · ' + qCount(all.shaky) + ' 题</button>' : '') +
-      (all.once ? '<button class="btn btn-ghost" id="sweepOnce" type="button">曾错过的词 · ' + all.once + ' 个</button>' : '') +
       (selCount() ? '<button class="btn btn-ghost" id="quizSel" type="button">测验选中的词 · ' + selCount() + ' 个</button>' : '') +
       (shuf ? '' :                                  // 导入、手动加、合并都落在原版那一套里
         '<button class="btn btn-ghost" id="openImp" type="button">导入词表</button>' +
@@ -1217,11 +1216,8 @@ function renderHome() {
   if (qa) qa.onclick = function () { quiz = null; go({ name: 'quiz', scope: 'all' }); };
   var qs = document.getElementById('quizSel');
   if (qs) qs.onclick = function () { quiz = null; go({ name: 'quiz', scope: 'sel' }); };
-  var ob = document.getElementById('sweepOnce');
-  if (ob) ob.onclick = function () {
-    startReview(pool.filter(function (w) { return lvl(w.i) === 3 && everShaky(w.i); }),
-      '曾错过的词', { name: 'home' });
-  };
+  /* 首页原来还有「曾错过的词」入口，第四十五次优化删了：名单只进不出，复习时标认识也不会离开，
+     越攒越多（用户那里攒到 434 个），清不完就没法当复习清单用。词卡上的「曾错过」小标还在。 */
   var oi = document.getElementById('openImp'); if (oi) oi.onclick = openImport;   // 乱序版里不摆这两个
   /* 得裹一层：openAdd(u, word) 第一个参数是单元号，直接当 onclick 会把
      MouseEvent 当成单元号传进去 —— addTarget 变成一个事件对象，
