@@ -651,9 +651,34 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
   padding-top:12px;border-top:1px solid var(--rule-2)}
 .qx-ex b{font-weight:600;color:var(--seal);font-style:italic}
 .qx-ext{color:var(--ink-2);font-size:.9rem;margin:5px 0 0}
+.qx-ext b{color:var(--seal);font-weight:600}   /* 和词卡的 .ex-zh b 一样，中文里对应的词也标红 */
 .q-explain .btn{margin-top:16px}
 .q-explain .btn .q-keys{color:var(--ground);opacity:.7;margin-left:5px}
-.q-explain .sense-ask .btn-gen{margin-top:0}
+/* 讲透单独一张卡（第四十三次优化）。窄屏接在答案卡下面；宽屏答案卡放右边、讲透放左边，
+   都用绝对定位贴在选项两侧，不占文档流，亮答案时选项不动、页面也不往下滑 */
+.q-side{margin-top:14px;padding:16px 20px;border:1px solid var(--rule);border-radius:var(--r);
+  background:var(--card);box-shadow:var(--shadow);animation:qxin .22s ease}
+.q-side .qs-l{margin:0 0 8px}
+.q-side .qs-hint{margin:0;font-size:.86rem;line-height:1.6;color:var(--ink-3)}
+.q-side:has(.blk.sense) > .qs-l,.q-side:has(.blk.sense) > .qs-hint{display:none}   /* 讲透块自带标题 */
+.q-side .blk{margin-top:0;padding-top:0;border-top:0}
+.q-side .sense-ask{margin-top:12px}
+@media (min-width:1240px){
+  .q-run{position:relative;max-width:600px}
+  .q-run .q-explain,.q-run .q-side{position:absolute;top:0;margin-top:0;width:clamp(260px,calc(50vw - 360px),400px)}
+  .q-run .q-explain{left:calc(100% + 30px)}
+  .q-run .q-side{right:calc(100% + 30px)}
+}
+/* 中等宽度两边放不下：题目靠左，右边一栏放答案卡，讲透接在它下面 */
+@media (min-width:960px) and (max-width:1239px){
+  .q-run{position:relative;max-width:none;padding-right:calc(min(340px,32vw) + 28px)}
+  .q-run #quizAfter{position:absolute;top:0;right:0;width:min(340px,32vw)}
+  .q-run .q-explain{margin-top:0}
+}
+@media (min-width:960px){
+  .q-side .sense-n{grid-template-columns:minmax(0,1fr)}   /* 侧栏窄，近义词和区别上下排 */
+  .q-side .near-peek{grid-column:1}
+}
 
 /* ---------- 5. 词组当标题时别撑破卡片 ---------- */
 .w-word{overflow-wrap:anywhere}
@@ -16634,9 +16659,12 @@ function senseHtml(w) {
     '</div>';
 }
 /* 测验答错（第四十二次优化）：原来只给一句「≈ 简单说法」，现在整块讲透都摆出来。
-   没有讲透的词，填了 DeepSeek Key 就给个按钮当场问；没填 Key 就不显示，不在测验半路弹设置 */
+   没有讲透的词，填了 DeepSeek Key 就给个按钮当场问；没填 Key 就不显示，不在测验半路弹设置。
+   单独一张卡（第四十三次优化）：宽屏上摆在选项左边，答案卡在右边，亮答案时页面不往下滑 */
 function quizSense(w) {
-  return senseOf(w) || senseBusy[w.w] || aiReady() ? senseHtml(w) : '';
+  return senseOf(w) || senseBusy[w.w] || aiReady()
+    ? '<div class="q-side"><p class="blk-l qs-l">讲透</p><p class="qs-hint">大白话讲这个词什么感觉，再跟近义词比一比</p>' +
+      senseHtml(w) + '</div>' : '';
 }
 function senseEl(w) {
   var el = view.querySelector('[data-sense]');
@@ -18193,7 +18221,7 @@ function renderQuiz(u, sel) {
     : '<h2 class="q-stem">' + esc(q.w.w) + '</h2>' +
       '<p class="q-sub">/' + esc(ipaOf(q.w)) + '　<button class="speak" data-say="' + esc(q.w.w) +
       '" type="button" aria-label="朗读" style="width:28px;height:28px;flex:0 0 28px;vertical-align:middle">' + SPK + '</button></p>';
-  view.innerHTML = head + '<div class="quiz-wrap">' +
+  view.innerHTML = head + '<div class="quiz-wrap q-run">' +
     '<div class="quiz-prog"><i style="width:' + (quiz.at / quiz.qs.length * 100) + '%"></i></div>' +
     '<div class="q-top"><p class="q-kind">' + kind + '</p>' +
       '<div class="q-kinds" role="group" aria-label="题型">' + QKINDS.map(function (k) {
@@ -18267,7 +18295,6 @@ function renderQuiz(u, sel) {
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
           '</div>' +
           '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : q.w.z) + '</p>' +
-          (ok ? '' : quizSense(q.w)) +
           (r && r.r ? '<p class="root qx-root">' + rootHtml(r.r) + '</p>' : '') +
           (ex ? '<p class="qx-ex">' + bold(ex.e, q.w.w) +
                   (ex.from === 'book' ? '' : '<span class="qx-from">' +
@@ -18275,7 +18302,7 @@ function renderQuiz(u, sel) {
                       /* 这里不管「藏起翻译」的设置 —— 已经答错了，正是要看的时候 */
                       (ex.t ? '<p class="qx-ext">' + zhEx(ex.t) + '</p>' : '') : '') +
           '<button class="btn" id="qNext" type="button">继续 <span class="q-keys">回车</span></button>' +
-        '</div>';
+        '</div>' + (ok ? '' : quizSense(q.w));
       Array.prototype.forEach.call(view.querySelectorAll('#quizAfter [data-say]'), function (x) {
         x.onclick = function () { speak(x.dataset.say, x); };
       });

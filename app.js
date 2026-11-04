@@ -656,9 +656,12 @@ function senseHtml(w) {
     '</div>';
 }
 /* 测验答错（第四十二次优化）：原来只给一句「≈ 简单说法」，现在整块讲透都摆出来。
-   没有讲透的词，填了 DeepSeek Key 就给个按钮当场问；没填 Key 就不显示，不在测验半路弹设置 */
+   没有讲透的词，填了 DeepSeek Key 就给个按钮当场问；没填 Key 就不显示，不在测验半路弹设置。
+   单独一张卡（第四十三次优化）：宽屏上摆在选项左边，答案卡在右边，亮答案时页面不往下滑 */
 function quizSense(w) {
-  return senseOf(w) || senseBusy[w.w] || aiReady() ? senseHtml(w) : '';
+  return senseOf(w) || senseBusy[w.w] || aiReady()
+    ? '<div class="q-side"><p class="blk-l qs-l">讲透</p><p class="qs-hint">大白话讲这个词什么感觉，再跟近义词比一比</p>' +
+      senseHtml(w) + '</div>' : '';
 }
 function senseEl(w) {
   var el = view.querySelector('[data-sense]');
@@ -2215,7 +2218,7 @@ function renderQuiz(u, sel) {
     : '<h2 class="q-stem">' + esc(q.w.w) + '</h2>' +
       '<p class="q-sub">/' + esc(ipaOf(q.w)) + '　<button class="speak" data-say="' + esc(q.w.w) +
       '" type="button" aria-label="朗读" style="width:28px;height:28px;flex:0 0 28px;vertical-align:middle">' + SPK + '</button></p>';
-  view.innerHTML = head + '<div class="quiz-wrap">' +
+  view.innerHTML = head + '<div class="quiz-wrap q-run">' +
     '<div class="quiz-prog"><i style="width:' + (quiz.at / quiz.qs.length * 100) + '%"></i></div>' +
     '<div class="q-top"><p class="q-kind">' + kind + '</p>' +
       '<div class="q-kinds" role="group" aria-label="题型">' + QKINDS.map(function (k) {
@@ -2289,7 +2292,6 @@ function renderQuiz(u, sel) {
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
           '</div>' +
           '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : q.w.z) + '</p>' +
-          (ok ? '' : quizSense(q.w)) +
           (r && r.r ? '<p class="root qx-root">' + rootHtml(r.r) + '</p>' : '') +
           (ex ? '<p class="qx-ex">' + bold(ex.e, q.w.w) +
                   (ex.from === 'book' ? '' : '<span class="qx-from">' +
@@ -2297,7 +2299,7 @@ function renderQuiz(u, sel) {
                       /* 这里不管「藏起翻译」的设置 —— 已经答错了，正是要看的时候 */
                       (ex.t ? '<p class="qx-ext">' + zhEx(ex.t) + '</p>' : '') : '') +
           '<button class="btn" id="qNext" type="button">继续 <span class="q-keys">回车</span></button>' +
-        '</div>';
+        '</div>' + (ok ? '' : quizSense(q.w));
       Array.prototype.forEach.call(view.querySelectorAll('#quizAfter [data-say]'), function (x) {
         x.onclick = function () { speak(x.dataset.say, x); };
       });

@@ -639,9 +639,34 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
   padding-top:12px;border-top:1px solid var(--rule-2)}
 .qx-ex b{font-weight:600;color:var(--seal);font-style:italic}
 .qx-ext{color:var(--ink-2);font-size:.9rem;margin:5px 0 0}
+.qx-ext b{color:var(--seal);font-weight:600}   /* 和词卡的 .ex-zh b 一样，中文里对应的词也标红 */
 .q-explain .btn{margin-top:16px}
 .q-explain .btn .q-keys{color:var(--ground);opacity:.7;margin-left:5px}
-.q-explain .sense-ask .btn-gen{margin-top:0}
+/* 讲透单独一张卡（第四十三次优化）。窄屏接在答案卡下面；宽屏答案卡放右边、讲透放左边，
+   都用绝对定位贴在选项两侧，不占文档流，亮答案时选项不动、页面也不往下滑 */
+.q-side{margin-top:14px;padding:16px 20px;border:1px solid var(--rule);border-radius:var(--r);
+  background:var(--card);box-shadow:var(--shadow);animation:qxin .22s ease}
+.q-side .qs-l{margin:0 0 8px}
+.q-side .qs-hint{margin:0;font-size:.86rem;line-height:1.6;color:var(--ink-3)}
+.q-side:has(.blk.sense) > .qs-l,.q-side:has(.blk.sense) > .qs-hint{display:none}   /* 讲透块自带标题 */
+.q-side .blk{margin-top:0;padding-top:0;border-top:0}
+.q-side .sense-ask{margin-top:12px}
+@media (min-width:1240px){
+  .q-run{position:relative;max-width:600px}
+  .q-run .q-explain,.q-run .q-side{position:absolute;top:0;margin-top:0;width:clamp(260px,calc(50vw - 360px),400px)}
+  .q-run .q-explain{left:calc(100% + 30px)}
+  .q-run .q-side{right:calc(100% + 30px)}
+}
+/* 中等宽度两边放不下：题目靠左，右边一栏放答案卡，讲透接在它下面 */
+@media (min-width:960px) and (max-width:1239px){
+  .q-run{position:relative;max-width:none;padding-right:calc(min(340px,32vw) + 28px)}
+  .q-run #quizAfter{position:absolute;top:0;right:0;width:min(340px,32vw)}
+  .q-run .q-explain{margin-top:0}
+}
+@media (min-width:960px){
+  .q-side .sense-n{grid-template-columns:minmax(0,1fr)}   /* 侧栏窄，近义词和区别上下排 */
+  .q-side .near-peek{grid-column:1}
+}
 
 /* ---------- 5. 词组当标题时别撑破卡片 ---------- */
 .w-word{overflow-wrap:anywhere}
