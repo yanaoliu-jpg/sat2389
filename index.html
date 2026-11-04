@@ -227,7 +227,7 @@
     <p class="imp-lede">支持 <b>.numbers</b>、<b>.xlsx / .xls / .csv</b>、<b>.pdf</b>、<b>.html</b> 和纯文本。
       表格请让单词和中文释义各占一列（音标那列会自动认出来）；文档和 PDF 按行读，
       形如「abate /əˈbeɪt/ v.减弱」都能认。<b>词组也认</b>：「prone to 容易…的」这样写就行。
-      同一个词出现两次而释义不同，会并成一条，不会丢。
+      认出来以后会数一数有多少个词、有几个是重复的；重复的词默认只导一次，释义并到一起，不会丢。
       <b>Excel 有好几张表</b>（比如一张表一个 List）会拆成好几个单元，不会全挤在一起。</p>
     <div class="imp-drop" id="impDrop">
       <button class="btn" id="impPick" type="button">选择文件</button>
@@ -247,6 +247,7 @@
         <small class="hint" id="impNameHint"></small>
       </label>
     </div>
+    <div class="imp-sum" id="impSum"></div>
     <div class="imp-prev" id="impPrev"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost" id="closeImp" type="button">取消</button>

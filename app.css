@@ -533,6 +533,25 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 .imp-group-h{font-family:var(--util);font-size:.72rem;font-weight:600;letter-spacing:.02em;color:var(--ink-2);
   margin:18px 0 4px;padding-top:12px;border-top:1px solid var(--rule-2)}
 .imp-group-h:first-child{margin-top:0;padding-top:0;border-top:none}
+/* 导入前的统计（第四十二次优化） */
+.imp-sum:empty{display:none}
+.imp-sum{margin-top:16px}
+.imp-nums{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;font-family:var(--util);font-size:.78rem;color:var(--ink-3)}
+.imp-num b{font-family:var(--display);font-size:1.35rem;font-weight:600;color:var(--ink);margin-right:3px}
+.imp-num.dup b{color:var(--seal)}
+.imp-num.ok{color:var(--ink-2)}
+.imp-once{display:flex;gap:9px;align-items:flex-start;margin:12px 0 0;cursor:pointer;font-size:.84rem;color:var(--ink)}
+.imp-once input{margin:3px 0 0;accent-color:var(--seal);width:15px;height:15px;flex:none}
+.imp-once small{display:block;font-family:var(--util);font-size:.72rem;color:var(--ink-3);margin-top:2px}
+.imp-tabs{display:inline-flex;margin-top:12px;border:1px solid var(--rule);border-radius:999px;padding:2px}
+.imp-tabs button{border:0;background:none;color:var(--ink-2);font:inherit;font-family:var(--util);font-size:.76rem;
+  padding:5px 14px;border-radius:999px;cursor:pointer}
+.imp-tabs button[aria-selected="true"]{background:var(--ink);color:var(--card)}
+.imp-x{display:inline-block;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--seal-soft);color:var(--seal);
+  font-family:var(--util);font-size:.68rem;font-weight:600;vertical-align:1px}
+.imp-prev td.imp-n{font-family:var(--util);color:var(--seal);font-weight:600;white-space:nowrap}
+.imp-prev td.imp-in{font-family:var(--util);font-size:.74rem;color:var(--ink-3)}
+.imp-drop-n{font-weight:400;color:var(--ink-3);margin-left:8px}
 .tag-imp{font-family:var(--util);font-size:.58rem;letter-spacing:.1em;color:var(--seal);
   border:1px solid var(--seal-soft);border-radius:4px;padding:0 4px;margin-left:8px}
 
@@ -615,8 +634,6 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 .qx-zh{margin:9px 0 0;font-size:1rem}
 .qx-zh .pos{font-family:var(--util);font-size:.72rem;color:var(--seal);border:1px solid var(--seal-soft);
   background:var(--seal-soft);border-radius:5px;padding:1px 6px;margin-right:7px}
-.qx-sense{margin:7px 0 0;font-family:var(--display);font-size:1.12rem;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
-.qx-sense span{color:var(--seal);margin-right:.32em}
 .qx-root{margin-top:9px;font-size:.88rem}
 .qx-ex{font-family:var(--display);font-size:1.02rem;line-height:1.55;margin:12px 0 0;
   padding-top:12px;border-top:1px solid var(--rule-2)}
@@ -624,6 +641,7 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 .qx-ext{color:var(--ink-2);font-size:.9rem;margin:5px 0 0}
 .q-explain .btn{margin-top:16px}
 .q-explain .btn .q-keys{color:var(--ground);opacity:.7;margin-left:5px}
+.q-explain .sense-ask .btn-gen{margin-top:0}
 
 /* ---------- 5. 词组当标题时别撑破卡片 ---------- */
 .w-word{overflow-wrap:anywhere}

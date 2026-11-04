@@ -655,6 +655,11 @@ function senseHtml(w) {
       '<button class="sense-link" id="senseDel" type="button">删掉</button>' + note + '</p>') +
     '</div>';
 }
+/* 测验答错（第四十二次优化）：原来只给一句「≈ 简单说法」，现在整块讲透都摆出来。
+   没有讲透的词，填了 DeepSeek Key 就给个按钮当场问；没填 Key 就不显示，不在测验半路弹设置 */
+function quizSense(w) {
+  return senseOf(w) || senseBusy[w.w] || aiReady() ? senseHtml(w) : '';
+}
 function senseEl(w) {
   var el = view.querySelector('[data-sense]');
   return el && el.dataset.sense === w.w ? el : null;
@@ -2272,7 +2277,7 @@ function renderQuiz(u, sel) {
          是两件事，很可能只是记住了这句话（第六次优化 2）。 */
       if (ok && !q.cloze) { setTimeout(next, 480); return; }
       quiz.waiting = true;
-      var r = rich(q.w), s = ok ? null : senseOf(q.w);    // 答错才加「≈ 简单说法」，只用已有的，这里不问 DeepSeek
+      var r = rich(q.w);
       /* 刚才读的是哪句就回放哪句（把空填上），没有的话给内置例句 */
       var ex = q.src || (r && r.e ? { e: r.e, t: r.t, from: 'book' } : null);
       document.getElementById('quizAfter').innerHTML =
@@ -2284,7 +2289,7 @@ function renderQuiz(u, sel) {
             '<button class="speak" data-say="' + esc(q.w.w) + '" type="button" aria-label="朗读">' + SPK + '</button>' +
           '</div>' +
           '<p class="qx-zh">' + zhHtml(r && r.z ? r.z : q.w.z) + '</p>' +
-          (s ? '<p class="qx-sense"><span>≈</span>' + esc(s.a) + '</p>' : '') +
+          (ok ? '' : quizSense(q.w)) +
           (r && r.r ? '<p class="root qx-root">' + rootHtml(r.r) + '</p>' : '') +
           (ex ? '<p class="qx-ex">' + bold(ex.e, q.w.w) +
                   (ex.from === 'book' ? '' : '<span class="qx-from">' +
@@ -2296,6 +2301,7 @@ function renderQuiz(u, sel) {
       Array.prototype.forEach.call(view.querySelectorAll('#quizAfter [data-say]'), function (x) {
         x.onclick = function () { speak(x.dataset.say, x); };
       });
+      if (!ok) wireSense(q.w);
       document.getElementById('qNext').onclick = next;
       document.getElementById('qNext').focus();
       /* 答案亮出来就读一遍（第三十七次优化），跟拼写检测一样听「自动朗读单词」的开关。
@@ -3061,68 +3067,101 @@ function rawToWords(raw) {
   return raw.lines.map(parseLine).filter(Boolean);
 }
 var impGroups = [], impName = '';
+/* 第四十二次优化：先留着各分页认出来的原始行（impRaw），数重复、去不去重都从这里重算；
+   impOnce 是「重复的词只导一次」（默认开），impView 是预览看全部还是只看重复的 */
+var impRaw = [], impScan = null, impOnce = true, impView = 'all';
 function openImport() {
   var m = document.getElementById('impModal');
-  impGroups = []; impName = '';
+  impGroups = []; impName = ''; impRaw = []; impScan = null; impOnce = true; impView = 'all';
   document.getElementById('impName').value = '';
   document.getElementById('impText').value = '';
   paintImport('把文件拖到这里，或点上面的按钮选一个。');
   m.hidden = false;
 }
+function rescan() {
+  impScan = importScan(impRaw, impOnce);
+  impGroups = impScan.groups;
+  if (!impScan.dups.length) impView = 'all';
+}
+function impTotal() { return impGroups.reduce(function (n, g) { return n + g.rows.length; }, 0); }
+function timesTag(n) { return n > 1 ? ' <span class="imp-x" title="表格里出现了 ' + n + ' 次">×' + n + '</span>' : ''; }
 function paintImport(msg, bad) {
-  var st = document.getElementById('impStat');
-  st.textContent = msg; st.className = 'imp-stat' + (bad ? ' bad' : '');
-  var pv = document.getElementById('impPrev');
-  var total = impGroups.reduce(function (n, g) { return n + g.rows.length; }, 0);
-  document.getElementById('impGo').disabled = !total;
+  if (msg != null) {
+    var st = document.getElementById('impStat');
+    st.textContent = msg; st.className = 'imp-stat' + (bad ? ' bad' : '');
+  }
+  var pv = document.getElementById('impPrev'), sm = document.getElementById('impSum');
+  var total = impTotal(), go = document.getElementById('impGo');
+  go.disabled = !total;
+  go.textContent = total ? '导入 ' + total + ' 个词' + (impGroups.length > 1 ? '（' + impGroups.length + ' 个单元）' : '') : '导入';
   document.getElementById('impFields').hidden = !total;
   var nh = document.getElementById('impNameHint');
+  var gone = impRaw.length - impGroups.length;
   if (nh) nh.textContent = impGroups.length > 1
-    ? '表格有 ' + impGroups.length + ' 个分页，会拆成 ' + impGroups.length + ' 个单元；这个名字打头，后面各自带上表格名。'
+    ? '会拆成 ' + impGroups.length + ' 个单元，一个分页一个' +
+      (gone ? '（另有 ' + gone + ' 个分页的词前面都有了，不单独成单元）' : '') + '；这个名字打头，后面各自带上表格名。'
     : '';
-  if (!total) { pv.innerHTML = ''; return; }
+  if (!total) { pv.innerHTML = ''; sm.innerHTML = ''; return; }
+  var sc = impScan, dupRows = sc.total - sc.uniq, sheets = impRaw.length;
+  function num(n, t, cls) { return '<span class="imp-num' + (cls ? ' ' + cls : '') + '"><b>' + n + '</b>' + t + '</span>'; }
+  sm.innerHTML = '<div class="imp-nums">' +
+      (sheets > 1 ? num(sheets, '个分页') : '') + num(sc.total, '行') + num(sc.uniq, '个不同的词') +
+      (dupRows ? num(dupRows, '行重复', 'dup') : '<span class="imp-num ok">没有重复的词</span>') +
+    '</div>' +
+    (dupRows ? '<label class="imp-once"><input type="checkbox" id="impOnce"' + (impOnce ? ' checked' : '') + '>' +
+        '<span>重复的词只导一次<small>' + (impOnce
+          ? '留在第一次出现的地方，各处的释义并到一起'
+          : '现在是一行一条，重复的词会导进来好几次') + '</small></span></label>' +
+      '<div class="imp-tabs" role="tablist">' +
+        '<button type="button" role="tab" data-impview="all" aria-selected="' + (impView === 'all') + '">全部 ' + total + '</button>' +
+        '<button type="button" role="tab" data-impview="dup" aria-selected="' + (impView === 'dup') + '">重复的 ' + sc.dups.length + ' 个</button>' +
+      '</div>' : '');
+  if (impView === 'dup') {
+    var multi = sheets > 1;
+    pv.innerHTML = '<table><thead><tr><th>单词</th><th>次数</th><th>释义（已并到一起）</th>' + (multi ? '<th>出现在</th>' : '') +
+      '</tr></thead><tbody>' + sc.dups.slice(0, 300).map(function (r) {
+        return '<tr><td>' + esc(r.w) + '</td><td class="imp-n">×' + r.n + '</td><td>' + esc(r.z) + '</td>' +
+          (multi ? '<td class="imp-in">' + esc(r.in.join('、')) + '</td>' : '') + '</tr>';
+      }).join('') + '</tbody></table>' +
+      (sc.dups.length > 300 ? '<p class="imp-more">还有 ' + (sc.dups.length - 300) + ' 个没显示。</p>' : '');
+    return;
+  }
   var manyGroups = impGroups.length > 8;
   var cap = impGroups.length > 1 ? (manyGroups ? 4 : 10) : 200;
   var shown = manyGroups ? impGroups.slice(0, 8) : impGroups;
   pv.innerHTML = shown.map(function (g) {
-    var head = g.name ? '<p class="imp-group-h">' + esc(g.name) + ' · ' + g.rows.length + ' 词</p>' : '';
+    var head = g.name ? '<p class="imp-group-h">' + esc(g.name) + ' · ' + g.rows.length + ' 词' +
+      (impOnce && g.dropped && impGroups.length > 1 ? '<span class="imp-drop-n">另有 ' + g.dropped + ' 个重复的已去掉</span>' : '') + '</p>' : '';
     return head + '<table><thead><tr><th>单词</th><th>音标</th><th>释义</th></tr></thead><tbody>' +
       g.rows.slice(0, cap).map(function (r) {
-        return '<tr><td>' + esc(r.w) + '</td><td>' + esc(r.p) + '</td><td>' + esc(r.z) + '</td></tr>';
+        return '<tr' + (r.n > 1 ? ' class="imp-rep"' : '') + '><td>' + esc(r.w) + timesTag(r.n) + '</td><td>' + esc(r.p) + '</td><td>' + esc(r.z) + '</td></tr>';
       }).join('') + '</tbody></table>' +
       (g.rows.length > cap ? '<p class="imp-more">还有 ' + (g.rows.length - cap) + ' 行没显示。</p>' : '');
   }).join('') + (manyGroups ? '<p class="imp-more">还有 ' + (impGroups.length - 8) + ' 个单元、' +
     (total - shown.reduce(function (n, g) { return n + g.rows.length; }, 0)) + ' 个词条没显示预览，导入时都会带上。</p>' : '');
 }
 function absorb(raw) {
-  var groups;
-  if (raw.sheets) {
-    /* 每张表分别认、分别去重 —— 同一个词在不同表里各出现一次是常事
-       （书本身就常常在后面的 List 里复习前面学过的词），不跨表合并。 */
-    groups = raw.sheets.map(function (s) {
-      var m = mergeRows(parseTable(s.rows));
-      return { name: s.name, rows: m.rows, merged: m.merged };
-    }).filter(function (g) { return g.rows.length; });
-  } else {
-    var m = mergeRows(rawToWords(raw));
-    groups = [{ name: null, rows: m.rows, merged: m.merged }];
-  }
-  impGroups = groups;
-  var total = 0, merged = 0;
-  groups.forEach(function (g) { total += g.rows.length; merged += g.merged; });
-  if (!total) { paintImport('没认出「英文 + 中文释义」的行。表格请让单词和释义各占一列。', 1); return; }
+  /* 每张表分别认；重复的词不管在不在同一张表，都交给 importScan 去数、去并 */
+  impRaw = (raw.sheets
+    ? raw.sheets.map(function (s) { return { name: s.name, rows: parseTable(s.rows) }; })
+    : [{ name: null, rows: rawToWords(raw) }]
+  ).filter(function (g) { return g.rows.length; });
+  impOnce = true; impView = 'all';
+  rescan();
+  if (!impTotal()) { paintImport('没认出「英文 + 中文释义」的行。表格请让单词和释义各占一列。', 1); return; }
   if (impName) document.getElementById('impName').value = impName;
-  var msg = groups.length > 1
-    ? '表格有 ' + groups.length + ' 个分页，按分页拆成了 ' + groups.length + ' 个单元，共认出 ' + total + ' 个词条'
-    : '认出 ' + total + ' 个词条';
-  paintImport(msg + (merged ? '（其中 ' + merged + ' 条在原表里出现过不止一次，释义已经并到一起，没丢）' : '') + '。核对一下再导入。');
+  paintImport(impRaw.length > 1
+    ? '按分页拆成单元，一个分页一个单元。核对一下再导入。'
+    : '认出来了，核对一下再导入。');
+  /* 文本框粘了很多行的话，数字和预览会被挤到下面看不见 */
+  document.getElementById('impFields').scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 function takeFile(file) {
   if (!file) return;
   impName = (file.name || '').replace(/\.[^.]+$/, '');
   paintImport('正在解析 ' + file.name + ' …');
   rawFile(file).then(function (raw) { absorb(raw); })
-    .catch(function (e) { impGroups = []; paintImport(String(e.message || e), 1); });
+    .catch(function (e) { impGroups = []; impRaw = []; paintImport(String(e.message || e), 1); });
 }
 /* 直接粘一段进来就分拣（第八次优化 8） */
 function takeText() {
@@ -3733,6 +3772,16 @@ document.getElementById('impFile').onchange = function (e) { takeFile(e.target.f
 document.getElementById('impPick').onclick = function () { document.getElementById('impFile').click(); };
 document.getElementById('impGo').onclick = doImport;
 document.getElementById('impParse').onclick = takeText;
+document.getElementById('impSum').addEventListener('change', function (e) {
+  if (e.target.id !== 'impOnce') return;
+  impOnce = e.target.checked; rescan(); paintImport();
+});
+document.getElementById('impSum').addEventListener('click', function (e) {
+  var b = e.target.closest('[data-impview]');
+  if (!b) return;
+  impView = b.dataset.impview; paintImport();
+  document.getElementById('impPrev').scrollTop = 0;
+});
 
 /* 自己加例句面板 */
 var exM = document.getElementById('exModal');

@@ -113,11 +113,51 @@ function mergeRows(rows) {
   rows.forEach(function (r) {
     var k = r.w.toLowerCase(), had = at[k];
     if (!had) { at[k] = r; out.push(r); return; }
-    var zs = had.z.split(/[；;]/).map(function (x) { return x.trim(); });
-    if (zs.indexOf(r.z.trim()) < 0) { had.z = had.z + '；' + r.z; merged++; }
+    /* 「adj. 平淡的」和「adj.平淡的」是同一条，比的时候不看空格 */
+    var bare = function (x) { return x.replace(/\s+/g, ''); };
+    var zs = had.z.split(/[；;]/).map(bare);
+    if (zs.indexOf(bare(r.z)) < 0) { had.z = had.z + '；' + r.z; merged++; }
     if (!had.p && r.p) had.p = r.p;
   });
   return { rows: out, merged: merged };
+}
+/* 导入前数一数表格自己里面的重复（第四十二次优化）：groups 是各分页认出来的原始行 [{name, rows}]。
+   once（默认）：重复的词整张表只留第一次出现的那条，后面的释义按 mergeRows 的规矩并过去，
+   不管在不在同一个分页；关掉就一行一条原样导入。每行带 n = 这个词在整张表里出现了几行，
+   dups 是出现不止一次的词（释义已并好，in 是出现过的分页名），给「重复的」那一栏看。 */
+function importScan(groups, once) {
+  var cnt = {}, where = {}, total = 0;
+  groups.forEach(function (g) {
+    g.rows.forEach(function (r) {
+      var k = r.w.toLowerCase();
+      cnt[k] = (cnt[k] || 0) + 1; total++;
+      where[k] = where[k] || [];
+      if (g.name != null && where[k].indexOf(g.name) < 0) where[k].push(g.name);
+    });
+  });
+  var all = mergeRows(groups.reduce(function (a, g) {
+    return a.concat(g.rows.map(function (r) { return { w: r.w, p: r.p, z: r.z }; }));
+  }, [])).rows;
+  var first = {};
+  all.forEach(function (r) { first[r.w.toLowerCase()] = r; });
+  var taken = {};
+  var out = groups.map(function (g) {
+    var rows = [], dropped = 0;
+    g.rows.forEach(function (r) {
+      var k = r.w.toLowerCase();
+      if (!once) { rows.push({ w: r.w, p: r.p, z: r.z, n: cnt[k] }); return; }
+      if (taken[k]) { dropped++; return; }
+      taken[k] = 1;
+      var m = first[k];
+      rows.push({ w: m.w, p: m.p, z: m.z, n: cnt[k] });
+    });
+    return { name: g.name, rows: rows, dropped: dropped };
+  }).filter(function (g) { return g.rows.length; });
+  var dups = all.filter(function (r) { return cnt[r.w.toLowerCase()] > 1; }).map(function (r) {
+    var k = r.w.toLowerCase();
+    return { w: r.w, p: r.p, z: r.z, n: cnt[k], in: where[k] };
+  });
+  return { groups: out, total: total, uniq: all.length, dups: dups };
 }
 
 /* Match the headword and its usual inflections: a long word is safe to match by
@@ -395,7 +435,7 @@ function dsBody(prompt, model, plain) {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows,
+    parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows, importScan: importScan,
     lcsMark: lcsMark, blankAt: blankAt,
     wordPat: wordPat, inflectRe: inflectRe, wordRe: wordRe,
     phraseOk: phraseOk, cleanWord: cleanWord, headerish: headerish, wordCell: wordCell,
