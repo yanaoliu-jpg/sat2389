@@ -600,11 +600,14 @@ function unitMeta(u) {
 /* 单元改名（第二十九次优化）：内置单元的新名字存在 store.uname，单元本身不动，留空就回到原名；
    导入和自建的单元本来就是自己起的名字，直接改 store.custom 里的 t */
 function unitName(u) { return store.uname[u] || unitMeta(u).t || ''; }
+/* 原书 36 个单元本来没有名字，小标签只写「UNIT 09」，混在托福、雅思的标签里看不出是哪本书。
+   第四十八次优化起写全「SAT词汇 · Unit 09」，跟「托福绿宝书 · List 33」一个样子 */
+function satName(u) { return 'SAT词汇 · Unit ' + String(u).padStart(2, '0'); }
 function unitLabel(u) {                                  // unit 37 is the 错词本, not a book page
-  return unitName(u) || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书 P' + u);
+  return unitName(u) || (satName(u) + ' · 原书 P' + u);
 }
 function unitShort(u) {                                  // 搜索结果里的小标签，短一点
-  return unitName(u) || ('UNIT ' + String(u).padStart(2, '0'));
+  return unitName(u) || satName(u);
 }
 /* 这个词是单元里的第几个：按单元自己的顺序（原书顺序／乱序单元写死的那份乱序），不随排序和颜色筛选变（第二十二次优化） */
 function unitSeq(u) {
@@ -970,6 +973,7 @@ function scrollTo0(y) {
   catch (e) { window.scrollTo(0, y); }
 }
 function go(r) {
+  if (r.name !== route.name || r.id !== route.id) unitRenaming = null;   // 离开这一页就退出批量改名
   var k = scrollKey(route);
   if (k) scrollMem[k] = window.scrollY || window.pageYOffset || 0;
   route = r; render();
@@ -1044,6 +1048,7 @@ function groupWords(g) {
   return out;
 }
 function unitCardHtml(u) {
+  if (unitRenaming) return unitCardEditHtml(u);
   var ws = unitWords(u.u), m = merging && route.name === 'home';
   return '<button class="unit-card' + (u.t ? ' extra' : '') +
     (m ? (u.imported ? (mergeSel[u.u] ? ' msel' : '') : ' mno') : '') +
@@ -1054,6 +1059,80 @@ function unitCardHtml(u) {
     unitProgHtml(ws) +
     '<div class="unit-foot">' + unitFootHtml(ws, u) + '</div>' +
     '</button>';
+}
+/* 批量改名（第四十八次优化）：分组页和首页「没分组的单元」点「给单元改名」，卡片变成输入框，
+   一个接一个改，回车跳到下一个，Esc 撤回这一格。原来只能进到单元里点那个小小的「改名」，
+   五十个 List 要进出五十次。unitRenaming 记着是哪一页开的（'home' 或分组 id），离开就关。 */
+var unitRenaming = null;
+function unitDefaultName(u) { return unitMeta(u).t || satName(u); }
+function unitCardEditHtml(u) {
+  var c = customUnit(u.u), moved = !c && store.uname[u.u];
+  return '<div class="unit-card un-edit" data-u="' + u.u + '">' +
+    '<input class="un-in" data-u="' + u.u + '" type="text" maxlength="40" autocomplete="off" ' +
+      'value="' + esc(unitName(u.u)) + '" placeholder="' + esc(c ? '名字不能空着' : unitDefaultName(u.u)) + '" ' +
+      'aria-label="' + esc(unitLabel(u.u)) + ' 的新名字">' +
+    '<div class="unit-span">' + esc(u.a) + '<i>—</i>' + esc(u.b) + '</div>' +
+    '<div class="un-orig">' + (moved ? '原名 ' + esc(unitBase(u.u)) + '<button class="un-reset" data-u="' + u.u +
+      '" type="button">换回</button>' : '') + '</div>' +
+    '</div>';
+}
+/* 改名都走这里：内置单元存 store.uname，空着或跟原名一样就删掉；导入、自建的单元改 t，不许空 */
+function setUnitName(u, name) {
+  name = String(name || '').replace(/\s+/g, ' ').trim();
+  var c = customUnit(u);
+  if (c) {
+    if (!name) return false;
+    c.t = name;
+  } else if (!name || name === unitMeta(u).t) delete store.uname[u];
+  else store.uname[u] = name;
+  save(); mountCustom();
+  return true;
+}
+function renameBtnHtml() {
+  return '<button class="btn btn-ghost' + (unitRenaming ? ' on' : '') + '" id="renameUnits" type="button">' +
+    (unitRenaming ? '✓ 改好了' : '给单元改名') + '</button>';
+}
+function wireUnitRename(key) {
+  var b = document.getElementById('renameUnits');
+  if (b) b.onclick = function () {
+    unitRenaming = unitRenaming ? null : key; render();
+    var f = unitRenaming && view.querySelector('.un-in');      // 刚打开就把光标放进第一格
+    if (f) { f.focus(); f.select(); }
+  };
+  if (!unitRenaming) return;
+  var ins = Array.prototype.slice.call(view.querySelectorAll('.un-in'));
+  function paint(inp) {                          // 存完把「原名」那行换掉，不整页重画，焦点不丢
+    var card = inp.closest('.un-edit'), tmp = document.createElement('div');
+    tmp.innerHTML = unitCardEditHtml(unitMeta(+inp.dataset.u));
+    card.querySelector('.un-orig').innerHTML = tmp.querySelector('.un-orig').innerHTML;
+    inp.value = unitName(+inp.dataset.u);
+  }
+  ins.forEach(function (inp, k) {
+    inp.dataset.was = inp.value;
+    inp.addEventListener('change', function () {
+      if (!setUnitName(+inp.dataset.u, inp.value)) inp.value = inp.dataset.was;   // 自己的单元不许清空
+      inp.dataset.was = inp.value;
+      paint(inp);
+    });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var nx = ins[k + (e.shiftKey ? -1 : 1)];
+        if (nx) { nx.focus(); nx.select(); } else inp.blur();
+      } else if (e.key === 'Escape') {
+        e.preventDefault(); e.stopPropagation();
+        inp.value = inp.dataset.was; inp.blur();
+      }
+    });
+  });
+  Array.prototype.forEach.call(view.querySelectorAll('.un-reset'), function (r) {
+    r.onclick = function () {
+      var inp = view.querySelector('.un-in[data-u="' + r.dataset.u + '"]');
+      setUnitName(+r.dataset.u, '');
+      inp.dataset.was = unitName(+r.dataset.u);
+      paint(inp);
+    };
+  });
 }
 function groupCardHtml(g) {
   var us = groupUnits(g), ws = groupWords(g), t = tally(ws), n = ws.length || 1;
@@ -1079,15 +1158,18 @@ function renderGroup(id) {
       '<h1>' + esc(g.name) + '</h1></div>' +
       '<div class="head-tools">' +
         (bad.length ? '<button class="btn btn-ghost" id="sweepGroup" type="button">整理错词 · ' + bad.length + '</button>' : '') +
+        (us.length ? renameBtnHtml() : '') +
         '<button class="btn btn-ghost" id="editGroup" type="button">编辑分组</button>' +
       '</div></div>' +
+    (unitRenaming ? '<p class="un-tip">直接在卡片上改，点别处或回车就存好了；回车接着改下一个，Esc 撤回这一格。词和进度都不动。</p>' : '') +
     (us.length ? '<div class="unit-grid">' + us.map(unitCardHtml).join('') + '</div>'
       : '<div class="empty"><b>这个分组还是空的</b>点右上角的「编辑分组」，把单元勾进来。</div>');
   document.getElementById('back').onclick = function () { go({ name: 'home' }); };
   document.getElementById('editGroup').onclick = function () { openGroup(g.id); };
   var sg = document.getElementById('sweepGroup');
   if (sg) sg.onclick = function () { startReview(bad, g.name + ' 错词', { name: 'group', id: g.id }); };
-  Array.prototype.forEach.call(view.querySelectorAll('.unit-card'), function (b) {
+  wireUnitRename(g.id);
+  Array.prototype.forEach.call(view.querySelectorAll('.unit-card:not(.un-edit)'), function (b) {
     b.onclick = function () { dropOrder(); go({ name: 'unit', u: +b.dataset.u, tab: 'browse' }); };
   });
 }
@@ -1156,10 +1238,6 @@ function dropGroup() {
 /* ================= HOME ================= */
 function renderHome() {
   var pool = WORDS, all = tally(pool);
-  var mine = { units: 0, words: 0 };
-  UNITS.forEach(function (x) { if (x.imported) { mine.units++; mine.words += x.n; } });
-  var toefl = { units: 0, words: 0 };            // u 1001-1048：新东方《绿宝书》托福词汇（第十二次优化 2）
-  UNITS.forEach(function (x) { if (x.u >= 1001 && x.u <= 1048) { toefl.units++; toefl.words += x.n; } });
   /* 乱序版单元第四十六次优化起是首页的一个分组（SHUF_NAME），不再单独一套；
      总词条照旧数 WORDS —— 乱序单元只是指向原书词条，不会重复算 */
   var shown = UNITS;
@@ -1171,14 +1249,10 @@ function renderHome() {
     '<div class="home-head"><div>' +
       '<p class="eyebrow">' + shown.length + ' 个单元 · ' + pool.length + ' 个词条</p>' +
       '<h1>我的词库。</h1>' +
-      ('<p class="lede">底子是《SAT词汇2300打印版》的 2389 个词条（原书每页 68 词就是一个单元），' +
-            '外加一个「错词本」单元；另外收了新东方《绿宝书》托福词汇全本，' +
-            toefl.units + ' 个 List、' + toefl.words + ' 个词条，一 List 一个单元' +
-            (mine.units ? '；再往后是你自己攒的 ' + mine.units + ' 个单元、' + mine.words + ' 个词条 —— 导入的词表、手动加的词、背过和复习过的都收在这里'
-                        : '。往后凡是你背过、复习过的词，导进来或手动加进来，都会排在后面') +
-            '。每张词卡有音标、发音、例句，难词还附了词根。' +
-            '「' + SHUF_NAME + '」照《2300 高密度便携版》竖着一列一个单元、顺序打乱，学习进度跟原书共用。' +
-            '「' + IROOT_NAME + '」照《雅思词汇词根+联想记忆法 乱序版》一个 Word List 一个单元，词卡上有书里的记忆法、搭配、派生和同反义。</p>') +
+      /* 第四十八次优化：原来这段讲每本书怎么来的、几个 List 几个词，太长；用户要只说能做什么 */
+      '<p class="lede">每个词有音标、真人发音、例句和翻译，难词附词根和记忆法。' +
+        '按单元浏览、学习、测验、拼写；打星收进生词本，错词随时拎出来重过一遍。' +
+        '可以导入词表、手动加词，给单元改名、分组。</p>' +
     '</div><div class="stat-row">' +
       '<div class="stat stat-known"><b>' + all.known + '</b><span>已掌握</span></div>' +
       '<button class="stat stat-shaky" id="allShaky" type="button"' + (all.shaky ? '' : ' disabled') +
@@ -1197,10 +1271,13 @@ function renderHome() {
       (merging ? '' : '<button class="btn btn-ghost" id="newGroup" type="button">新建分组</button>') +
     '</div>' +
     (groups.length ? '<div class="group-grid">' + groups.map(groupCardHtml).join('') + '</div>' : '') +
-    (groups.length && cards ? '<h2 class="loose-h">没分组的单元</h2>' : '') +
+    (cards && !merging ? '<div class="loose-bar">' + (groups.length ? '<h2 class="loose-h">没分组的单元</h2>' : '<span></span>') +
+      renameBtnHtml() + '</div>' : '') +
+    (unitRenaming ? '<p class="un-tip">直接在卡片上改，点别处或回车就存好了；回车接着改下一个，Esc 撤回这一格。词和进度都不动。</p>' : '') +
     (cards ? '<div class="unit-grid' + (merging ? ' merging' : '') + '">' + cards + '</div>' : '') +
     '<div id="mergeSlot">' + mergeBarHtml() + '</div>';
-  Array.prototype.forEach.call(view.querySelectorAll('.unit-card'), function (b) {
+  wireUnitRename('home');
+  Array.prototype.forEach.call(view.querySelectorAll('.unit-card:not(.un-edit)'), function (b) {
     b.onclick = function () {
       var uu = +b.dataset.u;
       if (merging) {
@@ -1220,7 +1297,7 @@ function renderHome() {
   var ng = document.getElementById('newGroup'); if (ng) ng.onclick = function () { openGroup(null); };
   var mo = document.getElementById('mergeOn');
   if (mo) mo.onclick = function () {
-    merging = !merging;
+    merging = !merging; unitRenaming = null;
     if (!merging) { mergeSel = {}; mergeTitle = ''; mergeMsg = ''; }
     renderHome();
   };
@@ -1242,7 +1319,7 @@ function renderHome() {
 }
 
 /* ================= UNIT ================= */
-function unitBase(u) { return unitMeta(u).t || ('UNIT ' + String(u).padStart(2, '0') + ' · 原书第 ' + u + ' 页'); }
+function unitBase(u) { return unitMeta(u).t || (satName(u) + ' · 原书第 ' + u + ' 页'); }
 /* 改过名的单元，大标题换成新名字，「首词 — 末词」退到上面那行小字里（第四十一次优化）。
    导入的单元本来叫「导入 · 文件名」、自建的叫「我加的词」，这两种还算没改过名，标题照旧是首词 — 末词。 */
 function unitTitle(u) {
@@ -1267,9 +1344,9 @@ function unitHeader(u, tab) {
   return '<button class="back" id="back" type="button">← ' + esc(g ? g.name : '返回目录') + '</button>' +
     '<div class="unit-head"><div>' +
       (star ? '<p class="eyebrow">' + meta.n + ' 个词</p><h1>生词本</h1>'
-        : '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span>' +
-            '<button class="rename-link" id="renameUnit" type="button">改名</button></p>' +
-          '<h1 id="unitTitle">' + unitH1(u) + '</h1>') +
+        : '<p class="eyebrow"><span id="unitEyebrow">' + esc(unitEyebrow(u)) + '</span></p>' +
+          '<div class="title-line"><h1 id="unitTitle">' + unitH1(u) + '</h1>' +
+            '<button class="rename-btn" id="renameUnit" type="button" title="给这个单元改名">✎ 改名</button></div>') +
     '</div>' +
     '<div class="head-tools">' +
       (meta.imported ? '<button class="btn btn-ghost" id="dropUnit" type="button">删掉这个单元</button>' : '') +
@@ -3369,18 +3446,14 @@ function openRename(u) {
   inp.placeholder = unitBase(u);
   document.getElementById('renameNote').textContent = c
     ? '只改名字，词和学习进度都不动。'
-    : '只改名字，词和学习进度都不动。留空保存就换回原名：' + unitBase(u);
+    : '只改名字，词和学习进度都不动。原名：' + unitBase(u) + '。';
+  document.getElementById('renameReset').hidden = !!c || !store.uname[u];
   document.getElementById('renameModal').hidden = false;
   inp.focus(); inp.select();
 }
 function saveRename() {
-  var inp = document.getElementById('renameIn'), name = inp.value.trim(), c = customUnit(renaming);
-  if (c) {
-    if (!name) { inp.focus(); return; }
-    c.t = name;
-  } else if (!name || name === unitMeta(renaming).t) delete store.uname[renaming];
-  else store.uname[renaming] = name;
-  save(); mountCustom();
+  var inp = document.getElementById('renameIn');
+  if (!setUnitName(renaming, inp.value)) { inp.focus(); return; }
   document.getElementById('renameModal').hidden = true;
   /* 测验、拼写做到一半不能重画，这道题答过的样子会没了，只换标题那行字 */
   if (route.tab === 'quiz' || route.tab === 'spell') {
@@ -3482,7 +3555,29 @@ function wireRowUnit() {                     // 点单元标签 → 到那个单
     };
   });
 }
-function renderList(title, sub, list, exMap) {
+/* 搜单元名（第四十八次优化）：改了名的单元打名字就能找到；「list 21」「unit 9」也行 ——
+   比较前去掉空格和「·」，数字前面补的 0 也去掉，所以 unit9 对得上 Unit 09 */
+function unitKey(t) {
+  return String(t).toLowerCase().replace(/[\s·・\-—_]+/g, '').replace(/(^|\D)0+(?=\d)/g, '$1');
+}
+function unitHits(q) {
+  var k = unitKey(q);
+  if (!k || (k.length < 2 && !/\d/.test(k))) return [];
+  return UNITS.filter(function (x) {
+    return [unitName(x.u), unitLabel(x.u), unitBase(x.u)].some(function (t) { return t && unitKey(t).indexOf(k) >= 0; });
+  });
+}
+function unitHitsHtml(us) {
+  if (!us.length) return '';
+  var cap = 12;
+  return '<div class="u-hits"><span class="u-hits-h">单元</span>' + us.slice(0, cap).map(function (x) {
+    var g = groupOf(x.u);
+    return '<button class="u-hit" data-hu="' + x.u + '" type="button">' + esc(unitShort(x.u)) +
+      '<small>' + (g ? esc(g.name) + ' · ' : '') + x.n + ' 词</small></button>';
+  }).join('') + (us.length > cap ? '<span class="u-hits-more">还有 ' + (us.length - cap) + ' 个，多打几个字</span>' : '') +
+    '</div>';
+}
+function renderList(title, sub, list, exMap, unitsHtml) {
   var rows = list.map(function (w) {
     var ex = exMap && exMap[w.i];
     return '<div class="row ' + cls(w.i) + (store.sel[w.i] ? ' sel' : '') +
@@ -3497,11 +3592,15 @@ function renderList(title, sub, list, exMap) {
       '</div>';
   }).join('');
   view.innerHTML = '<button class="back" id="back" type="button">← 返回目录</button>' +
-    '<p class="eyebrow">' + esc(sub) + '</p><h1>' + esc(title) + '</h1>' +
+    '<p class="eyebrow">' + esc(sub) + '</p><h1>' + esc(title) + '</h1>' + (unitsHtml || '') +
     (list.length ? '<div class="sortbar">' + pickBarHtml() + '</div>' +
         '<div class="rows' + (picking ? ' picking' : '') + '" style="margin-top:14px">' + rows + '</div>' +
         '<div id="selbarSlot">' + selBarHtml() + '</div>'
+      : unitsHtml ? '' : route.name === 'search' ? '<div class="empty"><b>没搜到</b>换个拼法，或者搜中文意思、单元名。</div>'
       : '<div class="empty"><b>还是空的</b>在浏览或词卡上点 ★ 就会收进来。</div>');
+  Array.prototype.forEach.call(view.querySelectorAll('[data-hu]'), function (b) {
+    b.onclick = function () { dropOrder(); go({ name: 'unit', u: +b.dataset.hu, tab: 'browse' }); };
+  });
   document.getElementById('back').onclick = function () { document.getElementById('search').value = ''; go({ name: 'home' }); };
   var back = { name: route.name, q: route.q };
   wirePickBar(list, render);
@@ -3608,10 +3707,11 @@ function render() {
     else if (route.tab === 'spell') renderSpell(route.u, false);
     else renderBrowse(route.u);
   } else if (route.name === 'search') {
-    var all = searchHits(route.q);
+    var all = searchHits(route.q), uh = unitHits(route.q);
     var hit = all.slice(0, SEARCH_CAP);
     renderList('“' + route.q + '” 的结果',
-      all.length + ' 个词条' + (all.length > hit.length ? ' · 只列前 ' + hit.length + ' 个' : ''), hit, searchExcerpt);
+      (uh.length ? uh.length + ' 个单元 · ' : '') +
+      all.length + ' 个词条' + (all.length > hit.length ? ' · 只列前 ' + hit.length + ' 个' : ''), hit, searchExcerpt, unitHitsHtml(uh));
   }
   starCount();
 }
@@ -3793,6 +3893,10 @@ var rnM = document.getElementById('renameModal');
 document.getElementById('closeRename').onclick = function () { rnM.hidden = true; };
 rnM.addEventListener('click', function (e) { if (e.target === rnM) rnM.hidden = true; });
 document.getElementById('renameGo').onclick = saveRename;
+document.getElementById('renameReset').onclick = function () {
+  document.getElementById('renameIn').value = '';
+  saveRename();
+};
 document.getElementById('renameIn').addEventListener('keydown', function (e) {
   if (e.key === 'Enter') { e.preventDefault(); saveRename(); }
   else if (e.key === 'Escape') { e.stopPropagation(); rnM.hidden = true; }

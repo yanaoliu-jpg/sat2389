@@ -1113,3 +1113,33 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 .modal-group .hint{margin-top:8px}
 .modal-group .modal-foot{margin-top:14px;align-items:center}
 .foot-r{display:flex;gap:10px;margin-left:auto}
+
+/* ---------- 第四十八次优化：改单元名 ---------- */
+.title-line{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.title-line h1{margin-bottom:0}
+.rename-btn{flex:none;padding:3px 10px;border:1px solid var(--rule);border-radius:99px;background:none;
+  font-family:var(--util);font-size:.74rem;color:var(--ink-3);cursor:pointer;transition:color .15s,border-color .15s}
+.rename-btn:hover{color:var(--ink);border-color:var(--ink-3)}
+.loose-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.loose-bar .loose-h{margin:0}
+.un-tip{font-family:var(--util);font-size:.8rem;color:var(--ink-3);margin:-6px 0 16px}
+.unit-card.un-edit{cursor:default;transform:none}
+.unit-card.un-edit:hover{transform:none;border-color:var(--rule)}
+.unit-card.un-edit:focus-within{border-color:var(--seal);box-shadow:var(--shadow),0 0 0 1px var(--seal-soft)}
+.un-in{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;
+  background:var(--ground);color:var(--ink);font-family:var(--util);font-size:.86rem}
+.un-in:focus{outline:none;border-color:var(--seal)}
+.un-in::placeholder{color:var(--ink-3)}
+.un-edit .unit-span{margin:8px 0 6px;font-size:.92rem}
+.un-orig{font-family:var(--util);font-size:.72rem;color:var(--ink-3);line-height:1.5;min-height:1.5em}
+.un-reset{margin-left:8px;padding:0;border:0;background:none;font:inherit;color:var(--seal);cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px}
+/* 搜索结果顶上的单元 */
+.u-hits{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0 18px}
+.u-hits-h{font-family:var(--util);font-size:.72rem;letter-spacing:.16em;color:var(--ink-3);margin-right:4px}
+.u-hit{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:6px 12px;
+  border:1px solid var(--rule);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer;
+  font-family:var(--util);font-size:.84rem;text-align:left}
+.u-hit small{font-size:.7rem;color:var(--ink-3)}
+.u-hit:hover{border-color:var(--ink-3)}
+.u-hits-more{font-family:var(--util);font-size:.74rem;color:var(--ink-3)}
