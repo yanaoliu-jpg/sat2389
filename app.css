@@ -440,6 +440,7 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 .root{margin:0;font-size:.96rem;line-height:1.75;color:var(--ink-2);font-family:var(--han)}
 .root i{font-style:normal;color:var(--seal);padding:0 5px;font-weight:600}
 .root u{text-decoration:none;color:var(--ink-3);font-size:.86em}
+.xtra{margin:0;font-size:.92rem;line-height:1.7;color:var(--ink-2);font-family:var(--han)}   /* 雅思词根联想的搭配、派生、同反义（第四十七次优化） */
 /* ---------- 讲透 ----------
    简单说法放最前面，字最大：一眼先有个感觉，再读大白话，最后才比近义词 */
 .sense-a{margin:0;font-family:var(--display);font-size:1.32rem;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}

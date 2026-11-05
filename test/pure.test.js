@@ -87,6 +87,15 @@ test('blankAt：能挖到词的一般变形', () => {
   assert.equal(m[0], 'abated');
 });
 
+test('blankAt：不规则变化也挖得到（第四十七次优化，雅思词根联想书里的例句）', () => {
+  assert.equal(blankAt('They sought in vain for somewhere to shelter.', 'seek')[0], 'sought');
+  assert.equal(blankAt('It is improbable that there is a planet hidden behind the sun.', 'hide')[0], 'hidden');
+  assert.equal(blankAt('Mary knelt down to examine the damage to her car.', 'kneel')[0], 'knelt');
+  assert.equal(blankAt('The bus swung sharply to the left.', 'swing')[0], 'swung');
+  // 整词匹配：sat 不会从 satisfy 里挖出来
+  assert.equal(blankAt('They were satisfied with the result.', 'sit'), null);
+});
+
 test('blankAt：不会把别的词里嵌着的字母当成这个词（词界要卡住）', () => {
   // "department" 里嵌着 "art"，但两边都不是词界，不该被挖空
   assert.equal(blankAt('The department released new guidelines.', 'art'), null);

@@ -175,9 +175,35 @@ function wordPat(word) {
    concise 撞 conceded、distort 撞 district、imposing 撞 imposed。
    这里改成「词本身 + 常规屈折变化」，而且**词尾也要卡边界**。 */
 var PAT_CACHE = {};
+/* 不规则变化（第四十七次优化）：雅思词根联想那本书的例句里有 sought、hidden、crept、knelt、resat、swung 这些，
+   规则变化和前缀都接不住，填空题就挖不出来。只收真用得上的常见动词，都是整词匹配（两头卡词界）。 */
+var IRREG = {
+  seek: 'sought', hide: 'hid|hidden', creep: 'crept', stick: 'stuck', kneel: 'knelt', sit: 'sat', resit: 'resat',
+  swing: 'swung', sting: 'stung', cling: 'clung', fling: 'flung', spring: 'sprang|sprung', sink: 'sank|sunk',
+  shrink: 'shrank|shrunk', stink: 'stank|stunk', weep: 'wept', sweep: 'swept', sleep: 'slept', leap: 'leapt',
+  bend: 'bent', lend: 'lent', spend: 'spent', bind: 'bound', grind: 'ground', wind: 'wound', seize: 'seized',
+  weave: 'wove|woven', tread: 'trod|trodden', forbid: 'forbade|forbidden', forsake: 'forsook|forsaken',
+  forgive: 'forgave|forgiven', foresee: 'foresaw|foreseen', withdraw: 'withdrew|withdrawn',
+  withhold: 'withheld', withstand: 'withstood', undertake: 'undertook|undertaken', overtake: 'overtook|overtaken',
+  overcome: 'overcame', override: 'overrode|overridden', oversee: 'oversaw|overseen', undergo: 'underwent|undergone',
+  arise: 'arose|arisen', strive: 'strove|striven', stride: 'strode|stridden', strike: 'struck|stricken',
+  shake: 'shook|shaken', swear: 'swore|sworn', tear: 'tore|torn', bear: 'bore|borne|born', wear: 'wore|worn',
+  freeze: 'froze|frozen', steal: 'stole|stolen', breed: 'bred', flee: 'fled', feed: 'fed', bleed: 'bled',
+  dwell: 'dwelt', spill: 'spilt', spoil: 'spoilt', burn: 'burnt', dig: 'dug', hang: 'hung', shine: 'shone',
+  shoot: 'shot', slide: 'slid', fight: 'fought', catch: 'caught', teach: 'taught', buy: 'bought', bring: 'brought',
+  think: 'thought', lay: 'laid', lie: 'lay|lain', rise: 'rose|risen', ride: 'rode|ridden', drive: 'drove|driven',
+  write: 'wrote|written', hold: 'held', choose: 'chose|chosen', speak: 'spoke|spoken', break: 'broke|broken',
+  wake: 'woke|woken', fall: 'fell|fallen', grow: 'grew|grown', throw: 'threw|thrown', blow: 'blew|blown',
+  draw: 'drew|drawn', fly: 'flew|flown', swim: 'swam|swum', sing: 'sang|sung', ring: 'rang|rung',
+  drink: 'drank|drunk', begin: 'began|begun', forget: 'forgot|forgotten', hit: 'hit', cast: 'cast',
+  mislead: 'misled', mistake: 'mistook|mistaken', misunderstand: 'misunderstood', understand: 'understood',
+  uphold: 'upheld', upset: 'upset', beat: 'beaten', bite: 'bit|bitten', hew: 'hewn', sew: 'sewn', sow: 'sown',
+  swell: 'swollen', mow: 'mown', prove: 'proven', saw: 'sawn'
+};
 function inflectRe(w) {
   var b = String(w).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   var alts = [b];
+  if (Object.prototype.hasOwnProperty.call(IRREG, b)) alts.push(IRREG[b]);
   if (/[^aeiou]y$/.test(b)) alts.push(b.slice(0, -1) + 'i(?:es|ed|er|est|ly|ness)');
   if (/e$/.test(b)) alts.push(b.slice(0, -1) + '(?:es|ed|ing|er|est|ion|ions)');
   if (/[^aeiou][aeiou][^aeiouwxy]$/.test(b)) alts.push(b + b.charAt(b.length - 1) + '(?:ed|ing|er|est)');

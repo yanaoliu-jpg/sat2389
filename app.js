@@ -934,7 +934,17 @@ function zhEx(t) {   // translations mark the matching Chinese with **…**
   return esc(t || '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 }
 function bold(sent, word) {
-  return esc(sent).replace(new RegExp('\\b(' + wordPat(word) + ')', 'ig'), '<b>$1</b>');
+  var s = esc(sent), out = s.replace(new RegExp('\\b(' + wordPat(word) + ')', 'ig'), '<b>$1</b>');
+  // 前缀式接不住 sought、knelt 这类不规则变化（第四十七次优化）时，退回 wordRe（里面有不规则变化表）
+  return out !== s ? out : s.replace(new RegExp(wordRe(word).source, 'ig'), '<b>$&</b>');
+}
+/* 雅思词根联想（第四十七次优化）书上的搭配、派生、同义、反义，有哪栏显示哪栏 */
+function isRootBook(w) { return w.i >= 20001 && w.i < 30000; }
+function bookExtras(r) {
+  if (!r) return '';
+  return [['c', '搭配'], ['d', '派生'], ['y', '同义'], ['f', '反义']].map(function (k) {
+    return r[k[0]] ? '<div class="blk"><p class="blk-l">' + k[1] + '</p><p class="xtra">' + esc(r[k[0]]) + '</p></div>' : '';
+  }).join('');
 }
 function rootHtml(s) {   // ab-（离开）+ jur（发誓）→ 发誓离开 → 弃绝
   return esc(s)
@@ -987,13 +997,31 @@ function defaultGroups() {
   return [{ id: 'sat', name: 'SAT 词汇', us: pick(1, 37) },
           { id: 'shuf', name: SHUF_NAME, us: pick(3001, 3999) },
           { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
-          { id: 'ielts', name: '雅思核心词汇', us: pick(2001, 2008) }];
+          { id: 'ielts', name: '雅思核心词汇', us: pick(2001, 2008) },
+          { id: 'iroot', name: IROOT_NAME, us: pick(4001, 4050) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
    开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
    以后撤销或改了这个组就不再动。乱序单元已经在哪个组里的不挪。 */
 var SHUF_NAME = 'SAT2300单词乱序版';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; save(); }
+/* 第四十七次优化：《雅思词汇词根+联想记忆法 乱序版》50 个 Word List（u 4001–4050）。老用户打开时补一次这个组，
+   放在「雅思核心词汇」后面（没有那个组就放最后）；记上 store.ig，以后撤销或改了这个组不再动 */
+var IROOT_NAME = '雅思词根+联想记忆（乱序版）';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; save(); }
+if (store.ig !== 1) {
+  try {
+    var inG2 = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG2[u] = 1; }); });
+    var rootUs = UNITS.filter(function (x) { return x.u >= 4001 && x.u <= 4050 && !x.imported && !inG2[x.u]; })
+      .map(function (x) { return x.u; });
+    if (rootUs.length) {
+      var at2 = store.groups.length;
+      store.groups.forEach(function (g, k) { if (g.id === 'ielts') at2 = k + 1; });
+      store.groups.splice(at2, 0, { id: 'iroot', name: IROOT_NAME, us: rootUs });
+    }
+  } catch (e) {}
+  store.ig = 1; save();
+}
 if (store.sg !== 1) {
   try {
     var inG = {};
@@ -1149,7 +1177,8 @@ function renderHome() {
             (mine.units ? '；再往后是你自己攒的 ' + mine.units + ' 个单元、' + mine.words + ' 个词条 —— 导入的词表、手动加的词、背过和复习过的都收在这里'
                         : '。往后凡是你背过、复习过的词，导进来或手动加进来，都会排在后面') +
             '。每张词卡有音标、发音、例句，难词还附了词根。' +
-            '「' + SHUF_NAME + '」照《2300 高密度便携版》竖着一列一个单元、顺序打乱，学习进度跟原书共用。</p>') +
+            '「' + SHUF_NAME + '」照《2300 高密度便携版》竖着一列一个单元、顺序打乱，学习进度跟原书共用。' +
+            '「' + IROOT_NAME + '」照《雅思词汇词根+联想记忆法 乱序版》一个 Word List 一个单元，词卡上有书里的记忆法、搭配、派生和同反义。</p>') +
     '</div><div class="stat-row">' +
       '<div class="stat stat-known"><b>' + all.known + '</b><span>已掌握</span></div>' +
       '<button class="stat stat-shaky" id="allShaky" type="button"' + (all.shaky ? '' : ' disabled') +
@@ -1735,8 +1764,9 @@ function cardHtml(w, revealed, u) {
       (r && r.z ? '<div class="fix">原书作：' + esc(w.z) + '　<span>此处按通行释义订正</span></div>' : '') + '</div>';
     body += senseHtml(w);
     if (r && r.r) {
-      body += '<div class="blk"><p class="blk-l">词根</p><p class="root">' + rootHtml(r.r) + '</p></div>';
+      body += '<div class="blk"><p class="blk-l">' + (isRootBook(w) ? '记忆' : '词根') + '</p><p class="root">' + rootHtml(r.r) + '</p></div>';
     }
+    body += bookExtras(r);
     body += '<div class="blk"><p class="blk-l">例句</p>' +
       (r && r.e ? exHtml(r.e, r.t, w.w, 'S') : '<p class="pending">这个词的例句还没写好。</p>') + '</div>';
     body += '<div class="blk"><p class="blk-l">我的例句' +
