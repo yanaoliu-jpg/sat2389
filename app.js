@@ -1019,6 +1019,12 @@ if (store.ag !== 1) {
   store.groups.forEach(function (g) { if (g.id === 'ielts' && g.name === '雅思核心词汇') g.name = IELTS_NAME; });
   store.ag = 1; save();
 }
+/* 组里 8 个单元也跟着改成「雅思核心词汇AI自编 · List 01」（data/ielts.js 的 t）。用户之前在自己浏览器里
+   已经手动改成了一模一样的名字，那份改名现在跟原名重复，删掉，免得一直显示「原名 …」「换回原名」 */
+if (store.ag2 !== 1) {
+  UNITS.forEach(function (x) { if (x.u >= 2001 && x.u <= 2008 && store.uname[x.u] === x.t) delete store.uname[x.u]; });
+  store.ag2 = 1; save();
+}
 if (store.ig !== 1) {
   try {
     var inG2 = {};

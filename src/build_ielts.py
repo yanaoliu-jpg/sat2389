@@ -175,7 +175,7 @@ for li in range(0, len(rows), PER_LIST):
     units.append({
         "u": u, "n": len(unit_words),
         "a": unit_words[0]["w"], "b": unit_words[-1]["w"],
-        "t": "雅思核心词汇 · List %02d" % (u - U_START + 1),
+        "t": "雅思核心词汇AI自编 · List %02d" % (u - U_START + 1),
     })
     u += 1
 

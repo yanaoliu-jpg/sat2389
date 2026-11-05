@@ -9003,7 +9003,7 @@ window.SAT_WORDS=(window.SAT_WORDS||[]).concat([
 {"i":10638,"u":2008,"w":"majority","p":"məˈdʒɒrəti","z":"n. 多数，大多数"},
 {"i":10639,"u":2008,"w":"ratio","p":"ˈreɪʃiəʊ","z":"n. 比率，比例"},
 ]);
-window.SAT_UNITS=(window.SAT_UNITS||[]).concat([{"u":2001,"n":90,"a":"academic","b":"software","t":"雅思核心词汇 · List 01"},{"u":2002,"n":90,"a":"streaming","b":"obesity","t":"雅思核心词汇 · List 02"},{"u":2003,"n":90,"a":"oncology","b":"asset","t":"雅思核心词汇 · List 03"},{"u":2004,"n":90,"a":"audit","b":"parliament","t":"雅思核心词汇 · List 04"},{"u":2005,"n":90,"a":"penalty","b":"transnational","t":"雅思核心词汇 · List 05"},{"u":2006,"n":90,"a":"vernacular","b":"evident","t":"雅思核心词汇 · List 06"},{"u":2007,"n":90,"a":"export","b":"exceed","t":"雅思核心词汇 · List 07"},{"u":2008,"n":9,"a":"reach","b":"ratio","t":"雅思核心词汇 · List 08"}]);
+window.SAT_UNITS=(window.SAT_UNITS||[]).concat([{"u":2001,"n":90,"a":"academic","b":"software","t":"雅思核心词汇AI自编 · List 01"},{"u":2002,"n":90,"a":"streaming","b":"obesity","t":"雅思核心词汇AI自编 · List 02"},{"u":2003,"n":90,"a":"oncology","b":"asset","t":"雅思核心词汇AI自编 · List 03"},{"u":2004,"n":90,"a":"audit","b":"parliament","t":"雅思核心词汇AI自编 · List 04"},{"u":2005,"n":90,"a":"penalty","b":"transnational","t":"雅思核心词汇AI自编 · List 05"},{"u":2006,"n":90,"a":"vernacular","b":"evident","t":"雅思核心词汇AI自编 · List 06"},{"u":2007,"n":90,"a":"export","b":"exceed","t":"雅思核心词汇AI自编 · List 07"},{"u":2008,"n":9,"a":"reach","b":"ratio","t":"雅思核心词汇AI自编 · List 08"}]);
 /* 《雅思词汇词根+联想记忆法 乱序版》（第四十七次优化）：50 个 Word List，一个 List 一个单元，照书里的顺序。
    由 src/build_ielts_root.py 从 src/ielts_root/raw.json（PDF 拆的）+ src/ielts_root/Lxx.tsv 生成，
    i 从 20001 起、u 4001–4050，跟雅思核心词汇（i 10001–10639 · u 2001–2008）分开。例句等在 data/ielts_root_rich.js。 */
@@ -24203,6 +24203,12 @@ if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1;
 if (store.ag !== 1) {
   store.groups.forEach(function (g) { if (g.id === 'ielts' && g.name === '雅思核心词汇') g.name = IELTS_NAME; });
   store.ag = 1; save();
+}
+/* 组里 8 个单元也跟着改成「雅思核心词汇AI自编 · List 01」（data/ielts.js 的 t）。用户之前在自己浏览器里
+   已经手动改成了一模一样的名字，那份改名现在跟原名重复，删掉，免得一直显示「原名 …」「换回原名」 */
+if (store.ag2 !== 1) {
+  UNITS.forEach(function (x) { if (x.u >= 2001 && x.u <= 2008 && store.uname[x.u] === x.t) delete store.uname[x.u]; });
+  store.ag2 = 1; save();
 }
 if (store.ig !== 1) {
   try {
