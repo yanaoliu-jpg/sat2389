@@ -1001,7 +1001,7 @@ function defaultGroups() {
   return [{ id: 'sat', name: 'SAT 词汇', us: pick(1, 37) },
           { id: 'shuf', name: SHUF_NAME, us: pick(3001, 3999) },
           { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
-          { id: 'ielts', name: '雅思核心词汇', us: pick(2001, 2008) },
+          { id: 'ielts', name: IELTS_NAME, us: pick(2001, 2008) },
           { id: 'iroot', name: IROOT_NAME, us: pick(4001, 4050) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
@@ -1011,7 +1011,14 @@ var SHUF_NAME = 'SAT2300单词乱序版';
 /* 第四十七次优化：《雅思词汇词根+联想记忆法 乱序版》50 个 Word List（u 4001–4050）。老用户打开时补一次这个组，
    放在「雅思核心词汇」后面（没有那个组就放最后）；记上 store.ig，以后撤销或改了这个组不再动 */
 var IROOT_NAME = '雅思词根+联想记忆（乱序版）';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; save(); }
+/* 第四十八次优化：这 639 个词的例句是 AI 编的，不是书上的，用户要组名写明「雅思核心词汇AI自编」。
+   老用户的组名还是原来的「雅思核心词汇」就换掉一次（记上 store.ag）；自己改过名的不动 */
+var IELTS_NAME = '雅思核心词汇AI自编';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; save(); }
+if (store.ag !== 1) {
+  store.groups.forEach(function (g) { if (g.id === 'ielts' && g.name === '雅思核心词汇') g.name = IELTS_NAME; });
+  store.ag = 1; save();
+}
 if (store.ig !== 1) {
   try {
     var inG2 = {};
@@ -1155,7 +1162,8 @@ function renderGroup(id) {
   var us = groupUnits(g), ws = groupWords(g), bad = ws.filter(shaky);
   view.innerHTML = '<button class="back" id="back" type="button">← 返回目录</button>' +
     '<div class="unit-head"><div><p class="eyebrow">' + us.length + ' 个单元 · ' + ws.length + ' 个词</p>' +
-      '<h1>' + esc(g.name) + '</h1></div>' +
+      '<div class="title-line"><h1 id="groupTitleH">' + esc(g.name) + '</h1>' +
+        '<button class="rename-btn" id="renameGroup" type="button" title="给这个分组改名">✎ 改名</button></div></div>' +
       '<div class="head-tools">' +
         (bad.length ? '<button class="btn btn-ghost" id="sweepGroup" type="button">整理错词 · ' + bad.length + '</button>' : '') +
         (us.length ? renameBtnHtml() : '') +
@@ -1166,6 +1174,7 @@ function renderGroup(id) {
       : '<div class="empty"><b>这个分组还是空的</b>点右上角的「编辑分组」，把单元勾进来。</div>');
   document.getElementById('back').onclick = function () { go({ name: 'home' }); };
   document.getElementById('editGroup').onclick = function () { openGroup(g.id); };
+  document.getElementById('renameGroup').onclick = function () { openRename(null, g); };
   var sg = document.getElementById('sweepGroup');
   if (sg) sg.onclick = function () { startReview(bad, g.name + ' 错词', { name: 'group', id: g.id }); };
   wireUnitRename(g.id);
@@ -3438,10 +3447,28 @@ function paintMerge() {
 /* 面板可以加到「我加的词」，也可以加到某个导入的单元里；
    editing 有值时是在改某一条，不是新增。（第八次优化 3） */
 var addTarget = MANUAL_U, editing = null;
-var renaming = null;
-function openRename(u) {
+var renaming = null, renamingG = null;
+/* 分组改名（第四十八次优化）跟单元改名共用这个弹窗：openRename(null, 分组)。原来只能在「编辑分组」里改，
+   那个弹窗一大半是勾单元，只想换个名字找不到。默认的几个组可以「换回原名」 */
+function groupDefaultName(g) {
+  var d = defaultGroups().filter(function (o) { return o.id === g.id; })[0];
+  return d ? d.name : '';
+}
+function openRename(u, g) {
   var c = customUnit(u), inp = document.getElementById('renameIn');
-  renaming = u;
+  renaming = u; renamingG = g || null;
+  document.getElementById('renameTitle').textContent = g ? '分组改名' : '单元改名';
+  if (g) {
+    var dn = groupDefaultName(g);
+    inp.value = g.name;
+    inp.placeholder = dn || '分组的名字';
+    document.getElementById('renameNote').textContent = '只改名字，里面的单元和学习进度都不动。' +
+      (dn && dn !== g.name ? '原名：' + dn + '。' : '');
+    document.getElementById('renameReset').hidden = !dn || dn === g.name;
+    document.getElementById('renameModal').hidden = false;
+    inp.focus(); inp.select();
+    return;
+  }
   inp.value = unitName(u);
   inp.placeholder = unitBase(u);
   document.getElementById('renameNote').textContent = c
@@ -3453,6 +3480,14 @@ function openRename(u) {
 }
 function saveRename() {
   var inp = document.getElementById('renameIn');
+  if (renamingG) {
+    var name = inp.value.replace(/\s+/g, ' ').trim() || groupDefaultName(renamingG);
+    if (!name) { inp.focus(); return; }                 // 自己建的组没有原名，不能空着
+    renamingG.name = name; save();
+    document.getElementById('renameModal').hidden = true;
+    render();
+    return;
+  }
   if (!setUnitName(renaming, inp.value)) { inp.focus(); return; }
   document.getElementById('renameModal').hidden = true;
   /* 测验、拼写做到一半不能重画，这道题答过的样子会没了，只换标题那行字 */
