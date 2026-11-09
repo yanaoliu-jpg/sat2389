@@ -1154,7 +1154,7 @@ var IROOT_NAME = '雅思词根+联想记忆（乱序版）';
 var IELTS_NAME = '雅思核心词汇AI自编';
 /* 第四十九次优化：《SAT 冲刺终极词汇 1000》5 个单元、每个 200 词（u 5001–5005）。老用户打开时补一次这个组，放在最后；记上 store.tg */
 var T1000_NAME = 'SAT冲刺终极1000真题词';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; save(); }
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; save(); }
 /* 只在真题1000 的数据真的载进来时才补组、才记 store.tg2。原来（store.tg）没载到也记上：浏览器缓存着旧 index.html
    （没有 sat1000.js 那行）却拿到新 app.js 时，组没补上就被记成补过了，以后永远补不回来。tg2 让这些人再补一次；
    已经有这个组的，单元都在组里，不会重复补 */
@@ -1164,9 +1164,26 @@ if (store.tg2 !== 1 && T1000_US.length) {
     var inG3 = {};
     store.groups.forEach(function (g) { g.us.forEach(function (u) { inG3[u] = 1; }); });
     var tUs = T1000_US.filter(function (x) { return !inG3[x.u]; }).map(function (x) { return x.u; });
-    if (tUs.length) store.groups.push({ id: 't1000', name: T1000_NAME, us: tUs });
+    var tG = store.groups.filter(function (g) { return g.id === 't1000'; })[0];
+    if (tG) tG.us = tG.us.concat(tUs);
+    else if (tUs.length) store.groups.push({ id: 't1000', name: T1000_NAME, us: tUs });
   } catch (e) {}
   store.tg = 1; store.tg2 = 1; save();
+}
+/* 第五十二次优化：上面 tg2 原来不管已有的 t1000 组，另起一个。11-05 打开过半成品单文件版（只有 Unit 01）的人，
+   先得了一个只有 Unit 01 的组，tg2 又补出一个装 Unit 02–05 的组，首页两张同名卡片。打开时把几个 t1000 组并成一个，
+   放在第一个的位置，单元按编号排；记上 store.tg3 */
+if (store.tg3 !== 1 && T1000_US.length) {
+  try {
+    var tGs = store.groups.filter(function (g) { return g.id === 't1000'; });
+    if (tGs.length > 1) {
+      var tAll = [];
+      tGs.forEach(function (g) { g.us.forEach(function (u) { if (tAll.indexOf(u) < 0) tAll.push(u); }); });
+      tGs[0].us = tAll.sort(function (a, b) { return a - b; });
+      store.groups = store.groups.filter(function (g) { return g.id !== 't1000' || g === tGs[0]; });
+    }
+  } catch (e) {}
+  store.tg3 = 1; save();
 }
 if (store.ag !== 1) {
   store.groups.forEach(function (g) { if (g.id === 'ielts' && g.name === '雅思核心词汇') g.name = IELTS_NAME; });
