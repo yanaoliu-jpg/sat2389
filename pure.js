@@ -494,6 +494,170 @@ function dsBody(prompt, model, plain) {
   return body;
 }
 
+/* ---------- 批量删词（第五十次优化） ----------
+   单元的单词列表里勾一批词，一次删掉。词分两种，处理不一样：
+     · 自己导入／手动加的词（store.custom 里的）：真删 —— 从单元里拿掉，进度、曾错过、生词本、颜色、
+       选中一起删；拼写在别处再没有同名词条时，自己生成的例句（gen）和讲透（sense）也删。
+       单元删空了就连单元一起删，分组里也拿掉它。
+     · 内置书的词（data/*.js 里的）：删不掉源数据，改成「藏起来」—— 编号记进 store.hide，
+       从所有出现它的单元（原书单元、引用同一词条的乱序单元）、搜索、生词本、统计里一起消失；
+       它的进度、曾错过、星标、颜色收进 store.hide[i] 里跟着它，活的记录表里不留野记录，
+       随时能在单元页「恢复隐藏的词」放回来，记录原样回来。
+   deleteWords 返回一份快照，undoDelete 拿它把刚才这一下整个撤回（含选中状态）。
+   这几个函数会直接改传进来的 store（跟 app.js 里别的写法一致），快照里存的是拿走的原对象。 */
+var WORD_RECS = [['prog', 'p'], ['hist', 'h'], ['star', 's'], ['col', 'c']];
+function hasOwn(o, k) { return !!o && Object.prototype.hasOwnProperty.call(o, k); }
+function anyKey(o) { for (var k in o) if (hasOwn(o, k)) return true; return false; }
+/* 内置词表去掉藏起来的词；受影响的单元重算词数和首尾词（n/a/b），其余单元原样 */
+function applyHidden(words, units, hide) {
+  if (!anyKey(hide)) return { words: words.slice(), units: units.slice() };
+  var keep = [], at = {}, byU = {}, touched = {};
+  words.forEach(function (w) {
+    if (hasOwn(hide, w.i)) { touched[w.u] = 1; return; }
+    keep.push(w); at[w.i] = w; (byU[w.u] = byU[w.u] || []).push(w);
+  });
+  var out = units.map(function (x) {
+    var ws;
+    if (x.ids) {
+      if (!x.ids.some(function (i) { return hasOwn(hide, i); })) return x;
+      ws = x.ids.map(function (i) { return at[i]; }).filter(Boolean);
+    } else {
+      if (!touched[x.u]) return x;
+      ws = byU[x.u] || [];
+    }
+    var y = {};
+    for (var k in x) y[k] = x[k];
+    y.n = ws.length; y.a = ws.length ? ws[0].w : ''; y.b = ws.length ? ws[ws.length - 1].w : '';
+    return y;
+  });
+  return { words: keep, units: out };
+}
+/* 这个单元里藏起来的内置词，按单元自己的顺序 */
+function hiddenIn(unit, words, hide) {
+  if (!unit || !anyKey(hide)) return [];
+  if (unit.ids) {
+    var at = {};
+    words.forEach(function (w) { at[w.i] = w; });
+    return unit.ids.filter(function (i) { return hasOwn(hide, i); })
+      .map(function (i) { return at[i]; }).filter(Boolean);
+  }
+  return words.filter(function (w) { return w.u === unit.u && hasOwn(hide, w.i); });
+}
+function takeRecs(store, i) {             // 把一个编号的四份记录拿出来（活的表里删掉）
+  var r = {};
+  WORD_RECS.forEach(function (t) {
+    var m = store[t[0]];
+    if (hasOwn(m, i)) { r[t[1]] = m[i]; delete m[i]; }
+  });
+  return r;
+}
+function putRecs(store, i, r) {           // 放回去；表里已经有的（撤回前又标过）不覆盖
+  WORD_RECS.forEach(function (t) {
+    if (!hasOwn(r, t[1])) return;
+    if (!store[t[0]]) store[t[0]] = {};
+    if (!hasOwn(store[t[0]], i)) store[t[0]][i] = r[t[1]];
+  });
+}
+function liveSpellings(store, builtin) {
+  var s = {};
+  builtin.forEach(function (w) { if (!hasOwn(store.hide, w.i)) s[w.w] = 1; });
+  (store.custom || []).forEach(function (c) { c.words.forEach(function (w) { s[w.w] = 1; }); });
+  return s;
+}
+/* ids：要删的编号；builtin：完整的内置词表（window.SAT_WORDS）。返回快照，n 是真的删／藏了几个 */
+function deleteWords(store, ids, builtin) {
+  if (!store.hide) store.hide = {};
+  ['prog', 'hist', 'star', 'col', 'sel', 'gen', 'sense'].forEach(function (k) { if (!store[k]) store[k] = {}; });
+  var want = {};
+  ids.forEach(function (i) { want[i] = 1; });
+  var snap = { n: 0, hid: [], cut: [], units: [], groups: [], recs: {}, sel: [], gen: {}, sense: {} };
+  var gone = [];                          // 拿走的词条，最后看它们的拼写还在不在
+  var custom = store.custom || [], keepUnits = [];
+  custom.forEach(function (c, k) {
+    var cut = [];
+    var rest = c.words.filter(function (w, j) {
+      if (!want[w.i]) return true;
+      cut.push({ k: j, w: w }); return false;
+    });
+    if (!cut.length) { keepUnits.push(c); return; }
+    cut.forEach(function (x) {
+      delete want[x.w.i]; gone.push(x.w);
+      snap.recs[x.w.i] = takeRecs(store, x.w.i);
+    });
+    snap.cut.push({ u: c.u, words: cut });
+    if (rest.length) { c.words = rest; keepUnits.push(c); return; }
+    var shell = {};
+    for (var f in c) if (f !== 'words') shell[f] = c[f];
+    snap.units.push({ at: k, unit: shell });
+    (store.groups || []).forEach(function (g) {
+      var gk = g.us.indexOf(c.u);
+      if (gk >= 0) { snap.groups.push({ id: g.id, u: c.u, k: gk }); g.us.splice(gk, 1); }
+    });
+  });
+  store.custom = keepUnits;
+  var hidW = {};
+  builtin.forEach(function (w) {
+    if (!want[w.i] || hasOwn(store.hide, w.i)) return;
+    delete want[w.i];
+    store.hide[w.i] = takeRecs(store, w.i);
+    snap.hid.push(w.i); hidW[w.w] = hidW[w.w] || w.i; gone.push(w);
+  });
+  gone.forEach(function (w) {
+    if (store.sel[w.i]) { snap.sel.push(w.i); delete store.sel[w.i]; }
+  });
+  var live = liveSpellings(store, builtin);
+  gone.forEach(function (w) {
+    if (live[w.w]) return;
+    var h = hidW[w.w] ? store.hide[hidW[w.w]] : null;   // 藏起来的内置词还会回来：例句跟着它收着
+    if (hasOwn(store.gen, w.w)) { (h ? (h.g = store.gen[w.w]) : (snap.gen[w.w] = store.gen[w.w])); delete store.gen[w.w]; }
+    if (hasOwn(store.sense, w.w)) { (h ? (h.x = store.sense[w.w]) : (snap.sense[w.w] = store.sense[w.w])); delete store.sense[w.w]; }
+  });
+  snap.n = gone.length;
+  return snap;
+}
+/* 把藏起来的内置词放回来，返回放回了几个 */
+function restoreHidden(store, ids, builtin) {
+  var n = 0, byI = {};
+  builtin.forEach(function (w) { byI[w.i] = w; });
+  ids.forEach(function (i) {
+    if (!hasOwn(store.hide, i)) return;
+    var r = store.hide[i] || {}, w = byI[i];
+    delete store.hide[i];
+    putRecs(store, i, r);
+    if (w && hasOwn(r, 'g') && !hasOwn(store.gen, w.w)) store.gen[w.w] = r.g;
+    if (w && hasOwn(r, 'x') && !hasOwn(store.sense, w.w)) store.sense[w.w] = r.x;
+    n++;
+  });
+  return n;
+}
+/* 撤回刚才那一下 deleteWords */
+function undoDelete(store, snap, builtin) {
+  restoreHidden(store, snap.hid, builtin);
+  snap.units.slice().sort(function (a, b) { return a.at - b.at; }).forEach(function (x) {
+    if (store.custom.some(function (c) { return c.u === x.unit.u; })) return;
+    var c = {};
+    for (var f in x.unit) c[f] = x.unit[f];
+    c.words = [];
+    store.custom.splice(Math.min(x.at, store.custom.length), 0, c);
+  });
+  snap.cut.forEach(function (x) {
+    var c = store.custom.filter(function (y) { return y.u === x.u; })[0];
+    if (!c) return;
+    x.words.slice().sort(function (a, b) { return a.k - b.k; }).forEach(function (y) {
+      if (c.words.some(function (z) { return z.i === y.w.i; })) return;
+      c.words.splice(Math.min(y.k, c.words.length), 0, y.w);
+    });
+  });
+  for (var i in snap.recs) putRecs(store, +i, snap.recs[i]);
+  snap.sel.forEach(function (i) { store.sel[i] = 1; });
+  for (var g in snap.gen) if (!hasOwn(store.gen, g)) store.gen[g] = snap.gen[g];
+  for (var s in snap.sense) if (!hasOwn(store.sense, s)) store.sense[s] = snap.sense[s];
+  snap.groups.slice().sort(function (a, b) { return a.k - b.k; }).forEach(function (x) {
+    var gr = (store.groups || []).filter(function (y) { return y.id === x.id; })[0];
+    if (gr && gr.us.indexOf(x.u) < 0) gr.us.splice(Math.min(x.k, gr.us.length), 0, x.u);
+  });
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     parseLine: parseLine, parseTable: parseTable, mergeRows: mergeRows, importScan: importScan,
@@ -507,6 +671,8 @@ if (typeof module !== 'undefined' && module.exports) {
     pronUrl: pronUrl, pronList: pronList, phraseClips: phraseClips, pronGuesses: pronGuesses,
     poolSig: poolSig, wantCloze: wantCloze, againCloze: againCloze, againAt: againAt, nearOrder: nearOrder,
     SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense,
-    dsModel: dsModel, dsBody: dsBody
+    dsModel: dsModel, dsBody: dsBody,
+    applyHidden: applyHidden, hiddenIn: hiddenIn, deleteWords: deleteWords,
+    restoreHidden: restoreHidden, undoDelete: undoDelete
   };
 }

@@ -47,6 +47,7 @@ if (!store.custom) store.custom = [];
 if (!store.col) store.col = {};
 if (!store.pronx) store.pronx = {};
 if (!store.uname) store.uname = {};
+if (!store.hide) store.hide = {};          // 第五十次优化：藏起来的内置词，编号 → 收起来的记录
 var dropRel = !!store.rel;               // 第四次优化 5：不再记「反复」，顺手把旧字段清掉
 if (dropRel) delete store.rel;
 /* hist used to be set by ANY 模糊. It now means "真的错过": 不认识, or 掌握之后又掉下来。
@@ -109,8 +110,9 @@ if (dropRel || idMoved || histReset || unitSplit) save();
 
 /* ---------- imported units ---------- */
 function mountCustom() {
-  WORDS = (window.SAT_WORDS || []).slice();
-  UNITS = (window.SAT_UNITS || []).slice();
+  var base = applyHidden(window.SAT_WORDS || [], window.SAT_UNITS || [], store.hide);   // 藏起来的内置词不进词表（第五十次优化）
+  WORDS = base.words;
+  UNITS = base.units;
   store.custom.forEach(function (c) {
     UNITS.push({ u: c.u, n: c.words.length, a: c.words[0] ? c.words[0].w : '',
                  b: c.words.length ? c.words[c.words.length - 1].w : '', t: c.t,
@@ -824,6 +826,7 @@ function selBarHtml() {
     '<button class="btn btn-ghost" id="selSpell" type="button">拼写</button>' +
     '<button class="btn btn-ghost" id="selReview" type="button">逐个过一遍</button>' +
     colDots('selbar-cols', '') +
+    (delScope().length ? '<button class="btn btn-ghost btn-del" id="selDel" type="button" title="删掉这个单元里勾着的词（删之前会再问一次）">删掉 ' + delScope().length + ' 个</button>' : '') +
     '<button class="btn btn-ghost" id="selClear" type="button">清空</button></div>';
 }
 function wireSelBar(from) {
@@ -835,6 +838,8 @@ function wireSelBar(from) {
   if (r) r.onclick = function () { startReview(selWords(), '选中的词', from); };
   var c = document.getElementById('selClear');
   if (c) c.onclick = function () { store.sel = {}; save(); render(); };
+  var dl = document.getElementById('selDel');
+  if (dl) dl.onclick = function () { askDelete(delScope()); };
   /* 勾一批词，点个颜色，一次都标上 */
   Array.prototype.forEach.call(view.querySelectorAll('.selbar-cols [data-col]'), function (b) {
     b.onclick = function () {
@@ -900,6 +905,136 @@ function wirePickBar(list, redraw) {
   if (n) n.onclick = function () { list.forEach(function (w) { delete store.sel[w.i]; }); save(); redraw(); };
 }
 
+/* ---------- 批量删词（第五十次优化） ----------
+   单元的浏览列表里点「选择」勾一批词，底部横幅点「删掉 N 个」：先弹确认框，写清删几个、是哪些。
+   自己导入／加的词真删；内置书的词删不掉源数据，改成藏起来（怎么处理进度这些记录，见 pure.js 的 deleteWords）。
+   删完底下冒一条「撤销」，15 秒内点它整个撤回；藏起来的内置词以后在单元页「已隐藏 N」里随时恢复。
+   只在单元的浏览页能删：生词本、搜索结果里的词来自好多单元，删哪个单元的不好说清楚。 */
+function delScope() {
+  if (route.name !== 'unit' || route.u === STAR_U || (route.tab && route.tab !== 'browse')) return [];
+  return ordered(route.u).filter(function (w) { return store.sel[w.i]; });
+}
+function customIds() {
+  var m = {};
+  store.custom.forEach(function (c) { c.words.forEach(function (w) { m[w.i] = c; }); });
+  return m;
+}
+var delM = document.createElement('div');
+delM.className = 'modal'; delM.id = 'delModal'; delM.hidden = true;
+delM.innerHTML = '<div class="modal-card modal-del" role="dialog" aria-modal="true" aria-labelledby="delTitle">' +
+  '<h2 id="delTitle"></h2><div id="delBody"></div>' +
+  '<div class="modal-foot"><button class="btn btn-ghost" id="delNo" type="button">取消</button>' +
+  '<button class="btn btn-danger" id="delYes" type="button"></button></div></div>';
+document.body.appendChild(delM);
+delM.addEventListener('mousedown', function (e) { if (e.target === delM) delM.hidden = true; });
+document.getElementById('delNo').onclick = function () { delM.hidden = true; };
+function openDel(title, body, yes, onYes, noText) {
+  document.getElementById('delTitle').textContent = title;
+  document.getElementById('delBody').innerHTML = body;
+  var y = document.getElementById('delYes');
+  y.textContent = yes; y.hidden = !yes;
+  y.onclick = onYes;
+  document.getElementById('delNo').textContent = noText || '取消';
+  delM.hidden = false;
+  (yes ? y : document.getElementById('delNo')).focus();
+}
+function delChips(list, cap) {
+  return '<div class="del-list">' + list.slice(0, cap).map(function (w) {
+    return '<span class="del-w" title="' + esc(w.z) + '">' + esc(w.w) + '</span>';
+  }).join('') + (list.length > cap ? '<span class="del-more">…还有 ' + (list.length - cap) + ' 个</span>' : '') + '</div>';
+}
+/* 内置词除了这个单元，还在哪几个单元里（原书单元和乱序单元共用一份词条） */
+function otherUnits(list, u) {
+  var at = {}, names = [];
+  UNITS.forEach(function (x) { if (x.ids && x.u !== u) x.ids.forEach(function (i) { (at[i] = at[i] || []).push(x.u); }); });
+  list.forEach(function (w) {
+    (w.u !== u ? [w.u] : []).concat(at[w.i] || []).forEach(function (v) {
+      var nm = unitShort(v);
+      if (names.indexOf(nm) < 0) names.push(nm);
+    });
+  });
+  return names;
+}
+function askDelete(list) {
+  if (!list.length) return;
+  var u = route.u, cid = customIds();
+  var mine = list.filter(function (w) { return cid[w.i]; }), book = list.filter(function (w) { return !cid[w.i]; });
+  var emptied = store.custom.filter(function (c) {
+    return c.words.length && c.words.every(function (w) { return list.some(function (x) { return x.i === w.i; }); });
+  });
+  var also = otherUnits(book, u);
+  var body = '<p class="del-lede">要从「' + esc(unitShort(u)) + '」删掉这 <b>' + list.length + '</b> 个词：</p>' +
+    delChips(list, 80) +
+    (mine.length ? '<p class="del-note"><b>' + mine.length + '</b> 个是你自己导入或加的：直接删掉，' +
+      '它们的学习进度、生词本、颜色一起删。</p>' : '') +
+    (book.length ? '<p class="del-note"><b>' + book.length + '</b> 个是内置词书里的：原书删不掉，改成<b>隐藏</b>' +
+      '（从这个单元' + (also.length ? '和共用同一词条的「' + esc(also.slice(0, 3).join('」「')) + '」' +
+        (also.length > 3 ? '等 ' + also.length + ' 个单元' : '') : '') +
+      '、搜索、生词本里一起消失，进度跟着收起来）。以后点这个单元的「已隐藏」随时恢复，进度原样回来。</p>' : '') +
+    (emptied.length ? '<p class="del-note del-warn">「' + esc(emptied.map(function (c) { return c.t; }).join('」「')) +
+      '」会被删空，这个单元也一起删掉。</p>' : '') +
+    '<p class="del-note">删完 15 秒内可以撤销。</p>';
+  openDel(book.length && !mine.length ? '隐藏这 ' + list.length + ' 个词？' : '删掉这 ' + list.length + ' 个词？', body,
+    (book.length && !mine.length ? '隐藏 ' : '删掉 ') + list.length + ' 个', function () { doDelete(list, u); });
+}
+function afterWordsChanged() { save(); mountCustom(); dropOrder(); quiz = null; spell = null; }
+function doDelete(list, u) {
+  var snap = deleteWords(store, list.map(function (w) { return w.i; }), window.SAT_WORDS || []);
+  delM.hidden = true;
+  if (!snap.n) return;
+  afterWordsChanged();
+  if (UNITS.some(function (x) { return x.u === u; })) render();
+  else {                                   // 单元删空了：回到它原来所在的分组，没有就回目录
+    var gid = snap.groups.length ? snap.groups[0].id : null;
+    go(gid && groupById(gid) ? { name: 'group', id: gid } : { name: 'home' });
+  }
+  showUndo(snap, u);
+}
+var undoEl = document.createElement('div');
+undoEl.className = 'undo-bar'; undoEl.hidden = true; undoEl.setAttribute('role', 'status');
+document.body.appendChild(undoEl);
+var undoTimer = null;
+function hideUndo() { clearTimeout(undoTimer); undoEl.hidden = true; document.documentElement.classList.remove('has-undo'); }
+function showUndo(snap, u) {
+  clearTimeout(undoTimer);
+  var allHid = snap.hid.length === snap.n;
+  undoEl.innerHTML = '<span>' + (allHid ? '隐藏了 ' : '删掉了 ') + '<b>' + snap.n + '</b> 个词</span>' +
+    '<button class="btn" id="undoDel" type="button">撤销</button>' +
+    '<button class="undo-x" id="undoX" type="button" title="关掉">×</button>';
+  undoEl.hidden = false;
+  document.documentElement.classList.add('has-undo');
+  document.getElementById('undoX').onclick = hideUndo;
+  document.getElementById('undoDel').onclick = function () {
+    hideUndo();
+    undoDelete(store, snap, window.SAT_WORDS || []);
+    afterWordsChanged();
+    if (route.name === 'unit' && route.u === u) render(); else go({ name: 'unit', u: u, tab: 'browse' });
+  };
+  undoTimer = setTimeout(hideUndo, 15000);
+}
+/* 这个单元藏起来的词：一个个恢复，或者全部恢复 */
+function unitHidden(u) { return u === STAR_U ? [] : hiddenIn(unitMeta(u), window.SAT_WORDS || [], store.hide); }
+function openHidden(u) {
+  var hs = unitHidden(u);
+  if (!hs.length) { delM.hidden = true; render(); return; }
+  openDel('「' + unitShort(u) + '」隐藏的 ' + hs.length + ' 个词',
+    '<p class="del-lede">点一个词把它放回来，进度、生词本、颜色原样回来。</p>' +
+    '<div class="del-list">' + hs.map(function (w) {
+      return '<button class="del-w del-back" data-back="' + w.i + '" type="button" title="' + esc(w.z) + ' · 点一下恢复">' +
+        esc(w.w) + '<i>↺</i></button>';
+    }).join('') + '</div>',
+    '全部恢复 ' + hs.length + ' 个', function () {
+      restoreHidden(store, hs.map(function (w) { return w.i; }), window.SAT_WORDS || []);
+      afterWordsChanged(); delM.hidden = true; render();
+    }, '完成');
+  Array.prototype.forEach.call(delM.querySelectorAll('[data-back]'), function (b) {
+    b.onclick = function () {
+      restoreHidden(store, [+b.dataset.back], window.SAT_WORDS || []);
+      afterWordsChanged(); render(); openHidden(u);
+    };
+  });
+}
+
 /* ---------- 导出 / 复制（第十一次优化 3）----------
    一行一个词，Tab 分隔「单词 / 音标 / 释义」—— 正好能粘回「导入词表」的文本框，
    所以复习到一半想把这批词挪走、留个底、发给别人，都不用另存文件。 */
@@ -943,9 +1078,11 @@ function bold(sent, word) {
 }
 /* 雅思词根联想（第四十七次优化）书上的搭配、派生、同义、反义，有哪栏显示哪栏 */
 function isRootBook(w) { return w.i >= 20001 && w.i < 30000; }
+/* 真题1000（第四十九次优化）：r 是原书的构词，另有 n 辨析、x 第二句真题例句 */
+function isT1000(w) { return w.i >= 30001 && w.i <= 31000; }
 function bookExtras(r) {
   if (!r) return '';
-  return [['c', '搭配'], ['d', '派生'], ['y', '同义'], ['f', '反义']].map(function (k) {
+  return [['c', '搭配'], ['d', '派生'], ['y', '同义'], ['f', '反义'], ['n', '辨析']].map(function (k) {
     return r[k[0]] ? '<div class="blk"><p class="blk-l">' + k[1] + '</p><p class="xtra">' + esc(r[k[0]]) + '</p></div>' : '';
   }).join('');
 }
@@ -1002,7 +1139,8 @@ function defaultGroups() {
           { id: 'shuf', name: SHUF_NAME, us: pick(3001, 3999) },
           { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
           { id: 'ielts', name: IELTS_NAME, us: pick(2001, 2008) },
-          { id: 'iroot', name: IROOT_NAME, us: pick(4001, 4050) }];
+          { id: 'iroot', name: IROOT_NAME, us: pick(4001, 4050) },
+          { id: 't1000', name: T1000_NAME, us: pick(5001, 5005) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
    开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
@@ -1014,7 +1152,19 @@ var IROOT_NAME = '雅思词根+联想记忆（乱序版）';
 /* 第四十八次优化：这 639 个词的例句是 AI 编的，不是书上的，用户要组名写明「雅思核心词汇AI自编」。
    老用户的组名还是原来的「雅思核心词汇」就换掉一次（记上 store.ag）；自己改过名的不动 */
 var IELTS_NAME = '雅思核心词汇AI自编';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; save(); }
+/* 第四十九次优化：《SAT 冲刺终极词汇 1000》5 个单元、每个 200 词（u 5001–5005）。老用户打开时补一次这个组，放在最后；记上 store.tg */
+var T1000_NAME = 'SAT冲刺终极1000真题词';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; save(); }
+if (store.tg !== 1) {
+  try {
+    var inG3 = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG3[u] = 1; }); });
+    var tUs = UNITS.filter(function (x) { return x.u >= 5001 && x.u <= 5005 && !x.imported && !inG3[x.u]; })
+      .map(function (x) { return x.u; });
+    if (tUs.length) store.groups.push({ id: 't1000', name: T1000_NAME, us: tUs });
+  } catch (e) {}
+  store.tg = 1; save();
+}
 if (store.ag !== 1) {
   store.groups.forEach(function (g) { if (g.id === 'ielts' && g.name === '雅思核心词汇') g.name = IELTS_NAME; });
   store.ag = 1; save();
@@ -1656,7 +1806,9 @@ function renderBrowse(u) {
           (editing2 ? '<button class="chip" id="addHere" type="button">＋ 添加</button>' : '')
         : '') +
       pickBarHtml() +
+      (unitHidden(u).length ? '<button class="chip chip-hid" id="hidOpen" type="button" title="这个单元里隐藏起来的内置词，点开可以恢复">已隐藏 ' + unitHidden(u).length + '</button>' : '') +
     '</div>' + colBarHtml(u, ws) +
+    (ws.length ? '' : '<div class="empty"><b>这个单元的词都隐藏了</b>点上面的「已隐藏」把它们放回来。</div>') +
     '<div class="' + bodyCls(ws) + '"><div><div class="rows' + (picking ? ' picking' : '') + (canMiss ? ' can-miss' : '') + '">' + rows + '</div></div>' +
       railHtml(ws, -1, picking) + '</div>' +
     '<div id="selbarSlot">' + selBarHtml() + '</div>';
@@ -1673,6 +1825,8 @@ function renderBrowse(u) {
   if (et) et.onclick = function () { editUnit = editing2 ? null : u; picking = false; renderBrowse(u); };
   var ah = document.getElementById('addHere');
   if (ah) ah.onclick = function () { openAdd(u); };
+  var ho = document.getElementById('hidOpen');
+  if (ho) ho.onclick = function () { openHidden(u); };
   Array.prototype.forEach.call(view.querySelectorAll('[data-edit]'), function (b) {
     b.onclick = function (e) {
       e.stopPropagation();
@@ -1856,11 +2010,12 @@ function cardHtml(w, revealed, u) {
       (r && r.z ? '<div class="fix">原书作：' + esc(w.z) + '　<span>此处按通行释义订正</span></div>' : '') + '</div>';
     body += senseHtml(w);
     if (r && r.r) {
-      body += '<div class="blk"><p class="blk-l">' + (isRootBook(w) ? '记忆' : '词根') + '</p><p class="root">' + rootHtml(r.r) + '</p></div>';
+      body += '<div class="blk"><p class="blk-l">' + (isRootBook(w) ? '记忆' : isT1000(w) ? '构词' : '词根') + '</p><p class="root">' + rootHtml(r.r) + '</p></div>';
     }
     body += bookExtras(r);
     body += '<div class="blk"><p class="blk-l">例句</p>' +
-      (r && r.e ? exHtml(r.e, r.t, w.w, 'S') : '<p class="pending">这个词的例句还没写好。</p>') + '</div>';
+      (r && r.e ? exHtml(r.e, r.t, w.w, 'S') : '<p class="pending">这个词的例句还没写好。</p>') +
+      (r && r.x ? exHtml(r.x[0], r.x[1], w.w, '·') : '') + '</div>';
     body += '<div class="blk"><p class="blk-l">我的例句' +
         (gs.length ? ' · ' + gs.length : '') + '</p>' +
       gs.map(function (g, n) {
@@ -1925,7 +2080,7 @@ function wireCard(w, redraw) {
 function renderStudy(u, n) {
   var ws = ordered(u);
   if (!ws.length && curFilter(u)) { setFilter(u, ''); ws = ordered(u); }   // 这一批被挑空了
-  if (!ws.length) { if (u === STAR_U) render(); return; }
+  if (!ws.length) { if (u === STAR_U) render(); else renderBrowse(u); return; }   // 词都隐藏了（第五十次优化）
   n = Math.max(0, Math.min(n || 0, ws.length - 1));
   var w = ws[n];
   var revealed = route.rev === true;
@@ -3997,8 +4152,9 @@ document.addEventListener('keydown', function (e) {
   if (e.key === '/') { e.preventDefault(); si.focus(); return; }
   if (e.key === 'Escape') {
     /* 有弹窗先关弹窗；没有弹窗、又开着选择模式，就退出选择（第二十九次优化），已勾的词留着 */
-    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden || !gpM.hidden;
+    var pop = !modal.hidden || !imp.hidden || !addM.hidden || !exM.hidden || !rnM.hidden || !gpM.hidden || !delM.hidden;
     modal.hidden = true; imp.hidden = true; addM.hidden = true; exM.hidden = true; rnM.hidden = true; gpM.hidden = true;
+    delM.hidden = true;
     var pt = !pop && picking && document.getElementById('pickToggle');
     if (pt) pt.click();
     return;
