@@ -1154,16 +1154,19 @@ var IROOT_NAME = '雅思词根+联想记忆（乱序版）';
 var IELTS_NAME = '雅思核心词汇AI自编';
 /* 第四十九次优化：《SAT 冲刺终极词汇 1000》5 个单元、每个 200 词（u 5001–5005）。老用户打开时补一次这个组，放在最后；记上 store.tg */
 var T1000_NAME = 'SAT冲刺终极1000真题词';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; save(); }
-if (store.tg !== 1) {
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; save(); }
+/* 只在真题1000 的数据真的载进来时才补组、才记 store.tg2。原来（store.tg）没载到也记上：浏览器缓存着旧 index.html
+   （没有 sat1000.js 那行）却拿到新 app.js 时，组没补上就被记成补过了，以后永远补不回来。tg2 让这些人再补一次；
+   已经有这个组的，单元都在组里，不会重复补 */
+var T1000_US = UNITS.filter(function (x) { return x.u >= 5001 && x.u <= 5005 && !x.imported; });
+if (store.tg2 !== 1 && T1000_US.length) {
   try {
     var inG3 = {};
     store.groups.forEach(function (g) { g.us.forEach(function (u) { inG3[u] = 1; }); });
-    var tUs = UNITS.filter(function (x) { return x.u >= 5001 && x.u <= 5005 && !x.imported && !inG3[x.u]; })
-      .map(function (x) { return x.u; });
+    var tUs = T1000_US.filter(function (x) { return !inG3[x.u]; }).map(function (x) { return x.u; });
     if (tUs.length) store.groups.push({ id: 't1000', name: T1000_NAME, us: tUs });
   } catch (e) {}
-  store.tg = 1; save();
+  store.tg = 1; store.tg2 = 1; save();
 }
 if (store.ag !== 1) {
   store.groups.forEach(function (g) { if (g.id === 'ielts' && g.name === '雅思核心词汇') g.name = IELTS_NAME; });

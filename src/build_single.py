@@ -15,6 +15,23 @@ out_path = sys.argv[1]
 fragment = "--fragment" in sys.argv
 
 html = read("index.html")
+
+# 线上 index.html 里本站的 js/css 后面带 ?v=内容摘要（第五十一次优化）。GitHub Pages 每个文件各缓存 10 分钟，
+# 不带版本时浏览器可能拿旧 index.html 配新 app.js（新数据没载进来）。文件一改摘要就变，浏览器只能取新的。
+# 每次发布都要跑这个脚本，所以顺手在这里把 index.html 的版本号盖上。
+import hashlib
+def stamp(m):
+    path = m.group(2)
+    full = os.path.join(ROOT, path)
+    if not os.path.isfile(full):
+        return m.group(0)
+    v = hashlib.md5(open(full, "rb").read()).hexdigest()[:8]
+    return m.group(1) + path + "?v=" + v + '"'
+stamped = re.sub(r'((?:src|href)=")((?:data/)?[\w.-]+\.(?:js|css))(?:\?v=\w+)?"', stamp, html)
+if stamped != html:
+    open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8").write(stamped)
+    html = stamped
+
 body = re.search(r"<body>(.*)</body>", html, re.S).group(1)
 body = re.sub(r'\s*<script src="[^"]+"></script>', "", body)
 
