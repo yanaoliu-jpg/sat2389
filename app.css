@@ -4,6 +4,7 @@
   --ink:#16211c; --ink-2:#57685e; --ink-3:#84968b; --rule:#c3d0c5; --rule-2:#d6e0d7;
   --seal:#c0362c; --seal-soft:#c0362c1f; --amber:#9d7220; --amber-soft:#9d72201f;
   --miss:#5b6f86; --miss-soft:#5b6f8626;
+  --ok:#2f8a4f; --ok-soft:#2f8a4f24;  /* 测验里对的绿、错的红（第五十四次优化） */
   --shadow:0 1px 0 #ffffffb3 inset, 0 1px 2px #16211c14, 0 8px 24px -12px #16211c33;
   --display:"Faustina",Georgia,"Songti SC","Times New Roman",serif;
   --util:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -18,6 +19,7 @@
   --ink:#e7eee6; --ink-2:#95a89c; --ink-3:#6d8076; --rule:#2c3830; --rule-2:#242e28;
   --seal:#e4685b; --seal-soft:#e4685b26; --amber:#d5a44b; --amber-soft:#d5a44b26;
   --miss:#8199b4; --miss-soft:#8199b433;
+  --ok:#5cc184; --ok-soft:#5cc18429;
   --shadow:0 1px 0 #ffffff0a inset, 0 2px 6px #0006, 0 14px 30px -18px #000;
   }
 }
@@ -27,6 +29,7 @@
   --ink:#e7eee6; --ink-2:#95a89c; --ink-3:#6d8076; --rule:#2c3830; --rule-2:#242e28;
   --seal:#e4685b; --seal-soft:#e4685b26; --amber:#d5a44b; --amber-soft:#d5a44b26;
   --miss:#8199b4; --miss-soft:#8199b433;
+  --ok:#5cc184; --ok-soft:#5cc18429;
   --shadow:0 1px 0 #ffffff0a inset, 0 2px 6px #0006, 0 14px 30px -18px #000;
 }
 /* 背景色调（第二十八次优化，app.js applyTone）：--th 色相、--tc 浓淡 0–1，只换中性色，朱红等强调色不动 */
@@ -333,8 +336,8 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
   padding:14px 18px;cursor:pointer;display:flex;gap:14px;align-items:baseline;transition:border-color .14s}
 .opt:hover{border-color:var(--ink-3)}
 .opt .k{font-family:var(--util);font-size:.74rem;color:var(--ink-3)}
-.opt.right{border-color:var(--seal);background:var(--seal-soft)}
-.opt.wrong{border-color:var(--amber);background:var(--amber-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--seal);background:var(--seal-soft)}
 .opt[disabled]{cursor:default}
 .quiz-foot{margin-top:24px;text-align:center;font-family:var(--util);font-size:.8rem;color:var(--ink-3)}
 .score{text-align:center;padding:40px 0}
@@ -366,8 +369,8 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,3rem)
 
 /* quiz result marks */
 .opt .mark{margin-left:auto;padding-left:14px;font-size:1.05rem;line-height:1}
-.opt.right .mark{color:var(--seal)}
-.opt.wrong .mark{color:var(--amber)}
+.opt.right .mark{color:var(--ok)}
+.opt.wrong .mark{color:var(--seal)}
 
 /* compact answer-card rail on narrow screens */
 @media (max-width:900px){
@@ -709,8 +712,8 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 /* ============ 第六次优化 ============ */
 .qx-tag{font-family:var(--util);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
   color:var(--amber);margin:0 0 12px}
-.qx-tag.ok{color:var(--seal)}
-.q-explain.good{border-color:var(--seal-soft)}
+.qx-tag.ok{color:var(--ok)}
+.q-explain.good{border-color:var(--ok-soft)}
 .score-rest{font-size:.88rem;color:var(--ink-3)}
 
 /* ============ 第七次优化 ============ */

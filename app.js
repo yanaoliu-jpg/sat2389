@@ -2610,7 +2610,7 @@ function renderQuiz(u, sel) {
     '</div>' +
     '<div id="quizAfter"></div>' +
     '<p class="quiz-foot">第 ' + seen + ' / ' + quiz.total + ' 题' + (q.again ? ' · 再考' : '') + ' · 已答对 ' + quiz.right +
-      '　<span class="q-keys">按 <kbd>1</kbd>–<kbd>4</kbd> 选，<kbd>回车</kbd> 看答案</span></p></div>';
+      '　<span class="q-keys">按 <kbd>1</kbd>–<kbd>4</kbd> 选，<kbd>空格</kbd> / <kbd>回车</kbd> 看答案</span></p></div>';
   quiz.shownAt = Date.now();
   wire();
   Array.prototype.forEach.call(view.querySelectorAll('[data-say]'), function (b) { b.onclick = function () { speak(b.dataset.say, b); }; });
@@ -2703,7 +2703,11 @@ function revealTooSoon(e, shownAt) { return e.repeat || Date.now() - shownAt < R
 function quizKey(e) {
   if (!quiz) return false;
   if (quiz.waiting) {
-    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); quiz.next(); return true; }
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (!e.repeat) quiz.next();     // 按住不放不连着翻：看答案那一下按住了，讲解不能一闪就过去
+      return true;
+    }
     return false;
   }
   if (quiz.answered) return false;
@@ -2711,10 +2715,12 @@ function quizKey(e) {
     var b = view.querySelector('.opt[data-n="' + e.key + '"]');
     if (b) { e.preventDefault(); b.click(); return true; }
   }
-  if (e.key === 'Enter') {
-    /* 焦点在别的按钮上（Tab 到选项）回车还是按那个按钮；喇叭和题型点过之后焦点留在上面，不算 */
-    var fb = e.target.closest && e.target.closest('button,a');
-    if (fb && !fb.classList.contains('speak') && !fb.dataset.qk) return false;
+  if (e.key === 'Enter' || e.key === ' ') {     // 空格也能看答案（第五十四次优化，用户习惯按空格）
+    /* 只有用 Tab 走到某个选项上时，回车才是按那个选项。别的按钮不算：
+       点「测验」标签、喇叭、题型进来，焦点会留在那个按钮上，以前回车就去按它，
+       看着像回车没反应（第五十四次优化） */
+    var fb = e.target.closest && e.target.closest('.opt');
+    if (fb) return false;
     e.preventDefault();
     if (!revealTooSoon(e, quiz.shownAt)) quiz.settle(null, 'idk');
     return true;
