@@ -50,3 +50,38 @@ test('真题1000：例句里找得到这个词（高亮、填空）', function (
   }).map(function (w) { return w.w; });
   assert.ok(miss.length <= 30, '找不到的太多：' + miss.join(', '));
 });
+
+/* 第五十七次优化：换成 11-10 新版。新词占了被删词的编号，打开时一次性清掉那些编号的旧记录，
+   curate 的记录从 30052 挪到 30005，别的编号不动 */
+test('真题1000 新版：新词在被删词的编号上，没有重复的词', function () {
+  const at = {};
+  WORDS.forEach(function (w) { at[w.i] = w.w; });
+  assert.strictEqual(at[30005], 'curate');
+  assert.strictEqual(at[30052], 'counteract');
+  assert.strictEqual(at[30091], 'anecdote');   // 新版 91 号重复放了 forestall，网站上留原来的 anecdote
+  assert.strictEqual(at[30628], 'indelible');
+  assert.strictEqual(new Set(WORDS.map(function (w) { return w.w; })).size, 1000);
+  ['highwayman', 'quay', 'ponder', 'breadth'].forEach(function (w) {
+    assert.ok(!WORDS.some(function (x) { return x.w === w; }), w + ' 应该删掉了');
+  });
+});
+
+test('真题1000 新版：reslotIds 清掉被删词的记录，curate 的跟着挪，别的不动', function () {
+  const st = {
+    prog: { 30005: 3, 30052: 1, 30091: 3, 30628: 1, 30001: 3 },
+    hist: { 30052: 2, 30085: 1 },
+    star: { 30005: 1, 30625: 1, 30002: 1 },
+    sel: { 30052: 1 },
+    col: { 30098: 'r', 30003: 'g' },
+    hide: { 30443: { p: 3 } }
+  };
+  const n = P.reslotIds(st, P.T1000_V2_DROP, P.T1000_V2_MOVE);
+  assert.deepStrictEqual(st.prog, { 30005: 1, 30091: 3, 30001: 3 });
+  assert.deepStrictEqual(st.hist, { 30005: 2 });
+  assert.deepStrictEqual(st.star, { 30002: 1 });
+  assert.deepStrictEqual(st.sel, { 30005: 1 });
+  assert.deepStrictEqual(st.col, { 30003: 'g' });
+  assert.deepStrictEqual(st.hide, {});
+  assert.strictEqual(n, 7);   // highwayman 的 prog、star，30628、30085、30625、30098、30443 各一条
+  assert.strictEqual(P.T1000_V2_DROP.length, 26);
+});

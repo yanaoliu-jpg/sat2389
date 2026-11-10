@@ -129,6 +129,19 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - 自己导入／加的词真删；**内置书的词删不掉原书，改成「隐藏」**，随时能恢复，进度原样回来。删之前弹确认框写清删几个、是哪些；删完 15 秒内能撤销。
 - 代码：`pure.js` 的 `deleteWords` / `undoDelete` / `restoreHidden` / `applyHidden` / `hiddenIn`，测试 `test/delete.test.js`；界面在 `app.js` 的「批量删词（第五十次优化）」那段（`askDelete`、`doDelete`、`showUndo`、`openHidden`），隐藏的词在 `mountCustom()` 里从词表去掉。新字段 `store.hide`。
 
+第五十七次优化（2026-11-10）：**「SAT冲刺终极1000真题词」换成 11-10 新版**（`../SAT冲刺终极词汇1000(3).html`，用户说「同步新版」）。新旧版对照见 `../SAT1000新旧版差异.md`。
+- 新版删了 26 个词、加了 25 个，新词基本占了被删词原来的编号（curate 从 52 号挪到 5 号）。别的 974 个词编号、例句都没变；periodical 的补充语境新版换了一句（原来那句是 periodically），跟着换了。
+- **91 号新版重复放了一个 forestall**（396 号也是），网站上 91 号留原来的 anecdote，所以仍是 1000 个不同的词。`src/sat1000/raw.json` 是新版拆出来的，只有 91 号用的是旧版那一条。
+- 25 个新词 + curate 照 `src/sat1000/PROMPT.md` 整理，校出来的原书错照对的写、记在备注：anomalous 构词和译名（三宅芙沙）、meticulous／superficial／espouse／satiate 构词、ambivalent 说和 ambiguous 同根、diurnal temperature range 的意思；anomalous、undermine、superficial 音标改成英音；elude、satiate 例句里的空格填上正确选项、删掉句末中文注；counteract、idiosyncratic 的补充语境不含本词，删了。**enumerate 原书例句里没有这个词**（那是 lament 一题的题干，enumerate 只是 B 选项），全书找不到别的句子，换成了一句自拟例句（不是真题，备注里写着）。
+- 进度、星标等按编号存，老用户打开时一次性清掉这 26 个编号上的旧记录（被删词的进度不留给新词），curate 那份跟着挪到 30005（`pure.js` 的 `reslotIds`，记号 `store.tv`）。
+- 新版另加的 75 句补充语境没换进来：网站每个词只放一句，原来那句已经核对过；新句子多数没中文、混着选项或表格。
+- 勘误表（`../SAT冲刺1000勘误表.html`，`../勘误表脚本/`）也跟着按新版重出：`src/sat1000/in/*.jsonl` 用新版 raw.json 重新生成；`collect.py` 拿 `勘误表脚本/旧版in/`（旧版原书）比，旧版和我们不同、新版和我们相同的条目算新版自己改对了，去掉（heretofore 等）；encode、periodical 新版换了对的译文但措辞不同，在 `collect.py` 里手工列出。共 489 个词：去掉 10 个被删词和 3 个新版改对的，加上 16 个新词的原书错。
+
+第五十六次优化（2026-11-10）：**长列表右下角加了「↑ 顶部」按钮**（用户要的：浏览界面随时回到最上面）。
+- 单元浏览、首页、组、生词本、搜索结果往下翻过一屏多（至少 500px），右下角出现「↑ 顶部」，点一下平滑滚回这页最上面（系统设了「减少动态效果」就直接跳），同时把这页记住的滚动位置清成 0。翻回顶上按钮自己隐藏；学习页不出。
+- 底部有「已选 N 个」横幅或撤销条、而且挡到按钮时（手机上横幅很宽），按钮自动往上让开。打印时不显示。
+- 改动：`index.html` 多一个 `#toTop` 按钮；`app.js` 的 `toTopSync()`（滚动、改窗口大小、每次 render、撤销条出现／消失时重算）；`app.css` 末尾 `.to-top`。
+
 第五十五次优化（2026-11-10）：**加了《四级词汇教师-海豚版》**（`../四级词汇教师-海豚版(1).xlsx`，用户给的），做法和第五十三次的《四级词汇2022版》一样。
 - 首页最后多一个分组「四级词汇海豚版」，**原表一个 List 一个单元**，共 35 个单元、2661 个词条，顺序照原表；单元标题「四级海豚版 · List 01」到「List 35」，i 43001–45661、u 6101–6135，跟 2022 版分开，进度互不影响（两本书大部分词相同，但各记各的）。老用户打开时一次性补上这个组（`app.js` 的 `store.cdg`，同 `store.cg`：只在数据真的载进来时才补、才记号），放在最后。
 - 原表是给老师出测验用的表，只有单词和中文释义，表头、「VIP」「学员」之类的说明行和每个 List 末尾的「共 xx 词」都跳过（那些词数常常对不上，不用）；三个格子里塞了两三个词的（definite cautious prayer、signal encourage、provided curiosity）拆开，同一个 List 已经有的不重复加。

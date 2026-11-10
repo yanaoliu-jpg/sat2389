@@ -1175,3 +1175,17 @@ button.near-w:focus-visible,.sense-link:focus-visible{outline:2px solid var(--se
 .undo-x{background:none;border:0;color:inherit;opacity:.6;cursor:pointer;font-size:1rem;padding:2px 6px}
 .undo-x:hover{opacity:1}
 html.has-undo .selbar{bottom:78px}
+
+/* ---------- 回到顶部（第五十六次优化）---------- */
+.to-top{position:fixed;right:20px;bottom:20px;z-index:45;display:flex;align-items:center;gap:5px;
+  font-family:var(--util);font-size:.8rem;color:var(--ink-2);background:var(--card);
+  border:1px solid var(--rule);border-radius:99px;padding:8px 14px 8px 11px;cursor:pointer;
+  box-shadow:0 8px 26px -10px #16211c4d, 0 2px 6px #16211c14;
+  opacity:0;visibility:hidden;transform:translateY(8px);
+  transition:opacity .18s, transform .18s, visibility .18s, bottom .18s}
+.to-top span{font-size:.95rem;line-height:1}
+.to-top.on{opacity:1;visibility:visible;transform:none}
+.to-top:hover{color:var(--ink);border-color:var(--ink-2)}
+.to-top:focus-visible{outline:2px solid var(--ink-2);outline-offset:2px}
+@media (max-width:760px){.to-top{right:12px;bottom:12px;padding:8px 12px 8px 10px}}
+@media print{.to-top{display:none}}

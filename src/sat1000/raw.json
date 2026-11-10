@@ -171,44 +171,60 @@
 "mark": "investigated how convergence occurs through different",
 "zh": "与此同时，Cynthia C. Steiner 及其同事研究了趋同现象如何通过不同的遗传机制发生，但经由共享遗传过程与不同遗传过程实现的趋同，其相对普遍程度仍不清楚。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q11 · 补充语境",
+"en": "Alvarez and colleagues have explored how convergent evolution—a phenomenon that occurs when the same trait evolves independently in two reproductively separate lineages—can result from a genetic mechanism shared by both lineages.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
 {
 "n": 5,
-"w": "highwayman",
-"p": "ˈhaɪweɪmən",
-"pos": "n.",
+"w": "curate",
+"p": "kjʊˈreɪt",
+"pos": "v.",
 "tier": "高频",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "动词",
 "ext": false,
-"text": "（旧时）拦路抢劫的骑马强盗"
+"text": "策划、组织（展览、活动）：为展览挑选并安排作品"
 },
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "动词",
 "ext": true,
-"text": "真题中以专有名「Florida Highwaymen」出现，指 1950–60 年代佛罗里达一群自学成才的黑人风景画家；SAT 常考专名的字面义反差"
+"text": "精选并整理（内容、歌单、档案等）——真题里 curated playlist / curated archive 的用法"
+},
+{
+"k": "辨析",
+"pos": "",
+"ext": false,
+"text": "curate ≠ create：curate 的核心是「从既有材料中挑选并编排」，不强调原创制作"
 }
 ],
-"kin": [],
+"kin": [
+"curation — n. 策展；策划——挑作品、定主题、排展线的全过程",
+"curator — n. 策展人——真题另现 17 次；「人」用 curator，动作才是 curate"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2041 · Module M1 · Q6",
-"en": "Driven to sell as many paintings as possible, Alfred Hair, an influential figure among the landscape artists known as the Florida Highwaymen, pioneered “fast painting,” a technique (which in part involved slashing in elements with a palette knife) that many Highwaymen, including James Gibson, adopted.",
-"mark": "the Florida Highwaymen, pioneered “fast",
-"zh": "为了尽可能多卖画，Alfred Hair——被称作「佛罗里达公路客」的风景画家群体中的核心人物——开创了「快画法」，一种用调色刀快速抹出物象的技法，后来被包括 James Gibson 在内的许多同派画家采用。",
+"src": "卷 2063 · Module M2 · Q5",
+"en": "The Reckoning and Resilience (2022) exhibition at Duke University’s Nasher Museum of Art in Durham, North Carolina, was curated to feature the work of thirty North Carolina artists.",
+"mark": "was curated to feature",
+"zh": "在北卡罗来纳州达勒姆市杜克大学纳舍艺术博物馆举办的《清算与韧性》（2022）展览，其策展重点是呈现三十位北卡罗来纳州艺术家的作品。",
 "more": false
 },
 {
-"src": "卷 2040 · Module M1 · Q6 · 补充语境",
-"en": "But there was room for individuation: Sylvester Wells's Fire Sky Palms, for example, may resemble other Highwaymen paintings at first glance, but his works stand out for their occasional depictions of scenes from everyday life.",
+"src": "卷 2027 · Module M2 · Q9 · 补充语境",
+"en": "Such stylistic diversity is encouraged in part by the music-streaming app Spotify, whose curated playlist of hyperpop songs balances cohesion with variety.",
 "mark": "",
-"zh": "但个人风格仍有空间：例如 Sylvester Wells 的《Fire Sky Palms》乍看与其他「公路画家」的作品相似，但他偶尔描绘日常生活场景，使作品脱颖而出。",
+"zh": "这种风格多样性部分得益于音乐流媒体应用 Spotify——它那精心编排的 hyperpop 歌单在凝聚力与多样性之间取得了平衡。",
 "more": true
 }
 ]
@@ -458,6 +474,13 @@
 "mark": "the novel's protagonist, Amory Blaine,",
 "zh": "菲茨杰拉德 1920 年的小说《人间天堂》含有取材于他本人经历的元素——小说主人公艾默里·布莱恩的经历与菲茨杰拉德的经历有许多相似之处，因此《人间天堂》常被描述为一部自传体小说。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q63 · 补充语境",
+"en": "That characterization is apt—there are many parallels between the experiences of the novel’s protagonist, Jo March, and those of Alcott—but it should not be taken to mean that every person or event depicted in Little Women has a real-life analogue.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -1049,7 +1072,7 @@
 "w": "acclaim",
 "p": "əˈkleɪm",
 "pos": "v. / n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -1288,7 +1311,7 @@
 "w": "microorganism",
 "p": "ˌmaɪkrəʊˈɔːɡənɪzəm",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -1330,7 +1353,7 @@
 "w": "modernist",
 "p": "ˈmɒdnɪst",
 "pos": "adj. / n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -1369,7 +1392,7 @@
 "w": "respondent",
 "p": "rɪˈspɒndənt",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -1719,6 +1742,13 @@
 "mark": "explicable in terms of",
 "zh": "Joel Brown 及同事表明，月光强度高会抑制亚利桑那囊鼠（Perognathus amplus）的活动，这一结果可从收益与成本的角度解释：更强的月光未必能让囊鼠把觅食成功率提高到足以抵消被捕食性猫头鹰或鹰隼发现的更高风险。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q36 · 补充语境",
+"en": "This discrepancy is explicable in terms of OFT: the lemurs’ greater reliance on vision means that higher lunar intensity benefits them more than it benefits the jackrabbits.",
+"mark": "explicable in terms of",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -1970,6 +2000,13 @@
 "mark": "volatiles and secondary metabolites",
 "zh": "当亚库舍夫、伦斯等人研究 Fl 与金表面的相互作用时，他们发现 Fl 的反应活性低于易挥发的金属汞，但高于惰性气体氡。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q92 · 补充语境",
+"en": "Serrano and colleagues hypothesized that microbial communities could also affect plants’ flavor chemistry, including volatiles and secondary metabolites like glucosinolates.",
+"mark": "volatiles and secondary metabolites",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -2141,42 +2178,49 @@
 },
 {
 "n": 52,
-"w": "curate",
-"p": "kjʊˈreɪt",
+"w": "counteract",
+"p": "ˌkaʊntərˈækt",
 "pos": "v.",
-"tier": "中频 · 高难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
 "pos": "动词",
 "ext": false,
-"text": "策划、组织（展览）；为展览挑选并编排作品"
+"text": "抵消、对抗、中和：通过施加相反的作用使某事物的效果失效"
 },
 {
 "k": "dnum",
 "pos": "动词",
+"ext": true,
+"text": "抵制、消解（不良影响或趋势）"
+},
+{
+"k": "构词",
+"pos": "",
 "ext": false,
-"text": "精心挑选并编排（歌单、藏品、内容）——数字语境引申义"
+"text": "counter-（反）+ act（作用）→「反着作用」"
 }
 ],
 "kin": [
-"curator — n. 策展人；馆藏负责人（真题现于卷 2009 / 2050 / 2072）",
-"curatorial — adj. 策展的（应备派生）"
+"counteraction — n. 抵消、对抗",
+"counterpart — n. 对应的人 / 物——同前缀 counter- 但词义不同，别混",
+"counteracting — v-ing 抵消——文法题真题另现（作后置定语，如 a compensatory measure counteracting the decline）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2027 · Module M2 · Q9",
-"en": "Such stylistic diversity is encouraged in part by the music-streaming app Spotify, whose curated playlist of hyperpop songs balances cohesion with variety.",
-"mark": "whose curated playlist",
-"zh": "这种风格上的多样性在一定程度上得益于音乐流媒体应用 Spotify——它经过精心编排的 hyperpop 歌单在连贯性与多样性之间取得了平衡。",
+"src": "卷 2017 · Module M2 · Q16",
+"en": "Such comparisons have engendered speculation that by diluting control over the economy, democratic institutions inhibit states' ability to counteract inflationary pressures.",
+"mark": "counteract inflationary pressures",
+"zh": "这样的对比引发了一种猜测：通过削弱国家对经济的控制，民主制度会抑制国家对抗通胀压力的能力。",
 "more": false
 },
 {
-"src": "卷 2103 · Module M2E · Q6 · 补充语境",
-"en": "These experts advocate that instead of attempting to manipulate emotional responses with scents, museums should curate exhibits that enable meaningful connections with historical objects.",
+"src": "卷 2100 · Module M1 · Q3 · 补充语境",
+"en": "Single-celled foraminifera inhabiting estuarine waters experience significant environmental salinity changes during tidal cycles. How, then, do they ____ internal salt levels?",
 "mark": "",
-"zh": "这些专家主张：与其试图用气味操纵情绪反应，博物馆不如策展能让观众与历史物件建立有意义联结的展览。",
+"zh": "栖息在河口水域的单细胞有孔虫，在潮汐周期中会经历显著的环境盐度变化。那么，它们如何______内部的盐分水平？（正确选项即 counteract「抵消、调节」）",
 "more": true
 }
 ]
@@ -2422,6 +2466,13 @@
 "mark": "household fuel use was heterogeneous, flexible",
 "zh": "然而，Richard Hosier 与 Jeffrey Dowd 对津巴布韦燃料使用情况的研究表明，这一模型是何等简化：家庭燃料使用是混杂而灵活的，并受到包括不同燃料当地价格在内的多种因素影响。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q14 · 补充语境",
+"en": "A illustrate through close attention to the riddles’ textual details that medieval attitudes toward the natural world were more heterogeneous than is commonly supposed.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -2940,6 +2991,13 @@
 "mark": "a convoluted tale of criminality",
 "zh": "理查德·尼克松总统最为人所知的是他在 1970 年代水门政治丑闻中的角色——那是一个盘根错节的犯罪与道德沦丧的故事，牵涉到一整批相关人物。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q3 · 补充语境",
+"en": "A convoluted B vague C condensed D simplistic It has plausibly been suggested that the widespread replacement of plants utilizing C3 carbon fixation by plants utilizing C4 carbon fixation 2.6 million years ago was due to increasing global aridity.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -2978,6 +3036,13 @@
 "mark": "the debt defaults of Philip II",
 "zh": "毛里西奥·德雷利希曼与汉斯-约阿希姆·福斯对腓力二世债务违约的研究，与其他关于欧洲近代早期国家财政的著述相关联，其中包括约翰·布鲁尔关于税收与战争的研究。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q129 · 补充语境",
+"en": "For several centuries after the birth of opera in sixteenth-century Florence, Italian remained the default language in which most opera scores were written.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -3464,8 +3529,8 @@
 },
 {
 "n": 85,
-"w": "quay",
-"p": "kiː",
+"w": "precaution",
+"p": "prɪˈkɔːʃn",
 "pos": "n.",
 "tier": "中频 · 高难",
 "senses": [
@@ -3473,23 +3538,31 @@
 "k": "dnum",
 "pos": "名词",
 "ext": false,
-"text": "沿河 / 港边用石或混凝土砌成的靠岸平台（复数 quays）"
+"text": "预防措施、防范手段：为免出现坏结果而事先做的事"
 },
 {
 "k": "dnum",
 "pos": "名词",
+"ext": true,
+"text": "预防、防备（as a precaution 以防万一）"
+},
+{
+"k": "搭配",
+"pos": "",
 "ext": false,
-"text": "拼写不透明、读音同 key，是 SAT 文学阅读里典型的「看起来简单其实不认识」的词"
+"text": "take the precaution of doing sth 采取……的预防措施；as a precaution 作为预防"
 }
 ],
-"kin": [],
+"kin": [
+"precautionary — adj. 预防性的（precautionary measures 预防措施）"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2081 · Module M1 · Q15",
-"en": "This sculpture is installed in a public square in Boat Quay, Singapore.",
-"mark": "Quay",
-"zh": "我在船头找了个位置站定，望着码头、树木、房舍与桥梁一一向后退去、消失不见。",
+"src": "卷 2008 · Module M2 · Q7",
+"en": "Meng and colleagues took the necessary precaution of separating the plants’ root systems (thereby excluding root-to-root transmission).",
+"mark": "took the necessary precaution",
+"zh": "Meng 及其同事采取了必要的预防措施——把植物的根系分隔开（从而排除根与根之间的传递）。",
 "more": false
 }
 ]
@@ -3988,33 +4061,49 @@
 },
 {
 "n": 98,
-"w": "cauldron",
-"p": "ˈkɔːldrən",
-"pos": "n.",
-"tier": "中频 · 高难",
+"w": "canonical",
+"p": "kəˈnɒnɪkl",
+"pos": "adj.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
 "ext": false,
-"text": "深口大铁锅；常引申为「酝酿中的混乱局面」（a cauldron of emotions）"
+"text": "经典的、被奉为正典的：被某个共同体公认为标准作品或标准版本"
 },
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
+"ext": true,
+"text": "（学科内）权威的、标准的（the canonical account 标准叙述）"
+},
+{
+"k": "辨析",
+"pos": "",
 "ext": false,
-"text": "真题里 jalebi 面糊在大铁锅的油里 floated and simmered，是典型的烹饪场景描写"
+"text": "canonical ≠ classical：classical 指古希腊罗马或「古典」时期；canonical 指被后世奉入「正典」"
 }
 ],
-"kin": [],
+"kin": [
+"canon — n. 正典；经典作品总目（the modernist canon 现代主义正典）",
+"canonize — v. 把……奉为经典；（宗教）封圣"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2064 · Module M2 · Q9",
-"en": "The halwai [baker] was already installed in front of the Mishthaan Sweet Shop, pressing jalebi batter into squiggly shapes that floated and simmered in the oil in a big iron cauldron.",
-"mark": "big iron cauldron",
-"zh": "做甜点的师傅早已在 Mishthaan 甜品店门前支好摊，把 jalebi 面糊挤成弯弯曲曲的形状，让它们浮在一口大铁锅的油里慢慢炸煮。",
+"src": "卷 2034 · Module M1 · Q8",
+"en": "The fact that there is no contemporary evidence that the first audience of Arrival of the Train was alarmed has not stopped the story from becoming canonical, even among film historians.",
+"mark": "becoming canonical",
+"zh": "尽管没有当时的证据表明《火车进站》的首批观众曾被吓到，这并没有妨碍这个故事成为「正典」——即使在电影史学者中间也是如此。",
 "more": false
+},
+{
+"src": "卷 2013 · Module M1 · Q20 · 补充语境",
+"en": "Though now canonical, many works featured in the show—particularly one abstract cubist painting by Marcel Duchamp— ______ considered shocking at the time.",
+"mark": "",
+"zh": "尽管如今已被奉为经典，展览中的许多作品——尤其是杜尚的一幅抽象立体主义绘画——在当时却曾被认为惊世骇俗。",
+"more": true
 }
 ]
 },
@@ -4052,45 +4141,48 @@
 },
 {
 "n": 100,
-"w": "commodity",
-"p": "kəˈmɒdəti",
-"pos": "n.",
-"tier": "中频 · 高难",
+"w": "diurnal",
+"p": "daɪˈɜːnl",
+"pos": "adj.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
 "ext": false,
-"text": "可买卖的货物，尤指农产品、矿产等初级产品（agricultural commodities）"
+"text": "昼行性的、白天活动的（diurnal pollinators 白天活动的传粉昆虫）"
 },
 {
 "k": "dnum",
-"pos": "名词",
-"ext": false,
-"text": "金融语境：可标准化交易的商品（commodity prices, commodity market）"
+"pos": "形容词",
+"ext": true,
+"text": "白天的、日间的（diurnal temperature range 日间温度变化）"
 },
 {
-"k": "dnum",
-"pos": "名词",
+"k": "辨析",
+"pos": "",
 "ext": false,
-"text": "引申义：被视为可供取用的资源（attention as a commodity）"
+"text": "diurnal ↔ nocturnal：真题常成对出现，一个「白天活动」，一个「夜间活动」"
 }
 ],
-"kin": [],
+"kin": [
+"nocturnal — adj. 夜行性的——与 diurnal 对照出题",
+"diurnally — adv. 在白天"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2065 · Module M2 · Q18",
-"en": "In economics, soybeans are considered a commodity because they are essentially interchangeable, “essentially” being a word that admits a degree of latitude.",
-"mark": "commodity because they are",
-"zh": "在 2021 年的一份报告中，经济学家杰森·贝克曼模拟了在《贸易便利化协定》与另一种贸易改革情形下，几种农产品的全球市场价格。",
+"src": "卷 2092 · Module M2 · Q7",
+"en": "Researchers' focus on diurnal invertebrate pollinators has resulted in a decided lack of data on moth pollination, but using infrared detection equipment, Max Anderson et al. assessed how diurnal and nocturnal insects separately contribute to R. fruticosus pollination.",
+"mark": "diurnal invertebrate pollinators",
+"zh": "研究者对白天活动的无脊椎传粉者的关注，导致蛾类传粉的数据明显缺乏；但 Max Anderson 等人利用红外探测设备，评估了昼行与夜行昆虫分别对 R. fruticosus 传粉的贡献。",
 "more": false
 },
 {
-"src": "卷 2071 · Module M2 · Q10 · 补充语境",
-"en": "A student consults a table showing projected changes in production and average market prices of agricultural commodities in four countries in a tariff-elimination scenario.",
-"mark": "",
-"zh": "",
+"src": "卷 2053 · Module M2 · Q4 · 补充语境",
+"en": "Difficulties of documenting nocturnal pollinator visits and a general focus on diurnal invertebrate pollinators, such as Volucella bombylans, have resulted in ____ of information on nocturnal moth pollination of plants such as Rubus fruticosus L.",
+"mark": "diurnal invertebrate pollinators",
+"zh": "记录夜间传粉者造访的困难，加上学界普遍聚焦于白天活动的无脊椎传粉者（如 Volucella bombylans），造成关于蛾类为 Rubus fruticosus L. 等植物夜间传粉的信息____。",
 "more": true
 }
 ]
@@ -4462,14 +4554,14 @@
 "src": "卷 2097 · Module M1 · Q15",
 "en": "Only recently, however, have ethnographers started to recognize that many Indigenous songs encode and transmit valuable ecological knowledge—citing, for instance, songs of the Kwakwaka’wakw people in British Columbia, Canada, that share vital information about clam gardens, and those of the Kazakh people in Bayan-Ölgii, Mongolia, that explain the quality of foraging and water in different locations.",
 "mark": "encode and transmit valuable",
-"zh": "在这种情况下，玩家的认知资源首先被导向广告游戏的玩法机制，几乎没有余力去编码和存储广告主希望凸显的信息。",
+"zh": "直到最近，民族志学者才开始认识到：许多原住民歌曲承载并传递着宝贵的生态知识——例如加拿大不列颠哥伦比亚省夸夸嘉夸人的歌曲分享关于蛤蜊养殖园的重要信息，蒙古国巴彦乌列盖的哈萨克人歌曲则讲述不同地点的草料与水质。",
 "more": false
 },
 {
 "src": "卷 2032 · Module M2 · Q11 · 补充语境",
 "en": "In a study of the evolution of DptA and DptB—Diptericin genes encoding antimicrobial peptides that combat pathogens and foster beneficial microbes in fruit flies (Drosophila)—researchers assessed Drosophila melanogaster resistance to pathogenic infections by Providencia rettgeri and Acetobacter sicerae, bacteria common in the flies' environments.",
 "mark": "",
-"zh": "",
+"zh": "在一项关于 DptA 与 DptB 演化的研究中——这两个 Diptericin 基因编码的抗菌肽能对抗病原体、并帮助果蝇（Drosophila）体内的有益微生物——研究者评估了黑腹果蝇对 Providencia rettgeri 与 Acetobacter sicerae 这类常见于其环境中的细菌所引发的病原感染的抵抗力。",
 "more": true
 }
 ]
@@ -4790,7 +4882,7 @@
 "src": "卷 2016 · Module M2 · Q6",
 "en": "Distant reading, or computer-assisted quantitative analysis of massive collections of digitized texts, can reveal stylistic elements that have heretofore escaped notice, despite being shared by numerous texts from the modernist period.",
 "mark": "have heretofore escaped notice",
-"zh": "文本二：远读（即借助计算机对海量数字化文本进行量化分析）能够揭示出迄今为止一直被忽视的风格要素——尽管现代主义时期的众多文本其实共享这些要素。",
+"zh": "远读（即借助计算机对海量数字化文本进行量化分析）能够揭示出迄今为止一直被忽视的风格要素——尽管现代主义时期的众多文本其实共享这些要素。",
 "more": false
 }
 ]
@@ -4869,6 +4961,13 @@
 "mark": "implicitly presenting capitalism as external to",
 "zh": "托马斯·皮凯蒂等资本主义史学家很少讨论欧洲殖民时期之前非洲本土的资本主义，这就含蓄地把资本主义呈现为外在于非洲、并被强加于非洲的东西。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q51 · 补充语境",
+"en": "• It implicitly criticizes the immense popularity of Pamela by satirizing the earlier novel’s subject matter and style.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -5309,7 +5408,7 @@
 "src": "卷 2081 · Module M1 · Q12 · 补充语境",
 "en": "Eventually, people made needles by perforating the end of a bone awl with an eye (hole) to hold the cord, thereby enabling the simultaneous performance of the previously separate actions of puncturing and threading.",
 "mark": "",
-"zh": "",
+"zh": "最终，人们通过在骨锥末端钻出一个孔（眼）来穿线，制成缝衣针，从而使原本分开的「刺穿」与「穿线」两道工序可以同时完成。",
 "more": true
 }
 ]
@@ -5344,14 +5443,14 @@
 "src": "卷 2099 · Module M2 · Q13",
 "en": "Gustav Frank and Madleen Podewski have observed that although serialized publication and a commercial focus mark periodicals as quite distinct from other objects of literary analysis, the periodical is insufficiently theorized as a unique form, leaving scholars heavily reliant on methods of literary criticism developed for analyzing other types of texts, as well as methods arising from other fields entirely, such as visual studies.",
 "mark": "periodicals as quite distinct",
-"zh": "1878 年发表于《芝加哥晚邮报》的 Whitmore 是「流散诗」（fugitive verse）现象的例证：这些诗作被报纸和其他 19 世纪美国期刊转载时，既没有作者的审订，许多情况下甚至连作者本人都不知情。",
+"zh": "Gustav Frank 与 Madleen Podewski 观察到：尽管连载出版与商业导向使期刊明显区别于文学分析的其他对象，但期刊作为一种独特形式仍未得到充分的理论化，致使学者严重依赖为分析其他类型文本而发展出的文学批评方法，乃至来自视觉研究等完全其他领域的方法。",
 "more": false
 },
 {
-"src": "卷 2061 · Module M2 · Q21 · 补充语境",
-"en": "Muhammed Shafi et al. used a continuous-wave diode laser to fire photons at a periodically-poled potassium titanyl phosphate (PPKTP) nonlinear crystal.",
+"src": "卷 2612 · Module RW · Q102 · 补充语境",
+"en": "As can be seen in the case of The Egoist, a London magazine published from January 1914 to December 1919, some small periodicals influential in the development of the modernist movement have been explored in depth by scholars.",
 "mark": "",
-"zh": "Muhammed Shafi 等人用连续波二极管激光器向周期极化磷酸钛氧钾（PPKTP）非线性晶体发射光子。",
+"zh": "从 1914 年 1 月至 1919 年 12 月在伦敦出版的杂志《利己主义者》（The Egoist）一例可以看出，一些对现代主义运动发展颇具影响力的小型期刊已被学者深入研究。",
 "more": true
 }
 ]
@@ -5700,6 +5799,13 @@
 "mark": "something to be repudiated with contempt",
 "zh": "直到此刻之前，那似乎还是好大一片地方；可现在，想到所有的狂暴与骚动竟都发生在某一道栅栏之内，这念头就成了应当带着轻蔑予以拒斥的东西，如同镜子的戏法一般。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q11 · 补充语境",
+"en": "whenever Jimmie, a young boy, has been scolded by his father A “Henry would sometimes choose to absolutely repudiate [Jimmie’s for misbehavior, he seeks behavior], and when Jimmie appeared in his shame would bully him comfort from Henry Johnson, most virtuously, preaching with assurance the precepts of [Jimmie’s the ma",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -6001,13 +6107,20 @@
 "mark": "simmered until the goldenrod’s",
 "zh": "第二步，把织物放入加热的染浴中慢煮，直到一枝黄花的黄色染入布料。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q21 · 补充语境",
+"en": "Next, they add the cloth to the dyebath and simmer it for hours, perhaps even days.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
 {
 "n": 149,
-"w": "sociological",
-"p": "ˌsəʊsiəˈlɒdʒɪkl",
+"w": "meticulous",
+"p": "məˈtɪkjələs",
 "pos": "adj.",
 "tier": "中频 · 高难",
 "senses": [
@@ -6015,34 +6128,33 @@
 "k": "dnum",
 "pos": "形容词",
 "ext": false,
-"text": "社会学的；与社会结构有关的"
+"text": "一丝不苟的、极细致的：对每个细节都精确、仔细到近乎苛求"
 },
 {
 "k": "dnum",
-"pos": "形容词",
+"pos": "副词提示",
+"ext": true,
+"text": "meticulously 精心地、细致地（真题 4 次均为此词形）"
+},
+{
+"k": "构词",
+"pos": "",
 "ext": false,
-"text": "sociological studies 社会学研究（真题搭配）"
+"text": "拉丁 meticulous「过分谨慎的」→ 对细节如履薄冰般在意"
 }
 ],
 "kin": [
-"sociology / sociologist — n. 社会学 / n. 社会学家（真题另现）",
-"sociological ≠ social — social 是「社会的」，sociological 是「社会学学科的」"
+"meticulously — adv. 精心地、细致地——真题高频词形（如 meticulously handcrafted 精工细作的）",
+"meticulousness — n. 细致、严谨"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2102 · Module M2 · Q10",
-"en": "The word “culture” often appears in sociological studies but is problematically labile: it might encompass knowledge, or habits, or other concepts.",
-"mark": "in sociological studies",
-"zh": "「文化」一词在社会学研究中频繁出现，但其含义却棘手地不稳定：它可能涵盖知识，也可能涵盖习惯，或其他种种概念。",
+"src": "卷 2010 · Module M2 · Q2",
+"en": "Historians argue that Morris's repudiation of industrialization is ______ the Kelmscott editions' use of handmade materials and intricate ornamentation reminiscent of medieval manuscripts: these meticulously handcrafted elements exemplify the artistry involved.",
+"mark": "these meticulously handcrafted elements",
+"zh": "历史学家认为，莫里斯对工业化的拒斥正体现在凯姆斯科特出版社对手工材料与繁复装饰的运用上——这些精心手工制作的元素令人想起中世纪手稿，充分展现了其中蕴含的工艺之美。",
 "more": false
-},
-{
-"src": "卷 2084 · Module M2 · Q9 · 补充语境",
-"en": "Several sociologists have observed that the word \"culture,\" though commonly used in academic literature, is an ultimately hazy concept—for example, Renate Mayntz has noted that \"there is (still) no agreement on the meaning of this core term of sociological analysis. \" Does the idea of culture encompass art, or customs, or both these things and others?",
-"mark": "",
-"zh": "多位社会学家注意到，「文化」一词虽在学术文献中司空见惯，归根到底却是个模糊概念——例如 Renate Mayntz 指出：「（至今）对这一社会学分析核心术语的含义仍无共识。」文化这一观念究竟涵盖艺术、习俗，还是两者及其他？",
-"more": true
 }
 ]
 },
@@ -6107,6 +6219,13 @@
 "mark": "a rippling speck against the sky.",
 "zh": "他看着父亲几分钟内就把风筝放上风里，高得果戈理必须仰起头才看得见——那只是衬在天空上、微微颤动的一个小点。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM2E · Q1 · 补充语境",
+"en": "He watches his father lift a kite within minutes into the wind, so high that Arun must tip his head back in order to see, a fluttering speck against the sky.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -6728,43 +6847,43 @@
 },
 {
 "n": 168,
-"w": "arid",
-"p": "ˈærɪd",
+"w": "anomalous",
+"p": "əˈnɑːmələs",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
 "pos": "形容词",
 "ext": false,
-"text": "干旱的；干燥的（arid climate / region / environment）"
+"text": "反常的、异常的：偏离常规、不符合预期模式"
 },
 {
-"k": "dnum",
-"pos": "形容词",
-"ext": true,
-"text": "枯燥乏味的（arid prose）"
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "a-（无、偏离）+ nomal（= normal 规则）+ -ous →「不合规则的」"
 }
 ],
 "kin": [
-"aridity — n. 干旱（度）",
-"semi-arid — adj. 半干旱的——真题常见复合形式",
-"arid ≠ acrid — 形近异义：后者是「辛辣刺鼻的」"
+"anomaly — n. 反常、异常（2072 卷真题：neoclassical economics cannot explain anomalies「无法解释这些反常现象」）",
+"anomalies — n. 反常现象（复数）",
+"anomalously — adv. 反常地"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2092 · Module M2 · Q14",
-"en": "The process of calcite formation requires sufficient vegetation and soil to produce carbonic acid that dissolves limestone, while gypsum deposits primarily form through evaporation processes and are typical in arid environments.",
-"mark": "are typical in arid environments",
-"zh": "方解石的形成过程需要充足的植被和土壤来产生溶蚀石灰岩的碳酸，而石膏沉积主要通过蒸发作用形成，常见于干旱环境。",
+"src": "卷 2032 · Module M1 · Q22",
+"en": "In her 2012 analysis of tree rings from Japan's Yaku Island, cosmic ray physicist Fusa Miyake noted an anomalous carbon-14 spike dating to 774-775 CE, indicating that a massive burst of radiation reached Earth during that time.",
+"mark": "an anomalous carbon-14 spike",
+"zh": "在 2012 年对日本屋久岛树轮的分析中，宇宙射线物理学家三宅真观测到一次反常的碳-14 峰值，其年代可追溯至公元 774–775 年，表明当时有一场巨大的辐射暴抵达地球。",
 "more": false
 },
 {
-"src": "卷 2002 · Module M2 · Q4 · 补充语境",
-"en": "Within Earth’s biomes, there are four main types of deserts: arid, semiarid, coastal, and cold.",
+"src": "卷 2091 · Module M1 · Q13 · 补充语境",
+"en": "No other known heating mechanism on Jupiter could account for the formation of this anomalous structure, so one hypothesis considered was that it was ejected from the auroral region toward the equator.",
 "mark": "",
-"zh": "在地球各生物群系中，沙漠有四种主要类型：干旱沙漠、半干旱沙漠、海岸沙漠和寒冷沙漠。",
+"zh": "木星上没有其他已知的加热机制能解释这一反常结构的形成，因此有一种假说认为它是从极光区被抛射到赤道地区的。",
 "more": true
 }
 ]
@@ -6848,7 +6967,7 @@
 "w": "augment",
 "p": "ɔːɡˈment",
 "pos": "v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -6876,6 +6995,13 @@
 "mark": "augmenting their findings from",
 "zh": "实现这一目标的途径之一是亲生物设计——它力求通过在建筑、自然与人体生理之间建立协调关系，来提升使用者的情绪与身体健康。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q13 · 补充语境",
+"en": "One way to accomplish this goal is through biophilic design, which seeks to augment occupants’ emotional and physical well-being by establishing a coherent relationship among the building, nature, and human biology.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -7345,7 +7471,7 @@
 "w": "conceivable",
 "p": "kənˈsiːvəbl",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -7374,6 +7500,13 @@
 "mark": "every conceivable obstacle",
 "zh": "大自然仿佛决心要给那些试图把世界两大洋连接起来的人，设置一切可以想见的障碍。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q13 · 补充语境",
+"en": "In recent years, architects have heightened their focus on developing eco-conscious and sustainable buildings, as exemplified by Wendy House, a structure conceived by Earthscape Studio.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -7457,7 +7590,7 @@
 "w": "contingent",
 "p": "kənˈtɪndʒənt",
 "pos": "adj. / n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -7487,6 +7620,13 @@
 "mark": "demand is contingent on having sufficient",
 "zh": "使用由可再生能源生产的氢气（绿氢）有助于降低一个国家的工业碳排放，但要扩大规模以满足不断增长的需求，则取决于是否有足够的空间来建设可再生能源基础设施。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q4 · 补充语境",
+"en": "A contingent on B immaterial to C uncharacteristic of D determinative of Can artificial intelligence (AI) truly capture human consciousness?",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -7495,7 +7635,7 @@
 "w": "convergent",
 "p": "kənˈvɜːdʒənt",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -7522,45 +7662,54 @@
 "mark": "convergent evolution",
 "zh": "Protas 及其同事探讨了趋同演化——即同一性状在两个生殖隔离的谱系中各自独立演化出来的现象——如何可能源自两个谱系共有的遗传机制。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q11 · 补充语境",
+"en": "Alvarez and colleagues have explored how convergent evolution—a phenomenon that occurs when the same trait evolves independently in two reproductively separate lineages—can result from a genetic mechanism shared by both lineages.",
+"mark": "convergent evolution",
+"zh": "",
+"more": true
 }
 ]
 },
 {
 "n": 190,
-"w": "creole",
-"p": "ˈkriːəʊl",
-"pos": "n. / adj.",
+"w": "facile",
+"p": "ˈfæsaɪl",
+"pos": "adj.",
 "tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
 "ext": false,
-"text": "由两种以上语言接触、稳定下来并成为母语的混合语（English-lexifying creoles）"
+"text": "轻易得来的、不费力的——常含贬义：得来太易，因而流于表面（facile splendours 轻易得来的华美）"
+},
+{
+"k": "dnum",
+"pos": "形容词",
+"ext": true,
+"text": "轻率作出的、信口而来的（a facile assumption 想当然的假定）"
 },
 {
 "k": "辨析",
 "pos": "",
 "ext": false,
-"text": "与 pidgin（洋泾浜，无人以其为母语）严格对举，是语言学阅读的高频考点"
+"text": "facile ≠ easy：easy 是中性的；facile 多带负面评价，暗示「省事所以不深刻」"
 }
 ],
-"kin": [],
+"kin": [
+"facilitate — v. 促进、使便利——同源但语义已分化",
+"facility — n. 设施；熟练"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2042 · Module M1 · Q16",
-"en": "Zydeco music originated in the French Creole community of southwest Louisiana.",
-"mark": "Creole community of southwest",
-"zh": "柴迪科舞曲（Zydeco）起源于路易斯安那州西南部的法语克里奥尔社区。",
+"src": "卷 2050 · Module M2 · Q7",
+"en": "Its very situation—withdrawn a little behind the facile splendours of St. Pancras—implied a comment on the materialism of life.",
+"mark": "facile splendours of St. Pancras",
+"zh": "它（国王十字车站）所处的位置——稍稍退隐在圣潘克拉斯车站那轻易得来的华美之后——本身就含蓄地评论了生活的物质主义。",
 "more": false
-},
-{
-"src": "卷 2036 · Module M1 · Q11 · 补充语境",
-"en": "This is a heterogeneous history, even for a creole language.",
-"mark": "",
-"zh": "即便对一门克里奥尔语而言，这也是一段异质多元的历史。",
-"more": true
 }
 ]
 },
@@ -7868,7 +8017,7 @@
 "w": "dilution",
 "p": "daɪˈluːʃn",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -7895,6 +8044,13 @@
 "mark": "dilution of pollutants by ventilation",
 "zh": "植被减少空气污染主要靠两种机制：沉降（吸收污染物）和更有效的扩散（通过通风稀释污染物）。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q89 · 补充语境",
+"en": "Vegetation has two primary mechanisms by which it reduces air pollution: deposition (absorption of pollutants) and, the more effective, dispersion (dilution of pollutants by ventilation).",
+"mark": "dilution of pollutants by ventilation",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -8388,44 +8544,42 @@
 },
 {
 "n": 214,
-"w": "excavate",
-"p": "ˈekskəveɪt",
+"w": "valorize",
+"p": "ˈvæləraɪz",
 "pos": "v.",
-"tier": "低频 · 高难",
+"tier": "低频 · 极难",
 "senses": [
 {
 "k": "dnum",
 "pos": "动词",
 "ext": false,
-"text": "发掘；挖掘（excavate a tomb / site）"
+"text": "赋予……价值、抬高……的价值：把它当作有价值的东西来对待"
 },
 {
 "k": "dnum",
 "pos": "动词",
 "ext": true,
-"text": "（通过研究）发掘出（事实、证据）"
+"text": "（文本 / 文化分析）推崇、正面评价（valorize folk-art traditions 推崇民间艺术传统）"
+},
+{
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "valor（价值）+ -ize（使……化）→「使具有价值」"
 }
 ],
 "kin": [
-"excavation — n. 发掘（工作）",
-"excavator — n. 挖掘机；发掘者",
-"excavate ≠ unearth — 后者偏「使重见天日」，真题亦现"
+"valorization — n. 价值化、推崇",
+"value — n./v. 价值；估价——同源词根 val-"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2041 · Module M1 · Q15",
-"en": "Archaeologist Christiana Kohler and her team excavated the Egyptian tomb of Queen Merneith, the wife of a First Dynasty pharaoh.",
-"mark": "her team excavated the Egyptian tomb of Queen Merneith",
-"zh": "考古学家 Christiana Kohler 及其团队发掘了埃及王后 Merneith 的陵墓，她是一位第一王朝法老的妻子。",
+"src": "卷 2081 · Module M2 · Q6",
+"en": "Both texts valorize folk-art traditions, but Text 1 does so by emphasizing qualities that are intrinsic to folk art, whereas Text 2 makes reference to other modes of cultural production.",
+"mark": "valorize folk-art traditions",
+"zh": "两篇文章都推崇民间艺术传统，但文本一的做法是强调民间艺术内在的品质，而文本二则援引其他文化生产方式。",
 "more": false
-},
-{
-"src": "卷 2082 · Module M2 · Q9 · 补充语境",
-"en": "Archaeologist Weiwei Wang and her colleagues analyzed footed grinding slabs and other food-preparation tools excavated from Óc Eo, a Southeast Asian port city that flourished between the first and sixth centuries CE.",
-"mark": "",
-"zh": "考古学家 Wang Weiwei 及同事分析了出土自 Óc Eo 的带足磨板等食物加工工具——这是一座于公元一至六世纪兴盛的东南亚港口城市。",
-"more": true
 }
 ]
 },
@@ -8783,7 +8937,7 @@
 "w": "gastronomy",
 "p": "ɡæˈstrɒnəmi",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -8901,7 +9055,7 @@
 "w": "heighten",
 "p": "ˈhaɪtn",
 "pos": "v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -8941,44 +9095,43 @@
 },
 {
 "n": 229,
-"w": "helix",
-"p": "ˈhiːlɪks",
-"pos": "n.",
-"tier": "低频 · 高难",
+"w": "venerate",
+"p": "ˈvenəreɪt",
+"pos": "v.",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "动词",
 "ext": false,
-"text": "螺旋（线）；螺旋结构（复数 helices）"
+"text": "尊崇、敬奉（传统、人物、理念）：怀着深深的敬意对待"
 },
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "词形提示",
+"ext": true,
+"text": "真题中 4/5 次以 venerated（受尊崇的）出现，作前置定语"
+},
+{
+"k": "构词",
+"pos": "",
 "ext": false,
-"text": "双螺旋：double helix（DNA 结构）"
+"text": "拉丁 venerari「尊敬、崇拜」"
 }
 ],
 "kin": [
-"helical — adj. 螺旋形的",
-"helix (复数 helices) — 不规则复数，主谓一致易设陷",
-"spiral — n. 螺旋——近义，真题亦现"
+"venerated — adj. 受尊崇的——真题高频词形（the venerated republican ideals）",
+"venerable — adj. 令人敬仰的、庄严的（易混拼形）",
+"revere — v. 尊敬（近义，词表可对照）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2102 · Module M1 · Q10",
-"en": "Delany’s “Time Considered as a Helix of Semi-Precious Stones” (1968) and Beth Cato’s “Apocalypse Playlist” (2020).",
-"mark": "Time Considered as a Helix of Semi-Precious Stones",
-"zh": "例如 Delany 的《被视为半宝石螺旋的时间》（1968）与 Beth Cato 的《末日歌单》（2020）。",
+"src": "卷 2048 · Module M1 · Q21",
+"en": "It wasn't an arbitrary pen name but rather a complex rhetorical strategy through which Thomson aligned his political views with the venerated republican ideals of the ancient world, thereby bolstering the authority of his writing.",
+"mark": "the venerated republican ideals of the ancient world",
+"zh": "这并不是一个随意起的笔名，而是一套复杂的修辞策略：汤姆森借此让自己的政治立场与古人所尊崇的共和主义理想相接，从而为自己文章的权威性背书。",
 "more": false
-},
-{
-"src": "卷 2108 · Module M1 · Q10 · 补充语境",
-"en": "Delany's \"Time Considered as a Helix of Semi-Precious Stones\"(1968) and Beth Cato's \"Apocalypse Playlist\"(2020). In his introduction, Shurin defines cyberpunk as a subgenre of speculative fiction concerning \"the influence of technology on the scale, the pace, or the pattern of human affairs\"; however, some critics assert that cyberpunk is a literary movement that is in large part aesthetic rather than idea-driven.",
-"mark": "Time Considered as a Helix of Semi-Precious Stones",
-"zh": "Delany 的《时间被视为半宝石的螺旋》（1968）与 Beth Cato 的《末日播放列表》（2020）。Shurin 在导言中把赛博朋克定义为关涉「技术对人类事务的规模、节奏或模式之影响」的思辨小说亚类；然而一些批评家断言，赛博朋克在很大程度上是一场美学驱动、而非观念驱动的文学运动。",
-"more": true
 }
 ]
 },
@@ -9263,43 +9416,48 @@
 },
 {
 "n": 238,
-"w": "improvise",
-"p": "ˈɪmprəvaɪz",
-"pos": "v.",
-"tier": "低频 · 高难",
+"w": "idiosyncratic",
+"p": "ˌɪdiəʊsɪŋˈkrætɪk",
+"pos": "adj.",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "动词",
+"pos": "形容词",
 "ext": false,
-"text": "即兴创作；即兴表演（improvise the lyrics）"
+"text": "独特的、个人独有的：属于个体特质、因人而异的"
 },
 {
 "k": "dnum",
-"pos": "动词",
+"pos": "名词提示",
 "ext": true,
-"text": "临时凑合；临时应对（improvise a solution）"
+"text": "idiosyncrasy n. 个人癖性、独特之处（2099 卷干扰项）"
+},
+{
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "希腊 idio-（个人的）+ syn-（共同）+ krasis（混合）→「个人独有的调配」"
 }
 ],
 "kin": [
-"improvisation / improvisational — n. 即兴创作 / adj. 即兴的——真题高频",
-"improvised ≠ improved — 形近异义，仅差两个字母",
-"extemporize — v. 即席发言——近义"
+"idiosyncrasy — n. 个人特质、癖性（2026年9月美国A卷 Q4 干扰项）",
+"idio- 前缀家族 — idiom n. 习语、惯用语——同一前缀「个人特有的」"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2043 · Module M1 · Q9",
-"en": "Padre Florentino, who was an accomplished musician, was improvising, and, as he was alone, gave free rein to the sadness in his heart.",
-"mark": "was improvising",
-"zh": "戴维斯关注的是雷尼与史密斯如何即兴改动歌词——把原来的词句换成俏皮的玩笑和文字游戏。",
+"src": "卷 2089 · Module M1 · Q4",
+"en": "Animal dispersers may congregate at varying distances from parent trees, may carry seeds for varying lengths of time, and may have idiosyncratic spatial trajectories.",
+"mark": "idiosyncratic spatial trajectories",
+"zh": "动物传播者可能在距母树远近不一的地方聚集，携带种子的时间长短各异，其活动轨迹也可能各具独特性、彼此不同。",
 "more": false
 },
 {
-"src": "卷 2091 · Module M2 · Q20 · 补充语境",
-"en": "While improvising, a pianist may add expression without causing dissonance by swapping the bVII7 chord for its opposite, the ii6 chord.",
+"src": "卷 2099 · Module — · Q4 · 补充语境",
+"en": "Anonymous publication was a common practice for eighteenth- and nineteenth-century novels, but approaches to this ______ varied: for instance, while Maria Edgeworth's Belinda and Mary Shelley's Frankenstein were initially left unsigned, Jane Austen's Sense and Sensibility was signed \"By a Lady.\"",
 "mark": "",
-"zh": "即兴演奏时，钢琴家可以用 bVII7 和弦的对立和弦 ii6 来替换它，在不造成不协和的情况下增添表现力。",
+"zh": "匿名出版是十八、十九世纪小说的通行做法，但各家做法并不一致：例如玛丽亚·埃奇沃思的《贝琳达》与玛丽·雪莱的《弗兰肯斯坦》初版均未署名，而简·奥斯汀的《理智与情感》则署名「出自一位女士」。（本题 D 选项 idiosyncrasy「个人独有的癖性」为干扰项，正确答案为 convention「惯例」）",
 "more": true
 }
 ]
@@ -9435,43 +9593,42 @@
 },
 {
 "n": 242,
-"w": "inhabitant",
-"p": "ɪnˈhæbɪtənt",
-"pos": "n.",
-"tier": "低频 · 高难",
+"w": "sporadic",
+"p": "spəˈrædɪk",
+"pos": "adj.",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
 "ext": false,
-"text": "居民；栖息者（the inhabitants of a city / island）"
+"text": "零星的、偶发的：不时出现但不规律、不成连续"
 },
 {
-"k": "构词",
-"pos": "",
+"k": "dnum",
+"pos": "反义",
 "ext": false,
-"text": "inhabit（居住）+ -ant（者）"
+"text": "constant / continuous 持续的——2010 卷文段以 sporadic…（零星活动）vs dormant（休眠）作对照"
 }
 ],
 "kin": [
-"inhabit / inhabitable — v. 居住于 / adj. 可居住的——真题另现",
-"habitant / habitat — n. 居民（法语借词） / n. 栖息地",
-"inhabitant ≠ inhabitant of — 真题常与 human 连用：human inhabitants 人类居民"
+"sporadically — adv. 零星地（2066 卷：polynyas that sporadically form）",
+"构词 — 希腊 sporadikos「分散的」，与 spore（孢子）同源——「四处散播」"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2015 · Module M1 · Q7",
-"en": "It was a city of only 250,000 or 300,000 inhabitants; now it is a metropolis rivaling London in population, wealth and commerce.",
-"mark": "a city of only 250,000 or 300,000 inhabitants",
-"zh": "那时它还只是一座二三十万人口的城市；如今它已成为在人口、财富与商业上与伦敦比肩的大都会。",
+"src": "卷 2049 · Module M2 · Q20",
+"en": "Although 39P/Oterma and 83982 Crantor are both classified as centaur objects—outer solar system bodies in unstable orbits—they exhibit striking differences in behavior: while the object 39P/Oterma is considered an active centaur, showing sporadic comet-like activity (such as clouds of dust and gas on its surface), 83982 Crantor, showing no such activity, is considered dormant.",
+"mark": "sporadic comet-like activity",
+"zh": "尽管 39P/Oterma 与 83982 Crantor 都被归类为半人马型小天体——运行在不稳定轨道上的外太阳系天体——它们的行为表现却截然不同：39P/Oterma 属于活跃型，会零星出现彗星般的活动（比如表面喷出尘埃与气体云）；而 83982 Crantor 毫无此类活动，属于休眠型。",
 "more": false
 },
 {
-"src": "卷 2030 · Module M2 · Q14 · 补充语境",
-"en": "… and radiocarbon dating placed the fox at the site at the same time as human inhabitants. (Indeed …",
+"src": "卷 2066 · Module M2 · Q21 · 补充语境",
+"en": "Scientists have long known that cyclones can contribute to the formation of polynyas, large patches of unfrozen water that sporadically form amid vast sheets of sea ice.",
 "mark": "",
-"zh": "……而放射性碳测年表明，这只狐狸与人类居民曾同时出现在该遗址。（的确……",
+"zh": "科学家早已知道，气旋能促成冰间湖的形成——那是在大片海冰之间零星出现的开阔未冻水域。",
 "more": true
 }
 ]
@@ -10376,75 +10533,83 @@
 },
 {
 "n": 267,
-"w": "perplex",
-"p": "pəˈpleks",
-"pos": "v.",
+"w": "conspicuous",
+"p": "kənˈspɪkjuəs",
+"pos": "adj.",
 "tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "动词",
-"ext": false,
-"text": "使困惑；使费解（be perplexed by / at）"
-},
-{
-"k": "dnum",
 "pos": "形容词",
 "ext": false,
-"text": "perplexing adj. 令人费解的；perplexed adj. 困惑的"
+"text": "显眼的、引人注目的：一眼就能看见或识别"
+},
+{
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "拉丁 conspicere「看入眼中」→ con-（一起）+ spic（看）+ -uous"
 }
 ],
 "kin": [
-"perplexity — n. 困惑；复杂难解",
-"perplex ≠ complex — 形近异义，后者是「复杂的」",
-"puzzle / baffle — v. 使迷惑 / v. 使难倒——近义"
+"conspicuously — adv. 显眼地",
+"inconspicuous — adj. 不显眼的（反义）",
+"-spic- 词根家族 — suspect v. 怀疑（在下面看）／despicable adj. 卑劣的（看不起）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2101 · Module M2 · Q7",
-"en": "Ever since fossilized remains of this large ammonite were first discovered in 1895, scientists have been perplexed by its size.",
-"mark": "scientists have been perplexed by its size",
-"zh": "自1895年该物种的化石遗骸被发现以来，科学家一直对它的体型感到困惑。",
+"src": "卷 2038 · Module M2 · Q3",
+"en": "Political blogs with conspicuous ideological alignments became an integral component of US media in the early 2000s.",
+"mark": "conspicuous ideological alignments",
+"zh": "带有鲜明意识形态立场（站队一目了然）的政治博客，在 21 世纪初成了美国媒体的重要组成部分。",
 "more": false
 },
 {
-"src": "卷 2111 · Module M2 · Q7 · 补充语境",
-"en": "Tropical forests across the globe provide similar preservation conditions, so in all likelihood, this rather perplexing timeline simply reflected geographic differences in the extent of paleoanthropological research.",
+"src": "卷 2092 · Module M1 · Q23 · 补充语境",
+"en": "Even as GPR makes such areas conspicuous, water within masonry absorbs and scatters radar energy, often obscuring defects in layers beyond the saturated region.",
 "mark": "",
-"zh": "全球热带森林提供相似的保存条件，因此这一令人困惑的时间线，很可能只是反映了古人类学研究在地域上的深浅差异。",
+"zh": "尽管探地雷达（GPR）能让这些区域清楚地显现出来，砌体中的水分仍会吸收并散射雷达能量，常常遮蔽饱和区之外各层的缺陷。",
 "more": true
 }
 ]
 },
 {
 "n": 268,
-"w": "pidgin",
-"p": "ˈpɪdʒɪn",
-"pos": "n.",
-"tier": "低频 · 高难",
+"w": "culminate",
+"p": "ˈkʌlmɪneɪt",
+"pos": "v.",
+"tier": "低频 · 极难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "动词",
 "ext": false,
-"text": "不同语言群体为临时交际拼成的简化混合语，无人以其为母语"
+"text": "达到顶点、以……告终（culminate in sth）"
 },
 {
-"k": "辨析",
+"k": "dnum",
+"pos": "动词",
+"ext": true,
+"text": "（一连串挑选、努力）最终汇成、最终形成某个结果"
+},
+{
+"k": "搭配",
 "pos": "",
 "ext": false,
-"text": "与 creole（已成为母语的克里奥尔语）严格对举；Hawaiian Pidgin 是真题实例"
+"text": "culminate in 以……为终点 / 最终形成"
 }
 ],
-"kin": [],
+"kin": [
+"culmination — n. 顶点、高潮；最终结果"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2036 · Module M1 · Q11",
-"en": "English-lexifying creoles in the Caribbean, such as Vincentian Creole, rely on West African substrates, while Hawaiian Pidgin relies on 'Olelo Hawai'i, the Polynesian language of the Native Hawaiian people, with further contributions from Okinawan and other East Asian languages, Portuguese, and Spanish.",
-"mark": "while Hawaiian Pidgin relies on 'Olelo",
-"zh": "加勒比地区以英语为词汇来源的克里奥尔语（如文森特克里奥尔语）依赖西非底层语，而夏威夷洋泾浜则依赖夏威夷原住民的波利尼西亚语 'Olelo Hawai'i，并额外吸收了冲绳及东亚其他语言、葡萄牙语和西班牙语的成分。",
+"src": "卷 2050 · Module M2 · Q11",
+"en": "For its 2022 exhibition Guarding the Art, the Baltimore Museum of Art cast the security personnel typically responsible for safeguarding the institution's collections as the curators, whose individual selections from the museum's holdings culminated in a show amplifying a distinct perspective not typically given a formal platform.",
+"mark": "culminated in a show",
+"zh": "巴尔的摩艺术博物馆在 2022 年《守护艺术》展览中，把平时负责看护馆藏的安保人员安排为策展人；他们从馆藏中各自挑选的作品，最终汇成一场凸显了通常得不到正式平台的独特视角的展览。",
 "more": false
 }
 ]
@@ -10454,7 +10619,7 @@
 "w": "plausible",
 "p": "ˈplɔːzəbl",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -10558,37 +10723,43 @@
 },
 {
 "n": 272,
-"w": "ponder",
-"p": "ˈpɒndə(r)",
+"w": "undermine",
+"p": "ˌʌndərˈmaɪn",
 "pos": "v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
 "pos": "动词",
 "ext": false,
-"text": "沉思；仔细考虑（ponder a question / whether）"
+"text": "削弱、动摇（论证、地位、信心）：从底部挖松使不稳"
 },
 {
-"k": "辨析",
+"k": "构词",
 "pos": "",
 "ext": false,
-"text": "ponder（慢而深地想）≠ wonder（想知道、感到好奇）"
+"text": "under（在下面）+ mine（挖矿）→「从底下挖空」"
 }
 ],
 "kin": [
-"ponderous — adj. 笨重的；（文风）沉闷的——同根但义已分叉",
-"pondering — adj. 沉思的",
-"contemplate / deliberate — v. 深思 / v. 斟酌——近义"
+"undermining — n./v-ing 动摇——真题常以 thereby undermining that classification 等结构出现",
+"近义 — weaken 削弱 / erode 侵蚀（抽象义）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2084 · Module M2 · Q10",
-"en": "Readers sometimes divide the works of twentieth-century English author Evelyn Waugh into two periods: one consisting of his early satirical novels and the other consisting of his later, more serious—even ponderous—books.",
-"mark": "ponderous",
-"zh": "他一边踱着步，一边盘算着把这幅画挂在何处才最不显得荒唐；他皱眉的样子里藏着一种不为人察的尊严。",
+"src": "卷 2059 · Module M2 · Q8",
+"en": "In a 2023 study, Haley R. Dolton and colleagues found that basking sharks—planktivorous filter-feeders that were classified as full ectotherms at the time—have hearts consisting of 47% compact myocardial tissue, thereby undermining that classification.",
+"mark": "thereby undermining that classification",
+"zh": "在 2023 年的一项研究中，Haley R. Dolton 与同事发现：姥鲨——当时被归类为完全变温动物的滤食性动物——心脏中紧凑心肌组织占比高达 47%，这一发现动摇了原有分类。",
 "more": false
+},
+{
+"src": "卷 2008 · Module M2 · Q5 · 补充语境",
+"en": "While recent scholarship has undermined claims that the works of twelfth-century Islamic philosopher Ibn Rushd were ______ other Muslim philosophers of his time, it is indisputable that his location in the Muslim-ruled area of what is now Spain meant that his works were primarily available thousands of miles west of the era's center of Islamic thought.",
+"mark": "",
+"zh": "尽管近期研究已削弱了「十二世纪伊斯兰哲学家伊本·鲁世德的著作______同时代其他穆斯林哲学家」这一类说法，但有一点无可争议：他身处今西班牙境内的穆斯林统治区，意味着其著作主要流通于当时伊斯兰思想中心以西数千英里的地方。",
+"more": true
 }
 ]
 },
@@ -11099,7 +11270,7 @@
 "w": "rearrangement",
 "p": "ˌriːəˈreɪndʒmənt",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -11127,6 +11298,13 @@
 "mark": "seasonal fluctuations in chromosome rearrangements",
 "zh": "果蝇的世代周期只有10至12天，因此湿度等环境条件的季节变化会驱动 D. persimilis、D. subobscura 等物种染色体重排的季节性波动。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM2H · Q10 · 补充语境",
+"en": "Monthly Temperatures and Wing Centroid Sizes of Fruit Fly Samples Month Average high (°F) Average low (°F) Average male wing centroid size (mm) Average female wing centroid size (mm) June 80 56 2.01 2.31 July 87 62 2.02 2.31 October 67 44 1.98 2.29 10 Month Average high (°F) Average low (°F) Average male wing centroid",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -11863,7 +12041,7 @@
 "w": "strife",
 "p": "straɪf",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -11891,6 +12069,13 @@
 "mark": "By the lack of anvil and strife",
 "zh": "他告诉我，他的灵魂因缺少铁砧与纷争而安顿得多么平静。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q10 · 补充语境",
+"en": "A “When ye plead for the wrecked and fallen, / The exile from far- distant shores, / Remember that men are still wasting / Life’s crimson around your own doors.” (from “An Appeal to My Countrywomen”) B “Men may tread down the poor and lowly, / May crush them in anger and hate, / But surely the mills of God’s justice /",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -11935,7 +12120,7 @@
 "w": "submergence",
 "p": "səbˈmɜːdʒəns",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -11959,6 +12144,13 @@
 "mark": "was periodically submerged until 37 million",
 "zh": "该岛曾周期性被淹没，直到 3700 万年前才稳定；但一些研究者认为，岛上现生生物群中包含某些分化之前就已存在的支系——它们在淹没事件期间退避到格朗德特尔附近的岛屿，之后又回迁。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q6 · 补充语境",
+"en": "The island was periodically submerged until 37 million years ago, but some researchers suggest that its current biota includes species from clades predating the split that took refuge on islands near Grande Terre during submergence events and then returned.",
+"mark": "was periodically submerged until 37 million",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -11967,7 +12159,7 @@
 "w": "subterranean",
 "p": "ˌsʌbtəˈreɪniən",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -12250,7 +12442,7 @@
 "w": "testimonial",
 "p": "ˌtestɪˈməʊniəl",
 "pos": "n. / adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -12274,6 +12466,13 @@
 "mark": "the special testimonial of its proper",
 "zh": "若我判断不错，史家的职责是把一切置于其本来的光下，只依据正当的权威来传达事实，别无其他：我的意思是（说得尽量明白些）——若某个故事是凭充分权威向他作保的，他就该把该出处给出的专门凭据公之于世，否则便对不起这个故事；若故事来时并无此种充分权威，他也该如实说明，否则便对不起自己。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q7 · 补充语境",
+"en": "If I judge right, ’tis the duty of an historian to set everything in its own light, and to convey matter of fact upon its legitimate authority, and no other: I mean thus, (for I would be as explicit as I can) that where a story is vouched to him with sufficient authority, he ought to give the world the special testimon",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -12730,7 +12929,7 @@
 "w": "virtuosity",
 "p": "ˌvɜːtʃuˈɒsəti",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -12754,6 +12953,13 @@
 "mark": "experience and virtuosity, she never",
 "zh": "尽管阿格里奇经验丰富、技艺精湛，她从不理所当然地认为自己已经吃透了一首曲子。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q5 · 补充语境",
+"en": "Although the sonnet’s intricate, rule-bound structure makes writing even one sonnet—let alone an entire series—intrinsically challenging, more recent poets from Claude McKay to Natalie Diaz have undertaken sonnet sequences, likely in part because of the opportunity the genre presents for showcasing a poet’s virtuosity",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -12762,7 +12968,7 @@
 "w": "vouch",
 "p": "vaʊtʃ",
 "pos": "v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -12786,6 +12992,13 @@
 "mark": "voucher to any reports",
 "zh": "若我判断不错，史家的职责是把一切置于其本来的光下，只依据正当的权威来传达事实，别无其他：我的意思是（说得尽量明白些）——若某个故事是凭充分权威向他作保的，他就该把该出处给出的专门凭据公之于世，否则便对不起这个故事；若故事来时并无此种充分权威，他也该如实说明，否则便对不起自己。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q7 · 补充语境",
+"en": "If I judge right, ’tis the duty of an historian to set everything in its own light, and to convey matter of fact upon its legitimate authority, and no other: I mean thus, (for I would be as explicit as I can) that where a story is vouched to him with sufficient authority, he ought to give the world the special testimon",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -13152,7 +13365,7 @@
 "w": "authenticity",
 "p": "ˌɔːθenˈtɪsəti",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -13176,6 +13389,13 @@
 "mark": "it an authenticity and accessibility that",
 "zh": "与此同时，若恰当看待，民艺与纯艺术是有区别的：它扎根于日常工艺传统，这赋予了它一种纯艺术所无法企及的本真性与可亲近性——纯艺术推崇精致与创新。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q6 · 补充语境",
+"en": "Its authenticity was confirmed, making it one of only sixty or so known works by the artist.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -13525,7 +13745,7 @@
 "w": "conceptualize",
 "p": "kənˈseptʃuəlaɪz",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -13565,36 +13785,42 @@
 },
 {
 "n": 352,
-"w": "conclusively",
-"p": "kənˈkluːsɪvli",
-"pos": "adv.",
-"tier": "低频 · 极难",
+"w": "elude",
+"p": "ɪˈluːd",
+"pos": "v.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "副词",
+"pos": "动词",
 "ext": false,
-"text": "确凿地；决定性地（prove / finish conclusively）"
+"text": "躲过、避开（追捕、把握）"
 },
 {
 "k": "dnum",
-"pos": "形容词",
+"pos": "动词",
+"ext": true,
+"text": "难倒、为……所不能理解：问题/答案「躲着」人（熟词僻义，SAT 常考）"
+},
+{
+"k": "构词",
+"pos": "",
 "ext": false,
-"text": "conclusive adj. 决定性的；conclusive evidence"
+"text": "拉丁 e-（向外）+ ludere（玩）→「玩着脱身」"
 }
 ],
 "kin": [
-"conclusive — adj. 结论性的；确凿的",
-"conclusion / conclude — n. 结论 / v. 得出结论",
-"conclusively ≠ inconclusively — 反义"
+"elusive — adj. 难以捉摸的（2100 卷：renders the final homecoming elusive「使最终归乡难以企及」）",
+"allude — v. 提及、暗指（拼形易混）",
+"elusion — n. 逃避"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2014 · Module M2 · Q6",
-"en": "Some critics have found fault with the abrupt endings of The Ionian Mission and other books in the series, saying that they do not finish conclusively but arbitrarily stop.",
-"mark": "they do not finish conclusively",
-"zh": "一些批评者对《主人与指挥官》及该系列其他书的突兀结尾提出批评，说它们并非真正收束，而是随意地停了下来。",
+"src": "卷 2099 · Module — · Q2",
+"en": "A conclusive demonstration of the logical certainty of the Marden tameness conjecture, posed in 1974, ______ mathematicians until Ian Agol presented a proof of the conjecture in 2004.（本题正确选项即 eluded）",
+"mark": "eluded",
+"zh": "关于 1974 年提出的「马尔登驯服猜想」逻辑必然性的确凿证明，一直难倒（躲过）数学家们——直到 2004 年伊恩·阿戈尔才给出证明。",
 "more": false
 }
 ]
@@ -13704,7 +13930,7 @@
 "w": "corroborate",
 "p": "kəˈrɒbəreɪt",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -13734,6 +13960,13 @@
 "mark": "that was corroborated by Dokyun Lee",
 "zh": "Prabuddha De 等人发现，推荐系统（一种为网购者生成个性化商品建议的算法）会影响消费者行为并提升销售额，这一结果得到了 Dokyun Lee 与 Kartik Hosanagar 的佐证。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q14 · 补充语境",
+"en": "D ensure that interpretations attributing an environmental ethic to the riddles can be corroborated by attitudes toward reflected in other documents from the period.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -13742,7 +13975,7 @@
 "w": "cryptography",
 "p": "krɪpˈtɒɡrəfi",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -13770,6 +14003,13 @@
 "mark": "teaches digital cryptography",
 "zh": "就这样，范斯坦和她那样的人让更多女性得以进入密码学领域——比如目前在数字密码学领域工作并任教的 Anna Lysyanskaya。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q8 · 补充语境",
+"en": "In this way, Driscoll and others like her helped make it possible for more women—such as Shafi Goldwasser, who currently works in and teaches digital cryptography—to enter the field of cryptology.",
+"mark": "teaches digital cryptography",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -13778,7 +14018,7 @@
 "w": "daze",
 "p": "deɪz",
 "pos": "v./n.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -13806,41 +14046,48 @@
 "mark": "The Mole is dazed after briefly meeting a stranger",
 "zh": "鼹鼠在和朋友同行时短暂遇见一个陌生人后有些发懵。鼹鼠站着愣了一会儿，陷入沉思。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q7 · 补充语境",
+"en": "During the whole process of getting started, [Pollyanna] had kept up an uninterrupted stream of comments and questions, until the somewhat dazed Nancy found herself quite out of breath trying to keep up with her.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
 {
 "n": 359,
-"w": "debatable",
-"p": "dɪˈbeɪtəbl",
+"w": "ambivalent",
+"p": "æmˈbɪvələnt",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
 "pos": "形容词",
 "ext": false,
-"text": "有争议的；可争辩的（a debatable point）"
+"text": "（态度）矛盾的：两种对立情感并存、摇摆不定"
 },
 {
-"k": "dnum",
-"pos": "形容词",
-"ext": true,
-"text": "难以界定的、两可的（debatable ground between forty and fifty 四十到五十之间说不准的地带）"
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "ambi-（两边）+ val（价值）+ -ent →「两头都有价值」"
 }
 ],
 "kin": [
-"debate / debater — n./v. 辩论 / n. 辩论者",
-"debatable ≠ undebatable — 反义：无可争辩的",
-"controversial / arguable — adj. 有争议的 / adj. 可论证的——近义"
+"ambivalence — n. 矛盾心理（真题 6 次中 3 次为此名词形）",
+"ambivalently — adv. 矛盾地",
+"同根 val- — ambiguous adj. 模棱两可的（易混——但侧重「含义不明」而非「情感两难」）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2022 · Module M2 · Q1",
-"en": "French, the senior partner, who sat opposite Kirby, was an older man—a safe guess would have placed him somewhere in the debatable ground between forty and fifty; of a good height, as could be seen even from the seated figure, the upper part of which was held erect with the unconscious ease which one associates with military training.",
-"mark": "the debatable ground between forty and fifty",
-"zh": "坐在柯比对面的是高级合伙人弗伦奇，年纪较长——稳妥的猜测会把他的岁数放在四十到五十之间那段说不准的地带；他身材高大，即便从他坐着的身形也看得出来，上半身不自觉地挺得笔直，那种从容让人联想到受过军事训练。",
+"src": "卷 2003 · Module M2 · Q11",
+"en": "The poem highlights an ambivalence toward poetry as the speaker acknowledges its merits while also expressing a sense of displeasure.",
+"mark": "an ambivalence toward poetry",
+"zh": "这首诗凸显了说话者对诗歌的矛盾态度：一方面承认诗歌的价值，一方面又流露出不悦之感。（诗歌主旨题：需选出体现这种矛盾心理的诗行）",
 "more": false
 }
 ]
@@ -14030,44 +14277,37 @@
 },
 {
 "n": 365,
-"w": "descendant",
-"p": "dɪˈsendənt",
-"pos": "n.",
-"tier": "低频 · 极难",
+"w": "superficial",
+"p": "ˌsuːpərˈfɪʃl",
+"pos": "adj.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
 "ext": false,
-"text": "后代；后裔（descendants of the tarweed）"
+"text": "表面的、肤浅的：只触及表层、不深入"
 },
 {
-"k": "dnum",
-"pos": "名词",
-"ext": true,
-"text": "（由某物）衍生而来的后续事物"
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "super-（上面）+ fic（面、做）→「只做表面」"
 }
 ],
 "kin": [
-"descend / descent — v. 下降；传下 / n. 血统；下降",
-"descendant ≠ ancestor — 反义：祖先",
-"descendant ≠ descendent — 后者为形容词变体，罕用"
+"superficially — adv. 浅表地（2093 卷真题词形）",
+"superfluous — adj. 多余的（词表已收录——拼形近、义不同，注意区分）",
+"surface — n. 表面（同根）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2007 · Module M1 · Q6",
-"en": "The tarweed's descendants diversified into distinct species as they adapted to live in the wide variety of habitats found on the Hawaiian Islands.",
-"mark": "diversified into distinct species",
-"zh": "这种黏菊的后代在适应夏威夷群岛各类栖息地的过程中，分化成了不同的物种。",
+"src": "卷 2093 · Module M2 · Q7",
+"en": "Her other major novels consist mainly of scenes of everyday life and describe their characters' interior states in great detail, whereas Orlando propels itself through a series of fantastical events and considers its characters' psychology more superficially.",
+"mark": "more superficially",
+"zh": "她的其他主要小说大多由日常生活场景构成，对人物内心状态的刻画细致入微；而《奥兰多》则由一连串奇幻事件推进，对人物心理的处理较为浮光掠影。",
 "more": false
-},
-{
-"src": "卷 2010 · Module M2 · Q17 · 补充语境",
-"en": "Proto-Uralic—a protolanguage, or ancestral language of a family of descendant (daughter) languages—is said to be the common ancestor of all Uralic languages.",
-"mark": "",
-"zh": "原始乌拉尔语——某一后代语言（子语）家族的原型语言、即祖先语言——据说是所有乌拉尔语的共同祖先。",
-"more": true
 }
 ]
 },
@@ -14186,7 +14426,7 @@
 "w": "disparate",
 "p": "ˈdɪspərət",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -14214,13 +14454,20 @@
 "mark": "disparate elements is a",
 "zh": "非理性并置或迥异元素的组合，是超现实主义拼贴的核心面向。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q10 · 补充语境",
+"en": "Enacted in societies as disparate as early modern France and Tokugawa Japan, sumptuary laws—restrictions on personal spending on luxury—often focused on matters of dress, such as the specific colors allowed for different social classes.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
 {
 "n": 370,
-"w": "displace",
-"p": "dɪsˈpleɪs",
+"w": "satiate",
+"p": "ˈseɪʃieɪt",
 "pos": "v.",
 "tier": "低频 · 极难",
 "senses": [
@@ -14228,35 +14475,28 @@
 "k": "dnum",
 "pos": "动词",
 "ext": false,
-"text": "取代；替换（high-tech fuels displace solid fuels）"
+"text": "使满足、使饱足（欲望、胃口）：充分供给到不再渴求"
 },
 {
-"k": "dnum",
-"pos": "动词",
-"ext": true,
-"text": "使离家；使流离失所（displaced people）"
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "拉丁 satis「足量」——satisfy、saturate 同源"
 }
 ],
 "kin": [
-"displacement — n. 取代；位移",
-"displace ≠ misplace — 形近异义：后者是「放错地方」",
-"supplant / replace — v. 取代——近义"
+"insatiable — adj. 无法满足的、贪得无厌的（SAT 高频衍生词）",
+"satiation — n. 满足",
+"近义 — satisfy / sate（sate 即其缩短形）"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2003 · Module M1 · Q9",
-"en": "In Bolivia, use of solid fuel (e.g., coal, wood) as a share of total household fuel use fell by more than half between 2000 and 2015; such shifts are typically explained by appeal to the energy ladder, a model holding that fuel choice is mediated mainly by household income(specifically, high-technology fuels displace solid fuels as incomes rise).",
-"mark": "high-technology fuels displace solid fuels",
-"zh": "在玻利维亚，固体燃料（如煤、木柴）占家庭燃料总用量的份额在2000至2015年间下降了一半以上；这类转变通常用能源阶梯模型来解释——该模型认为，燃料选择主要由家庭收入所介导（具体地说，收入上升时高技术燃料会取代固体燃料）。",
+"src": "卷 2102 · Module — · Q2",
+"en": "From sculptures like Miró's Chicago by Joan Miró, found at Brunswick Plaza, to street art like Kristen Kula's mural Tornado on East 11th Street, Chicago offers an array of works to ____ the tastes of art lovers.（本题正确选项即 satiate）",
+"mark": "satiate",
+"zh": "从布伦瑞克广场米罗的雕塑《芝加哥》，到东 11 街克里斯滕·库拉的壁画《龙卷风》，芝加哥提供了琳琅满目的作品，足以满足艺术爱好者的品味。（阅读完形题，空格正确答案为 B. satiate）",
 "more": false
-},
-{
-"src": "卷 2032 · Module M1 · Q6 · 补充语境",
-"en": "In 2023 literary scholar Jeremy Douglass cautioned technology investors and enthusiasts who predict conventional books' ultimate displacement by newer forms of media.",
-"mark": "",
-"zh": "2023 年，文学学者 Jeremy Douglass 告诫那些预言传统书籍终将被更新媒介取代的科技投资者与狂热者。",
-"more": true
 }
 ]
 },
@@ -14990,7 +15230,7 @@
 "w": "exponent",
 "p": "ɪkˈspəʊnənt",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -15024,6 +15264,13 @@
 "mark": "Dorian Electra as an early exponent",
 "zh": "被称为 hyperpop 的电子音乐微类型于2010年代兴起，美国歌手 Dorian Electra 是其早期代表人物之一。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q7 · 补充语境",
+"en": "The microgenre of electronic music known as hyperpop emerged in the 2010s, with Irish musician Maeve Kline as an early exponent.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -15172,7 +15419,7 @@
 "w": "foreshadow",
 "p": "fɔːˈʃædəʊ",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -15200,6 +15447,13 @@
 "mark": "our imagination foreshadows what lies uppermost in our minds",
 "zh": "这件事使我生出这样的感想：有时我们的想象会预先映出心头最挂念的东西，并把种种可能性带进现实的范围内。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM2E · Q5 · 补充语境",
+"en": "This incident leads me to the reflection that sometimes our imagination foreshadows what lies uppermost in our minds and brings possibilities within the sphere of realities.",
+"mark": "our imagination foreshadows what lies uppermost in our minds",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -15214,27 +15468,32 @@
 "k": "dnum",
 "pos": "动词",
 "ext": false,
-"text": "预先阻止；抢先防范（forestall a loss / a crisis）"
+"text": "预先阻止、防患于未然：在坏事发生之前就把它挡住"
 },
 {
-"k": "构词",
+"k": "dnum",
+"pos": "动词",
+"ext": true,
+"text": "抢先一步（做某事）以占得先机"
+},
+{
+"k": "辨析",
 "pos": "",
 "ext": false,
-"text": "fore-（预先）+ stall（拦住）"
+"text": "forestall ≠ prevent：forestall 强调「抢在前面」使某事无从发生；prevent 只强调阻止，不含抢先义"
 }
 ],
 "kin": [
-"forestall ≠ foreshadow / foretell — 预先阻止 / 预示 / 预言——三词形近易混",
-"forestalling — v. 现在分词——真题以此形出现",
-"preempt / avert — v. 先发制人 / v. 避免——近义"
+"forestalling — n./v-ing 预先阻止——真题里最常以动名词形式出现",
+"2024.03 A 卷 M2 Q6 — 正确选项 A：forestalling consideration of the full stylistic dimensions（阻碍对该时期诗歌完整风格维度的考察）"
 ],
 "note": "",
 "ex": [
 {
 "src": "卷 2106 · Module M1 · Q7",
 "en": "Although beneficial for forestalling loss of vascular function when leaf veins are blocked, reticulate (netlike)leaf-vein topologies in plants are thought to reduce efficiency in water and sugar transport and to increase vein construction costs relative to branched topologies.",
-"mark": "beneficial for forestalling loss of vascular function",
-"zh": "植物的网状（网格状）叶脉拓扑虽有利于在叶脉被堵塞时预先防止维管功能丧失，但人们认为它会降低水分与糖分运输的效率，并相对于分支状拓扑提高叶脉的构建成本。",
+"mark": "forestalling loss of vascular function",
+"zh": "网状（网眼状）的叶脉拓扑虽然有助于在叶脉被阻塞时防止维管功能丧失，但人们认为它会降低水分与糖分运输的效率，并相对于分枝状拓扑提高叶脉的构建成本。",
 "more": false
 }
 ]
@@ -15427,7 +15686,7 @@
 "w": "hectare",
 "p": "ˈhekteə(r)",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -15455,6 +15714,13 @@
 "mark": "less than 50 hectares",
 "zh": "他们测量了康涅狄格州林地碎片中红枫（Acer rubrum）与金缕梅（Hamamelis virginiana）叶片的含水量——小碎片不足50公顷，大碎片超过200公顷——并以含水量作为养分含量的替代指标（因为含水量与氮等促生长成分的含量呈正相关）。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q86 · 补充语境",
+"en": "The team found a range of edge density levels, from lows of around 80 meters per hectare or less in the 1960s and 1970s for all classes, to a high in 1986 of approximately ______.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -15505,36 +15771,35 @@
 },
 {
 "n": 404,
-"w": "illuminate",
-"p": "ɪˈluːmɪneɪt",
-"pos": "v.",
-"tier": "低频 · 极难",
+"w": "pragmatic",
+"p": "præɡˈmætɪk",
+"pos": "adj.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "动词",
+"pos": "形容词",
 "ext": false,
-"text": "阐明；使清晰（illuminate a connection / a problem）"
+"text": "务实的、重实效的：以实际效果而非原则理想为先"
 },
 {
-"k": "dnum",
-"pos": "动词",
-"ext": true,
-"text": "照亮；照射（illuminate a room）"
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "希腊 pragma「行为、事实」→「看做事管不管用」"
 }
 ],
 "kin": [
-"illumination — n. 照明；阐明",
-"luminous / luminosity — adj. 发光的 / n. 光度——同根，真题亦现",
-"illuminate ≠ illustrate — 前者是「阐明」，后者是「举例 / 插图说明」"
+"pragmatism — n. 实用主义（2050 卷 Forster 双篇题词形）",
+"反义对照 — idealistic 理想主义的——上例中两词恰好同句对举，是绝佳记忆锚点"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2100 · Module M2 · Q13",
-"en": "In this long song, Bell actualizes what he calls “discrepant engagement,” a compositional strategy that involves continuously revising and remixing diverse cultural references to illuminate the complex interconnectedness of global cultures.",
-"mark": "to illuminate the complex interconnectedness",
-"zh": "在这首长歌中，贝尔把他所谓的差异性介入付诸实现——一种不断修订、重混多元文化指涉，以阐明全球诸文化之间复杂互联性的作曲策略。",
+"src": "卷 2050 · Module M2 · Q7",
+"en": "On the one hand, the modern metropolis of London represents capitalism's emphasis on pragmatism and the accumulation of material wealth; on the other, the English countryside, accessible via King's Cross, fosters an idealism that values tradition, authentic personal connection, and the aesthetic—what the novel calls \"the infinite.\"",
+"mark": "emphasis on pragmatism",
+"zh": "一方面，现代化大都会伦敦代表着资本主义对实用主义与物质财富积累的强调；另一方面，从国王十字车站可达的英格兰乡野，则滋养着一种珍视传统、真挚联结与审美的理想主义——即小说所谓的「无限」。",
 "more": false
 }
 ]
@@ -15649,36 +15914,36 @@
 },
 {
 "n": 408,
-"w": "impracticable",
-"p": "ɪmˈpræktɪkəbl",
-"pos": "adj.",
-"tier": "低频 · 极难",
+"w": "enumerate",
+"p": "ɪˈnjuːməreɪt",
+"pos": "v.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "形容词",
+"pos": "动词",
 "ext": false,
-"text": "行不通的；不可实施的（habits become impracticable）"
+"text": "逐一点数、一一列举：把项目一个个数出来或列出"
 },
 {
-"k": "辨析",
+"k": "构词",
 "pos": "",
 "ext": false,
-"text": "impracticable（方案不可行）≠ impractical（不实用、不切实际，语气略轻）"
+"text": "e-（出）+ numer（数）→「数出来」——number、numerous 同根"
 }
 ],
 "kin": [
-"practicable / practical — adj. 可实施的 / adj. 实用的",
-"impracticable ≠ impractical — 真题取「行不通」义",
-"feasible / viable — adj. 可行的——反义"
+"enumeration — n. 列举、清点",
+"numerous — adj. 众多的（同根近形）",
+"近义 — list / itemize 逐项列出"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2102 · Module M1 · Q1",
-"en": "Your old habits become impracticable and you find yourself obliged to form new ones.",
-"mark": "Your old habits become impracticable",
-"zh": "你旧有的习惯变得行不通了，于是你发现自己不得不养成新的习惯。",
+"src": "卷 2096 · Module — · Q5",
+"en": "In times gone by, Mrs. Hilbery had known all the poets, all the novelists. These being now either dead or secluded in their infirm glory, she made her house a meeting-place for her own relations, to whom she would lament the passing of the great days of the nineteenth century.（真题词汇题考 lament「哀叹」的词义；Enumerate「逐一点数」为 B 选项干扰项）",
+"mark": "Enumerate",
+"zh": "往昔岁月里，希尔伯里太太结识了所有诗人、所有小说家。如今他们或已辞世，或退隐于迟暮的荣光之中，她便把宅邸变作亲戚们的聚会之所，向他们哀叹十九世纪那个伟大时代的一去不返。",
 "more": false
 }
 ]
@@ -15988,36 +16253,42 @@
 },
 {
 "n": 417,
-"w": "interdependence",
-"p": "ˌɪntədɪˈpendəns",
-"pos": "n.",
-"tier": "低频 · 极难",
+"w": "enrich",
+"p": "ɪnˈrɪtʃ",
+"pos": "v.",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "动词",
 "ext": false,
-"text": "相互依赖（economic interdependence）"
+"text": "丰富、充实（理解、经验、生活）：使之更有价值、更丰厚"
+},
+{
+"k": "dnum",
+"pos": "动词",
+"ext": true,
+"text": "（技术上）富化：向介质中添加养分（如 enriched soil 富养土壤）"
 },
 {
 "k": "构词",
 "pos": "",
 "ext": false,
-"text": "inter-（相互）+ dependence"
+"text": "en-（使）+ rich（丰富）"
 }
 ],
 "kin": [
-"interdependent — adj. 相互依存的",
-"interdependence ≠ independence — 反义：独立",
-"interplay / interconnectedness — n. 相互作用 / n. 互联性——真题近义"
+"enrichment — n. 丰富、充实",
+"enriched — adj. 经强化的（如 enriched uranium 浓缩铀——语境义）",
+"派生构词法 — en- + 形容词 = 动词：enlarge 扩大 / enable 使能够 / ensure 确保"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2111 · Module M1 · Q8",
-"en": "Economic interdependence means that different sectors of an economy rely on each other.",
-"mark": "Economic interdependence means that different sectors",
-"zh": "经济上的相互依赖，指一个经济体中不同部门彼此依靠。",
+"src": "卷 2013 · Module M2 · Q6",
+"en": "For too long, scholars have focused on experimental versus conventional poetic forms, inhibiting inquiry into other points of stylistic correspondence among poems that would enrich our understanding of the modernist canon.",
+"mark": "enrich our understanding of the modernist canon",
+"zh": "长久以来，学者们只盯着实验诗体与传统诗体之争，阻碍了对诗与诗之间其他风格呼应关系的探究——而这些关系本可以丰富我们对现代主义经典的理解。",
 "more": false
 }
 ]
@@ -16063,7 +16334,7 @@
 "w": "interlocutor",
 "p": "ˌɪntəˈlɒkjʊtə",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -16095,6 +16366,13 @@
 "mark": "as vital interlocutors who facilitate new",
 "zh": "两种路径都与有影响力的思想家打交道，但做哲学的人把这些人物视为促成新洞见的重要对话者，而不是僵化的权威——后者虽然与当下相关，却主要代表这门学科的过去。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q105 · 补充语境",
+"en": "While both approaches engage with influential thinkers, those who do philosophy treat such thinkers as vital interlocutors who facilitate new insights rather than as fixed authorities who, though relevant to the present, primarily represent the discipline’s past.",
+"mark": "as vital interlocutors who facilitate new",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -16671,43 +16949,48 @@
 },
 {
 "n": 435,
-"w": "misconception",
-"p": "ˌmɪskənˈsepʃn",
-"pos": "n.",
-"tier": "低频 · 极难",
+"w": "delineate",
+"p": "dɪˈlɪnieɪt",
+"pos": "v.",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "动词",
 "ext": false,
-"text": "误解；错误观念（correct misconceptions）"
+"text": "勾勒、描画出（轮廓、边界）：用线条精确画出"
+},
+{
+"k": "dnum",
+"pos": "动词",
+"ext": true,
+"text": "（抽象）阐明、界定：把概念的范围说清楚"
 },
 {
 "k": "构词",
 "pos": "",
 "ext": false,
-"text": "mis-（错）+ conception"
+"text": "de-（出来）+ line（线）→「用线条画出」"
 }
 ],
 "kin": [
-"misconceive / conception — v. 误解 / n. 概念；构想",
-"misconception ≠ misconception about — 真题作 correct misconceptions 纠正误解",
-"fallacy / misapprehension — n. 谬误 / n. 误会——近义"
+"delineation — n. 勾勒、界定（2081 卷：a category that resists firm delineation「难以明确界定的范畴」）",
+"line 家族 — outline 概括 / linear 线性的——同根 line"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2053 · Module M2 · Q9",
-"en": "Such monitors can provide information to correct misconceptions.",
-"mark": "information to correct misconceptions",
-"zh": "这类监测器能提供信息，用以纠正种种误解。",
+"src": "卷 2092 · Module M2 · Q23",
+"en": "The biological species concept, described in 1942 by Mayr, defines species in accordance with reproductive isolation, while the phylogenetic species concept, delineated by Queiroz and Donoghue in 1988, organizes species according to monophyletic groups.",
+"mark": "delineated by Queiroz and Donoghue in 1988",
+"zh": "生物学物种概念由迈尔于 1942 年提出，依据生殖隔离来界定物种；而系统发育物种概念则由凯洛兹与多诺霍于 1988 年勾勒阐明，按单系群来划分物种。",
 "more": false
 },
 {
-"src": "卷 2107 · Module M1 · Q3 · 补充语境",
-"en": "Biologist Bryson Voirin and colleagues have employed hat-like monitors to⋯⋯⋯⋯longstanding misconceptions about the activity patterns of sloths.",
+"src": "卷 2066 · Module M1 · Q24 · 补充语境",
+"en": "The genetic species concept, ______ delineated by Baker and Bradley in 2006, organizes species according to genetic similarity.",
 "mark": "",
-"zh": "生物学家 Bryson Voirin 及同事利用帽式监测器来……树懒活动模式的长期误解。",
+"zh": "遗传学物种概念——例如由贝克与布拉德利在 2006 年界定的那一种——依据遗传相似性来划分物种。（空格为过渡词考点）",
 "more": true
 }
 ]
@@ -16910,7 +17193,7 @@
 "w": "occupant",
 "p": "ˈɒkjəpənt",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -16938,6 +17221,13 @@
 "mark": "augment occupants",
 "zh": "实现这一目标的途径之一是亲生物设计——它力求通过在建筑、自然与人体生理之间建立协调关系，来提升使用者情绪与身体健康。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q13 · 补充语境",
+"en": "One way to accomplish this goal is through biophilic design, which seeks to augment occupants’ emotional and physical well-being by establishing a coherent relationship among the building, nature, and human biology.",
+"mark": "augment occupants",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -16986,8 +17276,8 @@
 },
 {
 "n": 443,
-"w": "ornamental",
-"p": "ˌɔːnəˈmentl",
+"w": "eclectic",
+"p": "ɪˈklektɪk",
 "pos": "adj.",
 "tier": "低频 · 极难",
 "senses": [
@@ -16995,35 +17285,27 @@
 "k": "dnum",
 "pos": "形容词",
 "ext": false,
-"text": "装饰性的； ornamental elements / details"
+"text": "兼收并蓄的、博采众长的：从多种来源各取所长"
 },
 {
-"k": "dnum",
-"pos": "形容词",
-"ext": true,
-"text": "（植物）观赏性的：ornamental plants"
+"k": "构词",
+"pos": "",
+"ext": false,
+"text": "希腊 ek-（出来）+ leg（选）→「挑拣出来的」——elect（选举）同根"
 }
 ],
 "kin": [
-"ornament / ornamentation — n. 装饰物 / n. 装饰（工艺）",
-"ornamental ≠ ornate — 后者是「装饰华丽的」，形容整体",
-"functionalist / modernist — adj. 功能主义的 / adj. 现代主义的——真题与之对举"
+"eclecticism — n. 折中主义",
+"-lect- 词根家族 — select 挑选 / collect 收集 / elect 选举——均为「选」"
 ],
 "note": "",
 "ex": [
 {
-"src": "卷 2087 · Module M1 · Q25",
-"en": "It was first introduced to the US as an ornamental plant.",
-"mark": "ornamental plant",
-"zh": "它最初是作为观赏植物被引入美国的。",
+"src": "卷 2100 · Module — · Q13",
+"en": "Seriality in Bell's long song operates recursively, meaning that, in combination with the work's marshaling of an eclectic array of cultural allusions, it endlessly reiterates and recontextualizes the same archetypal images and narrative incidents, uncovering in these elements new and unexpected meanings with each repetition.",
+"mark": "an eclectic array of cultural allusions",
+"zh": "贝尔「长诗」中的序列性以递归方式运作：配合作品调集的兼收并蓄的种种文化典故，它不断重述并重新语境化同一批原型意象与叙事事件，在每一次重复中从中发掘出新的、出乎意料的意义。（本句为该题正确选项 A——文本证据题）",
 "more": false
-},
-{
-"src": "卷 2102 · Module M1 · Q16 · 补充语境",
-"en": "While the aquatic plant is native to parts of South America, it was introduced to the US as an ornamental plant and is now considered an invasive species there due to the environmental harm it causes.",
-"mark": "ornamental plant",
-"zh": "这种水生植物虽原产于南美部分地区，却作为观赏植物被引入美国，如今因造成环境危害而被视为入侵物种。",
-"more": true
 }
 ]
 },
@@ -17316,7 +17598,7 @@
 "w": "porous",
 "p": "ˈpɔːrəs",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -17344,6 +17626,13 @@
 "mark": "a porous molecular structure",
 "zh": "因此 Hayden A. Evans 等人研究了甲酸铝（ALF）——一种价格低廉、具有多孔分子结构、可借吸附储存气体的材料——把它作为另一种储氢介质。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM1 · Q15 · 补充语境",
+"en": "While earthenware (which is relatively porous and fragile) is fired at temperatures between 950°C and 1,100°C, stoneware (which is dense and impervious to liquid) must be heated to around 1,300°C.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -17694,7 +17983,7 @@
 "w": "refrigeration",
 "p": "rɪˌfrɪdʒəˈreɪʃn",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -17927,7 +18216,7 @@
 "w": "ridicule",
 "p": "ˈrɪdɪkjuːl",
 "pos": "v./n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -17970,7 +18259,7 @@
 "w": "saturate",
 "p": "ˈsætʃəreɪt",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -18554,7 +18843,7 @@
 "w": "stylus",
 "p": "ˈstaɪləs",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -18593,7 +18882,7 @@
 "w": "subjectivity",
 "p": "ˌsʌbdʒekˈtɪvəti",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -18621,6 +18910,13 @@
 "mark": "imbued with disagreement and subjectivity",
 "zh": "的确，Susan Silbey 说过，文化一词的含义是不稳定的。这种概念上的不稳定，造成了现实（虽复杂却终究自洽）与我们对现实的理解（一种试图达成共识、却浸透着分歧与主观性的东西）之间的落差。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM1 · Q26 · 补充语境",
+"en": "According to media historian Marian Bell, such revisions “centralized African American narrative presence and subjectivity.”",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -18697,7 +18993,7 @@
 "w": "substantiate",
 "p": "səbˈstænʃieɪt",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -18727,6 +19023,13 @@
 "mark": "substantiated direct observations",
 "zh": "例如，萤火虫鱿鱼因报告不一致而得 1 分，大王乌贼因与已知发光近缘种的解剖学相似性而得 4 分，而长须鮟鱇因有确凿的直接观察证据而得 6 分。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q2 · 补充语境",
+"en": "A ameliorate B augment C coalesce D substantiate In the 2010s, the price of vintage My Little Pony figures rose dramatically, which had the counterintuitive effect of ______ demand: buyers who hadn’t previously wanted to purchase old toys suddenly thronged the market, believing prices would continue to rise and the toy",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -18892,7 +19195,7 @@
 "w": "thematic",
 "p": "θɪˈmætɪk",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -18920,6 +19223,13 @@
 "mark": "central to Asimov",
 "zh": "因此，他缺乏人物刻画这一点，恰恰是阿西莫夫题旨追求的核心。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q5 · 补充语境",
+"en": "Popularized in sixteenth- and seventeenth- century England by such poets as William Shakespeare and Philip Sidney, the sonnet sequence (a series of fourteen-line poems unified by overarching thematic concerns) remains a prevalent poetic genre.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -19545,7 +19855,7 @@
 "w": "constrict",
 "p": "kənˈstrɪkt",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -19569,6 +19879,13 @@
 "mark": "constricted pupils",
 "zh": "研究发现，人在注视他人眼睛时，倾向于对放大的瞳孔作正面评价，对缩小的瞳孔作负面评价。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q40 · 补充语境",
+"en": "Studies have found that when looking at other people's eyes, humans tend to perceive dilated pupils positively and constricted pupils negatively.",
+"mark": "constricted pupils",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -19847,7 +20164,7 @@
 "w": "coalesce",
 "p": "ˌkəʊəˈles",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -19942,6 +20259,13 @@
 "mark": "counterintuitively",
 "zh": "现有证据表明，引导人们思考全人类共同的生物属性，能使个体更强烈地认同全人类——这提示，强调「人类家树」或可促成集体行动。——或许有悖直觉，聚焦群体差异反而有助于确保：对具有全球性影响的问题（如淡水短缺、生物多样性丧失），责任由全球共同分担。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q2 · 补充语境",
+"en": "A ameliorate B augment C coalesce D substantiate In the 2010s, the price of vintage My Little Pony figures rose dramatically, which had the counterintuitive effect of ______ demand: buyers who hadn’t previously wanted to purchase old toys suddenly thronged the market, believing prices would continue to rise and the toy",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -20060,7 +20384,7 @@
 "w": "guile",
 "p": "ɡaɪl",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -20084,6 +20408,13 @@
 "mark": "full of guile",
 "zh": "波莉姨妈问汤姆的问题满是圈套，而且用意极深——她想诱他露出破绽。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q7 · 补充语境",
+"en": "Aunt Polly asked [Tom] questions that were full of guile, and very deep—for she wanted to trap him into damaging revealments.",
+"mark": "full of guile",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -20607,7 +20938,7 @@
 "w": "categorical",
 "p": "ˌkætəˈɡɒrɪkl",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -20631,6 +20962,13 @@
 "mark": "categorical exclusions",
 "zh": "许多《国家环境政策法》的审查需要公众评议，但「类别豁免」允许对环境影响极小的行为快速审查、无需公众评议。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q49 · 补充语境",
+"en": "The categorical distinction between soft and hard commodities lies not in the products’ strength or durability but in their origin: the former type is grown or farmed, while the latter is mined or drilled.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -21286,7 +21624,7 @@
 "w": "arduous",
 "p": "ˈɑːdjuəs",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -21310,6 +21648,13 @@
 "mark": "an arduous writing process",
 "zh": "尽管瓦西里·格罗斯曼的小说《Stalingrad》被认为不如他后来的《Everything Flows》，仍有评论家称赞它，尽管为通过苏联审查，这部作品的写作过程极为艰难（PopMatters 的 Jordan Penney 称《Stalingrad》「有力」）。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q34 · 补充语境",
+"en": "Though Anton Kuznetsov’s novel The Volga Crossing is considered inferior to his later work The Open Road, some critics praise it despite an arduous writing process required to satisfy Soviet censors (Nina Wallace in The Observer called The Volga Crossing “dazzling”).",
+"mark": "an arduous writing process",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -21318,7 +21663,7 @@
 "w": "allege",
 "p": "əˈledʒ",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -21342,6 +21687,13 @@
 "mark": "have been alleged to be",
 "zh": "多件属于该时期的雕塑被指认为所报道的那尊胸像，但无一件被确证为 Desiderio 所塑的斯特罗齐像。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM1 · Q4 · 补充语境",
+"en": "Some critics allege that current sustainable forestry certification requirements and procedures, while uniform in application, are ______ in effect.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -22255,6 +22607,13 @@
 "mark": "metallic percussion",
 "zh": "美国音乐人 Laura Les 把密集的合成器编排与金属打击乐结合起来，并把人声以电子方式移调到她自然音域之上，堪称当代电子音乐风格「hyperpop」的代表。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q7 · 补充语境",
+"en": "Kline’s combination of dense synthesizer arrangements and metallic percussion with a recorded voice electronically shifted in pitch above its natural range exemplifies the hyperpop sound.",
+"mark": "metallic percussion",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -22632,7 +22991,7 @@
 "w": "chronological",
 "p": "ˌkrɒnəˈlɒdʒɪkl",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -22780,7 +23139,7 @@
 "w": "coarse",
 "p": "kɔːs",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -22858,7 +23217,7 @@
 "w": "contemplate",
 "p": "ˈkɒntəmpleɪt",
 "pos": "v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -23078,7 +23437,7 @@
 "w": "orient",
 "p": "ˈɔːrient",
 "pos": "v.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -23220,7 +23579,7 @@
 "w": "enact",
 "p": "ɪˈnækt",
 "pos": "v.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -23501,39 +23860,43 @@
 },
 {
 "n": 625,
-"w": "groundbreaking",
-"p": "ˈɡraʊndbreɪkɪŋ",
-"pos": "adj.",
-"tier": "中频 · 高难",
+"w": "espouse",
+"p": "ɪˈspaʊz",
+"pos": "v.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "形容词",
+"pos": "动词",
 "ext": false,
-"text": "首次做出、开辟新领域的（the groundbreaking Negro Ensemble Company 开创性的黑人剧团）"
+"text": "拥护、信奉、倡导（理念、事业、观点）"
 },
 {
-"k": "辨析",
+"k": "构词",
 "pos": "",
 "ext": false,
-"text": "褒义，比 innovative 语气更强；原义「破土的」"
+"text": "拉丁 e-（向）+ spondere（承诺）→「对……立誓」——spouse（配偶）同根「立约之人」"
 }
 ],
-"kin": [],
+"kin": [
+"espousal — n. 拥护、支持",
+"拼形警示 — expound v. 阐述（仅一字母之差，义完全不同）",
+"近义 — advocate / embrace（抽象义）拥护"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2004 · Module M1 · Q9",
-"en": "The groundbreaking Negro Ensemble Company (NEC), founded in 1967, produced Paul Carter Harrison's award-winning play The Great Mac Daddy in 1974.",
-"mark": "The groundbreaking Negro Ensemble Company",
-"zh": "开创性的黑人剧团（NEC）成立于 1967 年，1974 年制作了 Paul Carter Harrison 获奖剧作《The Great Mac Daddy》。",
+"src": "卷 2058 · Module M2 · Q26",
+"en": "The Bauhaus was an influential German art and design school; the school famously espoused the design principle of \"form follows function.\"",
+"mark": "famously espoused the design principle",
+"zh": "包豪斯是一所极具影响力的德国艺术设计学校，以奉行「形式追随功能」的设计原则而闻名。",
 "more": false
 },
 {
-"src": "卷 2016 · Module M1 · Q8 · 补充语境",
-"en": "Walker’s award-winning play The River Niger was produced in 1972 by the groundbreaking Negro Ensemble Company (NEC).",
+"src": "卷 2096 · Module — · Q25 · 补充语境",
+"en": "Philosophers espousing presentism (the view that only present things exist) must contend with the truth-maker objection (TO).",
 "mark": "",
-"zh": "Walker 的获奖剧作《尼日尔河》于 1972 年由开创性的黑人剧团（NEC）制作上演。",
+"zh": "信奉「现在主义」（认为只有当下存在之物才存在）的哲学家，必须直面「真值制造者」反驳。",
 "more": true
 }
 ]
@@ -23618,40 +23981,37 @@
 },
 {
 "n": 628,
-"w": "breadth",
-"p": "bredθ",
-"pos": "n.",
-"tier": "中频 · 高难",
+"w": "indelible",
+"p": "ɪnˈdeləbl",
+"pos": "adj.",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
-"pos": "名词",
+"pos": "形容词",
 "ext": false,
-"text": "涵盖范围的宽阔程度（the breadth of disciplines 学科跨度）"
+"text": "难以磨灭的、擦不掉的（印记、记忆）"
 },
 {
-"k": "辨析",
+"k": "构词",
 "pos": "",
 "ext": false,
-"text": "与 width 不同：breadth 多用于抽象范围；broad → breadth"
+"text": "in-（不）+ del（擦掉）+ -ible →「擦不掉的」——delete 同根"
 }
 ],
-"kin": [],
+"kin": [
+"indelibly — adv. 不可磨灭地",
+"delete 家族 — delete v. 删除 / deletion n. 删除——词根 del「涂去」",
+"近义 — permanent / enduring 持久的"
+],
 "note": "",
 "ex": [
 {
-"src": "卷 2029 · Module M2 · Q12",
-"en": "Although the Nasher Museum has focused exhibitions entirely on North Carolina artists before, as it did previously in the photography exhibition Across County Lines, the breadth of disciplines in Reckoning and Resilience sets it apart.",
-"mark": "the breadth of disciplines",
-"zh": "尽管纳舍尔博物馆此前也做过完全聚焦北卡罗来纳州艺术家的展览（如摄影展《Across County Lines》），但《Reckoning and Resilience》所涉学科的广度使其与众不同。",
+"src": "卷 2070 · Module M1 · Q23",
+"en": "Karel Čapek's 1920 play R.U.R. (Rossum's Universal Robots), in which artificial workers overthrow their masters, left an indelible mark on the science fiction genre, and the English language, by introducing the term \"robot\" (derived from the Czech word robota, meaning \"indentured labor\" or \"drudgery\").",
+"mark": "left an indelible mark",
+"zh": "卡雷尔·恰佩克 1920 年的剧作《罗素姆万能机器人》（剧中人造工人推翻了主人）给科幻类型乃至英语本身留下了一道难以磨灭的印记——它引入了「机器人」一词（源自捷克语 robota，意为「劳役」或「苦工」）。",
 "more": false
-},
-{
-"src": "卷 2050 · Module M2 · Q13 · 补充语境",
-"en": "As the movement spread beyond Chile, the breadth of musical traditions incorporated into its foundation also expanded.",
-"mark": "",
-"zh": "随着这一运动传出国境，被纳入其根基的音乐传统的广度也随之扩大。",
-"more": true
 }
 ]
 },
@@ -24029,7 +24389,7 @@
 "w": "resilient",
 "p": "rɪˈzɪliənt",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -24053,6 +24413,13 @@
 "mark": "more resilient to environmental shocks",
 "zh": "尽管宽叶眼子菜的增多与该湾海草总覆盖面积的大幅上升有关，研究者提醒，后一变化并不必然使整个海草生态系统对环境冲击更具韧性。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM1 · Q16 · 补充语境",
+"en": "In their study of ancient building materials, Stanford researchers used microscopic analysis and chemical testing to understand the ______ that made Maya lime plaster unusually resilient.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -24196,7 +24563,7 @@
 "w": "expressive",
 "p": "ɪkˈspresɪv",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -24453,7 +24820,7 @@
 "w": "conversely",
 "p": "ˈkɒnvɜːsli",
 "pos": "adv.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -24633,6 +25000,13 @@
 "mark": "be invaluable in determining",
 "zh": "纳入这一算法的预测模型，在确定一座城市设施的最佳组合时必定极有价值。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q17 · 补充语境",
+"en": "This interdisciplinary approach—integrating mathematical knowledge with artistic disciplines like fiber arts and ceramics—______ invaluable, enabling the team to create an immersive installation that neither group could have developed alone.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -24724,7 +25098,7 @@
 "w": "seismic",
 "p": "ˈsaɪzmɪk",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -24763,7 +25137,7 @@
 "w": "canopy",
 "p": "ˈkænəpi",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -24802,7 +25176,7 @@
 "w": "expire",
 "p": "ɪkˈspaɪə",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -24826,6 +25200,13 @@
 "mark": "copyright expires",
 "zh": "当一本书的版权到期，该书即进入公有领域。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q25 · 补充语境",
+"en": "When a book’s copyright expires, the book enters the public domain.",
+"mark": "copyright expires",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -24953,7 +25334,7 @@
 "w": "intricate",
 "p": "ˈɪntrɪkət",
 "pos": "adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -25236,6 +25617,13 @@
 "mark": "artistic endeavors",
 "zh": "这种定性有其用处，但在作品如何被看待方面也带来弊端——毕竟在艺术事业中，创造力与想象力被赋予了很高的价值。",
 "more": false
+},
+{
+"src": "卷 2613 · Module RWM2H · Q19 · 补充语境",
+"en": "The Euclid Space Telescope project has furthered this endeavor through both the increasing precision of its ______ and the vast scope of its observations, which have captured data from nearly 12 million celestial objects beyond our galaxy.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -25268,6 +25656,13 @@
 "mark": "indicative of live performance",
 "zh": "Wade 举出文本中表明现场表演的特征，例如礼貌地称呼观众、大量使用易于记诵的简单押韵，以及向听众索要赏钱。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q117 · 补充语境",
+"en": "In a 2021 study, however, Laura Nguyen and Dimitris Papadopoulos found that obsidian-object production methods at Petras stayed remarkably consistent during this architectural transition, which they interpret as indicative of local cultural continuity in the Middle and Late Bronze Ages.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -25393,7 +25788,7 @@
 "w": "dwell",
 "p": "dwel",
 "pos": "v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -26513,7 +26908,7 @@
 "w": "novelty",
 "p": "ˈnɒvlti",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -26726,7 +27121,7 @@
 "w": "vibrant",
 "p": "ˈvaɪbrənt",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -26821,6 +27216,13 @@
 "mark": "defective device or simply",
 "zh": "这些缺陷部分可以补救，甚至并不构成对字面真实的绝对违背。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q19 · 补充语境",
+"en": "A defect density, customer satisfaction; and B defect density, customer satisfaction and, C defect density, customer satisfaction, and D defect density; customer satisfaction, and Located in western Germany, Eifel National Park is a Dark Sky Park, a type of natural area recognized by DarkSky International.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -27010,7 +27412,7 @@
 "w": "durable",
 "p": "ˈdjʊərəbl",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -27257,6 +27659,13 @@
 "mark": "baseline concentration of precipitation",
 "zh": "这一研究文献受困于假设不清、样本量不足、缺少对照组，以及未能为所测的参与者属性建立训练前的基线。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q84 · 补充语境",
+"en": "This research literature is plagued by unclear hypotheses, insufficient sample sizes, a lack of control groups, and failures to establish pretraining baselines for the measured attributes of participants.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -27375,7 +27784,7 @@
 "w": "magistrate",
 "p": "ˈmædʒɪstreɪt",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -27399,6 +27808,13 @@
 "mark": "judges or magistrates",
 "zh": "一份来自某国际组织的报告，监测了各国最高法院（如芬兰最高法院与多米尼加共和国最高法院）中担任法官或地方法官的女性人数。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q12 · 补充语境",
+"en": "For instance, the number of women judges and magistrates on high courts in ______",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -28066,6 +28482,13 @@
 "mark": "from the solitary to those with complex sociality",
 "zh": "一只侏儒獴与外来侏儒獴发生领地冲突的情景，例示了动物物种社会生活的一个重要维度：从独居到高度群居，都存在与被视为外来者的同类接触。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q13 · 补充语境",
+"en": "The narrator indicates that her aunt and uncle’s home in Kansas is remote and solitary, writing that ______",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -28624,7 +29047,7 @@
 "w": "credible",
 "p": "ˈkredəbl",
 "pos": "adj.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -28648,6 +29071,13 @@
 "mark": "more credible",
 "zh": "然而，当传播学研究者 Sungkyoung Lee 及同事检验招募临床试验志愿者的信息时，他们发现，研究参与者认为由曾参加试验的志愿者发出的招募信息，显著比医生（即具有专业资质的专家）发出的信息更可信。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q4 · 补充语境",
+"en": "A incontrovertible B dubious C credible D advantageous According to a study led by Claire Heeryung Kim, artifact emojis—pictorial symbols representing objects, such as a flower—generally elicit consumer skepticism when used in digital marketing messages.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -28712,6 +29142,13 @@
 "mark": "Memoirs of Elleanor Eldridge",
 "zh": "《埃莉诺·埃尔德里奇回忆录》（Memoirs of Elleanor Eldridge）是 Elleanor Eldridge 与 Frances Harriet Whipple Green 于 1838 年写成的历史记述。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q1 · 补充语境",
+"en": "The following text is adapted from Yone Noguchi’s 1914 memoir The Story of Yone Noguchi.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -28837,7 +29274,7 @@
 "w": "variant",
 "p": "ˈveəriənt",
 "pos": "n. / adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -28861,6 +29298,13 @@
 "mark": "a particular variant",
 "zh": "研究者发现，小型家犬（如约克夏㹴）以及小型野生犬科动物（如狐狸）往往带有一种特定变体，称为 C 等位基因，位于 IGF1 基因上——这是所有哺乳动物都具有的一个与生长相关的基因。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q116 · 补充语境",
+"en": "Elena Markovic, Priya Nair, and colleagues analyzed a large sample of honey bees (Apis mellifera) collected from most US states, assessing mitochondrial DNA markers to identify three major evolutionary lineages—North Mediterranean, West Mediterranean, and African—and the distinct haplotypes (inherited DNA variants) ass",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -29557,6 +30001,13 @@
 "mark": "aerial imagery",
 "zh": "Zander S. Venter 等人的研究涵盖奥地利、美国加利福尼亚州以及全球数千个地点十年间的空气质量监测站数据，并配有同期这些地点的航空影像。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q89 · 补充语境",
+"en": "compared data from air-quality monitoring stations in Liechtenstein, the US state of Illinois, and thousands of other global locations over a ten-year span, coupled with aerial imagery of those locations from the same period.",
+"mark": "aerial imagery",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -29604,7 +30055,7 @@
 "w": "obscure",
 "p": "əbˈskjʊə",
 "pos": "v. / adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -29667,6 +30118,13 @@
 "mark": "the correspondence of Leonardo da Vinci's Mona Lisa to his self-portrait",
 "zh": "艺术家 Lillian Schwartz 注意到达·芬奇《蒙娜丽莎》与他红色粉笔自画像之间的对应关系，据此主张《蒙娜丽莎》在某种意义上是自画像——通过把自己的面部特征映射到画中表面上的对象丽莎·盖拉尔迪尼脸上，达·芬奇把自己画成了一个女人。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q6 · 补充语境",
+"en": "Most Native languages belong to language families, or groups of languages whose structural and lexical correspondence likely derives from their descent from a single language spoken long ago.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -30051,7 +30509,7 @@
 "w": "metric",
 "p": "ˈmetrɪk",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -30090,7 +30548,7 @@
 "w": "immense",
 "p": "ɪˈmens",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -30192,6 +30650,13 @@
 "mark": "is plagued by",
 "zh": "这一研究文献受困于假设不清……",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q84 · 补充语境",
+"en": "This research literature is plagued by unclear hypotheses, insufficient sample sizes, a lack of control groups, and failures to establish pretraining baselines for the measured attributes of participants.",
+"mark": "is plagued by",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -31850,7 +32315,7 @@
 "w": "speculation",
 "p": "ˌspekjuˈleɪʃn",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -32095,7 +32560,7 @@
 "w": "supplement",
 "p": "ˈsʌplɪment",
 "pos": "v. / n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -32425,7 +32890,7 @@
 "w": "expertise",
 "p": "ˌekspɜːˈtiːz",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -32542,7 +33007,7 @@
 "w": "testament",
 "p": "ˈtestəmənt",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -32566,6 +33031,13 @@
 "mark": "a testament to",
 "zh": "因此，这场演出是林迪舞对美国文化持久影响力的明证。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q2 · 补充语境",
+"en": "That such systems get successfully set up is a testament to the installers’ expertise.",
+"mark": "a testament to",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -33152,7 +33624,7 @@
 "w": "entity",
 "p": "ˈentəti",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -33340,7 +33812,7 @@
 "w": "haven",
 "p": "ˈheɪvn",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -33379,7 +33851,7 @@
 "w": "consciousness",
 "p": "ˈkɒnʃəsnəs",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -33403,6 +33875,13 @@
 "mark": "my own consciousness",
 "zh": "我自己的意识仿佛流过每一片草叶。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q4 · 补充语境",
+"en": "A contingent on B immaterial to C uncharacteristic of D determinative of Can artificial intelligence (AI) truly capture human consciousness?",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -33545,6 +34024,13 @@
 "mark": "Abstract Expressionism",
 "zh": "坎农等人的创作策略与抽象表现主义——一个由欧裔美国艺术家主导的画派——相一致，而非与土著艺术中传统的非具象形式相一致。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q13 · 补充语境",
+"en": "D respondents have little concern about the collection and use of personal data in the abstract but are uncomfortable with their own data being collected and used.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -33631,7 +34117,7 @@
 "w": "strain",
 "p": "streɪn",
 "pos": "n. / v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -33867,7 +34353,7 @@
 "w": "marvel",
 "p": "ˈmɑːvl",
 "pos": "n. / v.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -34136,7 +34622,7 @@
 "w": "metropolitan",
 "p": "ˌmetrəˈpɒlɪtən",
 "pos": "adj.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -34199,6 +34685,13 @@
 "mark": "consecutive pulses",
 "zh": "旋转射电暂现源（RRAT）相邻两次脉冲之间的时间被称为一个周期。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q1 · 补充语境",
+"en": "In Canada, federal regulations strictly limit the number of consecutive hours commercial drivers can operate their vehicles.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -34246,7 +34739,7 @@
 "w": "patent",
 "p": "ˈpætnt",
 "pos": "n. / adj. / v.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -34309,6 +34802,13 @@
 "mark": "Mars by English author",
 "zh": "但也许正因如此，整座宅邸那股彻底的教士气派反倒有所减损。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q22 · 补充语境",
+"en": "______ Srivastava worked as a systems engineer on the JPL’s Mars 2020 Perseverance rover team, which improved upon the 2011 Curiosity rover design by adding a coring drill to the robot that could collect rock samples for later analysis.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -34483,6 +34983,13 @@
 "mark": "Census Bureau",
 "zh": "北卡罗来纳州东北部的卡姆登县是美国最乡村化的县之一：美国人口普查局在 2010 年将其认定为 99.5% 乡村。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q90 · 补充语境",
+"en": "West Texas’s Loving County is among the most rural counties in the United States: the US Census Bureau classified it as 100% rural in 2010.",
+"mark": "Census Bureau",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -34710,6 +35217,13 @@
 "mark": "legitimate authority",
 "zh": "依我判断，史学家的职责是把每件事都放在它自身的光线下呈现，依据其正当的权威依据来陈述事实，而非其他。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M1 · Q7 · 补充语境",
+"en": "If I judge right, ’tis the duty of an historian to set everything in its own light, and to convey matter of fact upon its legitimate authority, and no other: I mean thus, (for I would be as explicit as I can) that where a story is vouched to him with sufficient authority, he ought to give the world the special testimon",
+"mark": "legitimate authority",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -35179,7 +35693,7 @@
 "w": "copyright",
 "p": "ˈkɒpiraɪt",
 "pos": "n.",
-"tier": "低频 · 极难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -35218,7 +35732,7 @@
 "w": "inquiry",
 "p": "ɪnˈkwaɪəri",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -35242,6 +35756,13 @@
 "mark": "scientific inquiry",
 "zh": "规划一项科学探究时，应遵循三个基本步骤。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q4 · 补充语境",
+"en": "Louisa Hall’s novel Speak pursues this inquiry by weaving together five stories across different centuries, from a Puritan woman’s diary to an AI’s confessions.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -35665,7 +36186,7 @@
 "w": "utility",
 "p": "juːˈtɪləti",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -35970,7 +36491,7 @@
 "w": "stem",
 "p": "stem",
 "pos": "v. / n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -36048,7 +36569,7 @@
 "w": "agenda",
 "p": "əˈdʒendə",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -36072,6 +36593,13 @@
 "mark": "agenda",
 "zh": "此外，她力图培养一种不受任何规定性议程束缚的「持续演化」的实践，使自己的艺术游走于传统与……之间的临界地带。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2B · Q9 · 补充语境",
+"en": "In her history of the US Civil Rights Movement, Tomiko Brown-Nagin notes that much of the NAACP’s national agenda in the 1950s was shaped by the progressive ideas of the organization’s New York– based lawyers, who litigated civil rights cases in federal courts on behalf of clients in distant locations, mostly in the So",
+"mark": "agenda",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -36167,7 +36695,7 @@
 "w": "domain",
 "p": "dəˈmeɪn",
 "pos": "n.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -36284,7 +36812,7 @@
 "w": "romance",
 "p": "rəʊˈmæns",
 "pos": "n.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -36323,7 +36851,7 @@
 "w": "boom",
 "p": "buːm",
 "pos": "n. / v.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",
@@ -36472,7 +37000,7 @@
 "w": "discount",
 "p": "ˈdɪskaʊnt",
 "pos": "n. / v.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -36496,6 +37024,13 @@
 "mark": "a discount",
 "zh": "在许多情况下，消费者的反应正如商家所愿，把这类价格视为打折或促销的标志。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q31 · 补充语境",
+"en": "The investigators attribute this finding to naive realism, a cognitive bias in which people’s belief in their own objectivity leads them to discount opposing views as evidence of others’ fallacious thinking rather than of reasonable alternative conclusions.",
+"mark": "",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -36599,6 +37134,13 @@
 "mark": "objective",
 "zh": "增加全球石珊瑚群落数量是生态学者的关键目标，因为陆源径流及其他压力正日益损害珊瑚礁。",
 "more": false
+},
+{
+"src": "卷 2611 · Module M2A · Q18 · 补充语境",
+"en": "These data provide objective measurements for evaluating both process and product quality.",
+"mark": "objective",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -36944,7 +37486,7 @@
 "w": "elite",
 "p": "eɪˈliːt",
 "pos": "n. / adj.",
-"tier": "低频 · 高难",
+"tier": "中频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -36968,6 +37510,13 @@
 "mark": "elites",
 "zh": "其他同时期的私人手稿主要由著名中世纪作家的作品以及精英阶层偏爱的读物组成。",
 "more": false
+},
+{
+"src": "卷 2612 · Module RW · Q83 · 补充语境",
+"en": "Most other contemporary personal manuscripts like the Barton Anthology (BA) consist primarily of pieces for polite society like genteel romances and other readings favored by elites, whereas the KM has a distinctive emphasis on the popular, including entertainments like parody romances, and the practical, with advice a",
+"mark": "elites",
+"zh": "",
+"more": true
 }
 ]
 },
@@ -37242,7 +37791,7 @@
 "w": "register",
 "p": "ˈredʒɪstə(r)",
 "pos": "v. / n.",
-"tier": "低频 · 极难",
+"tier": "低频 · 高难",
 "senses": [
 {
 "k": "dnum",
@@ -37281,7 +37830,7 @@
 "w": "champion",
 "p": "ˈtʃæmpiən",
 "pos": "n. / v.",
-"tier": "中频 · 高难",
+"tier": "高频",
 "senses": [
 {
 "k": "dnum",

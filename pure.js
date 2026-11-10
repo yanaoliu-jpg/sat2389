@@ -631,6 +631,27 @@ function restoreHidden(store, ids, builtin) {
   return n;
 }
 /* 撤回刚才那一下 deleteWords */
+/* 真题1000 换成 11-10 新版（第五十七次优化）：新版删了 26 个词、加了 25 个，新词基本占了被删词原来的编号，
+   curate 从 52 号挪到 5 号。进度、星标等都按编号存，不处理的话被删词的记录会落到同一编号的新词头上。
+   打开时一次性清掉这些编号的记录，curate 那份从 30052 挪到 30005。91 号新版重复放了 forestall，
+   网站上 91 号仍是 anecdote，不在这里面。返回清掉了几条记录（挪过去的不算）。 */
+var T1000_V2_DROP = [5, 52, 85, 98, 100, 149, 168, 190, 214, 229, 238, 242, 267, 268, 272,
+  352, 359, 365, 370, 404, 408, 417, 435, 443, 625, 628].map(function (n) { return 30000 + n; });
+var T1000_V2_MOVE = { 30052: 30005 };
+function reslotIds(store, drop, move) {
+  var n = 0;
+  ['prog', 'hist', 'sel', 'star', 'col', 'hide'].forEach(function (t) {
+    var tab = store[t];
+    if (!tab) return;
+    var keep = {}, from, to;
+    for (from in move) if (hasOwn(tab, from)) keep[move[from]] = tab[from];
+    drop.forEach(function (i) { if (hasOwn(tab, i)) { delete tab[i]; if (!hasOwn(move, i)) n++; } });
+    for (from in move) delete tab[from];
+    for (to in keep) tab[to] = keep[to];
+  });
+  return n;
+}
+
 function undoDelete(store, snap, builtin) {
   restoreHidden(store, snap.hid, builtin);
   snap.units.slice().sort(function (a, b) { return a.at - b.at; }).forEach(function (x) {
@@ -673,6 +694,7 @@ if (typeof module !== 'undefined' && module.exports) {
     SENSE_SHOTS: SENSE_SHOTS, sensePrompt: sensePrompt, cleanSense: cleanSense,
     dsModel: dsModel, dsBody: dsBody,
     applyHidden: applyHidden, hiddenIn: hiddenIn, deleteWords: deleteWords,
-    restoreHidden: restoreHidden, undoDelete: undoDelete
+    restoreHidden: restoreHidden, undoDelete: undoDelete,
+    T1000_V2_DROP: T1000_V2_DROP, T1000_V2_MOVE: T1000_V2_MOVE, reslotIds: reslotIds
   };
 }

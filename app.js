@@ -100,13 +100,20 @@ if (store.sv !== 1) {
     });
   } catch (e) {}
 }
+/* 第五十七次优化：真题1000 换成新版，被删词的进度、星标、颜色、选中、藏起来的记录不留给占了它编号的新词，
+   curate 的那份跟着它从 30052 挪到 30005（见 pure.js 的 reslotIds）。记上 store.tv */
+var t1kSwap = false;
+if (store.tv !== 1) {
+  try { reslotIds(store, T1000_V2_DROP, T1000_V2_MOVE); } catch (e) {}
+  store.tv = 1; t1kSwap = true;
+}
 var save = (function () {
   var t = null;
   return function () { clearTimeout(t); t = setTimeout(function () {
     try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {}
   }, 200); };
 })();
-if (dropRel || idMoved || histReset || unitSplit) save();
+if (dropRel || idMoved || histReset || unitSplit || t1kSwap) save();
 
 /* ---------- imported units ---------- */
 function mountCustom() {
@@ -1035,7 +1042,7 @@ var undoEl = document.createElement('div');
 undoEl.className = 'undo-bar'; undoEl.hidden = true; undoEl.setAttribute('role', 'status');
 document.body.appendChild(undoEl);
 var undoTimer = null;
-function hideUndo() { clearTimeout(undoTimer); undoEl.hidden = true; document.documentElement.classList.remove('has-undo'); }
+function hideUndo() { clearTimeout(undoTimer); undoEl.hidden = true; document.documentElement.classList.remove('has-undo'); if (typeof toTopSync === 'function') toTopSync(); }
 function showUndo(snap, u) {
   clearTimeout(undoTimer);
   var allHid = snap.hid.length === snap.n;
@@ -1044,6 +1051,7 @@ function showUndo(snap, u) {
     '<button class="undo-x" id="undoX" type="button" title="关掉">×</button>';
   undoEl.hidden = false;
   document.documentElement.classList.add('has-undo');
+  if (typeof toTopSync === 'function') toTopSync();
   document.getElementById('undoX').onclick = hideUndo;
   document.getElementById('undoDel').onclick = function () {
     hideUndo();
@@ -1168,6 +1176,35 @@ document.getElementById('goHome').onclick = function () {
   if (route.name === 'home') { scrollMem.home = 0; scrollTo0(0); return; }   // 已经在首页就是「回到顶上」
   go({ name: 'home' });
 };
+
+/* 回到顶部（第五十六次优化，用户要的）：浏览列表、首页、组、生词本、搜索结果往下翻过一屏多，
+   右下角出个「↑ 顶部」，点一下回到这页最上面。底部有选择横幅、撤销条时往上让开，不挡它们 */
+var toTop = document.getElementById('toTop');
+function toTopSync() {
+  if (!toTop) return;
+  var y = window.scrollY || window.pageYOffset || 0;
+  var on = y > Math.max(500, window.innerHeight) && !document.documentElement.classList.contains('studying');
+  toTop.classList.toggle('on', on);
+  if (!on) return;
+  var lift = 0;
+  Array.prototype.forEach.call(document.querySelectorAll('.selbar, .undo-bar'), function (b) {
+    if (b.hidden) return;
+    var r = b.getBoundingClientRect(), t = toTop.getBoundingClientRect();
+    if (r.height && r.right > t.left - 8) lift = Math.max(lift, window.innerHeight - r.top + 10);
+  });
+  toTop.style.bottom = lift ? lift + 'px' : '';
+}
+if (toTop) {
+  window.addEventListener('scroll', toTopSync, { passive: true });
+  window.addEventListener('resize', toTopSync);
+  toTop.onclick = function () {
+    var k = scrollKey(route);
+    if (k) scrollMem[k] = 0;
+    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { window.scrollTo({ top: 0, behavior: calm ? 'auto' : 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+    toTop.blur();
+  };
+}
 
 /* ---------- 单元分组（第三十一次优化）----------
    一百来个单元摊在首页太长。store.groups 是 [{ id, name, us: [单元号] }]，一个单元最多在一个组里，
@@ -4024,6 +4061,7 @@ function render() {
       all.length + ' 个词条' + (all.length > hit.length ? ' · 只列前 ' + hit.length + ' 个' : ''), hit, searchExcerpt, unitHitsHtml(uh));
   }
   starCount();
+  if (typeof toTopSync === 'function') requestAnimationFrame(toTopSync);
 }
 
 /* ================= chrome wiring ================= */
