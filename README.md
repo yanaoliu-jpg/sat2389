@@ -129,6 +129,14 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - 自己导入／加的词真删；**内置书的词删不掉原书，改成「隐藏」**，随时能恢复，进度原样回来。删之前弹确认框写清删几个、是哪些；删完 15 秒内能撤销。
 - 代码：`pure.js` 的 `deleteWords` / `undoDelete` / `restoreHidden` / `applyHidden` / `hiddenIn`，测试 `test/delete.test.js`；界面在 `app.js` 的「批量删词（第五十次优化）」那段（`askDelete`、`doDelete`、`showUndo`、`openHidden`），隐藏的词在 `mountCustom()` 里从词表去掉。新字段 `store.hide`。
 
+第五十五次优化（2026-11-10）：**加了《四级词汇教师-海豚版》**（`../四级词汇教师-海豚版(1).xlsx`，用户给的），做法和第五十三次的《四级词汇2022版》一样。
+- 首页最后多一个分组「四级词汇海豚版」，**原表一个 List 一个单元**，共 35 个单元、2661 个词条，顺序照原表；单元标题「四级海豚版 · List 01」到「List 35」，i 43001–45661、u 6101–6135，跟 2022 版分开，进度互不影响（两本书大部分词相同，但各记各的）。老用户打开时一次性补上这个组（`app.js` 的 `store.cdg`，同 `store.cg`：只在数据真的载进来时才补、才记号），放在最后。
+- 原表是给老师出测验用的表，只有单词和中文释义，表头、「VIP」「学员」之类的说明行和每个 List 末尾的「共 xx 词」都跳过（那些词数常常对不上，不用）；三个格子里塞了两三个词的（definite cautious prayer、signal encourage、provided curiosity）拆开，同一个 List 已经有的不重复加。
+- 词卡：**释义照海豚版原表**，只补词性、统一标点、改错；音标、例句先拿 2022 版里同一个词的（2645 个词对得上，拼法不同的 colour/color、analyse/analyze 也认），2650 个音标、2516 句例句沿用，其余新写（音标 11 个，例句 145 句）。
+- 每条都核对过，改了的都在 `src/cet4d/Lxx.tsv` 的备注栏登记：改词形 12 处（拼错的 homosexua、proclaime、plumbling、futhermore；两种拼法写在一起的 memorize/ise、blond(e)、connection/-xion 取一个，释义前注另一种；释义是另一个词的 permit→determine、neutral→knot；surrounding→surroundings 等）、改释义 86 处（错字「局支配地位」→「居」、「坐着」→「作者」、「领土」→「领主」，harm 的释义误抄了 thrive 的，多出来的词性等）、补释义 24 处（原表空着）、换例句 139 句、改音标 7 处。只写英式拼法的（rumour、harbour、favourite、analyse、millimetre……）是对的，照抄不改；assistant、neutral 原表出现两次，照原表留着。
+- 正本：`src/cet4d/raw.json`（`src/extract_cet4d.py` 从 xlsx 取）→ `src/prep_cet4d.js` 找 2022 版同一个词、配好参考音标／释义／例句写进 `src/cet4d/in/` → 子代理照 `src/cet4d/PROMPT.md` 逐个 List 整理成 `src/cet4d/L01–L35.tsv`（每行 `编号§单词§音标§释义§例句§译文§备注`，`=` 表示沿用参考那栏）→ `python3 src/build_cet4d.py`（核对不过就报错、不写文件；`--check`、`--partial` 同 build_cet4.py；原表释义空着却没写「补释义」、单词和参考拼法不同却沿用参考例句，都会报错）→ `node --test` → 重建单文件版。
+- 测试：`test/cet4d.test.js`（35 个单元、2661 个词条、编号连续、每个词条有音标、释义、例句和恰好一处加粗的译文，高亮和填空找得到词）。
+
 第五十四次优化（2026-11-10）：**测验对错改成绿／红，空格也能看答案**（用户要的）。
 - 选项颜色：选对的、正确答案用**绿色**（新色 `--ok` / `--ok-soft`，浅色、深色主题各一套），选错的用**红色**（`--seal`），跟平常判对错的习惯一致；原来是红表示对、土黄表示错，容易看反。讲解框「选对了」的小字和边框也跟着变绿。`app.css` 的 `.opt.right` / `.opt.wrong` / `.qx-tag.ok` / `.q-explain.good`。
 - 按键：没答时按**空格或回车**都直接看答案（记一次错过），答完再按空格／回车／→ 翻到下一题；底部提示改成「空格 / 回车 看答案」。修了一个 bug：以前点「测验」标签、题型、喇叭进来，焦点停在那个按钮上，按键会去按那个按钮，看起来像没反应。现在只有用 Tab 走到某个选项上时，回车才是选那个选项。按住不放不会连着翻题。`app.js` 的 `quizKey`。
@@ -662,6 +670,7 @@ sat2300-web/
 │   ├── ielts_root.test.js 雅思词根联想的数据回归：50 个单元、编号连续、例句和加粗译文、例句里找得到词（第四十七次优化）
 │   ├── sat1000.test.js  真题1000 的数据回归：5 个单元、编号连续、例句和加粗译文、例句里找得到词（第四十九次优化）
 │   ├── cet4.test.js     四级词汇的数据回归：35 个单元、编号连续、音标、例句和加粗译文、例句里找得到词（第五十三次优化）
+│   ├── cet4d.test.js    四级词汇海豚版的数据回归，同上（第五十五次优化）
 │   ├── ielts.test.js   雅思词表的数据回归：每 90 词一个单元、639 条例句、例句里找得到词（第十九次优化）
 │   ├── delete.test.js  批量删词：自建词真删、内置词隐藏、记录跟着走、撤销后 store 原样（第五十次优化）
 │   ├── customid.test.js 自建词编号：新词从 100000 起排、撞号的老数据换号且记录跟着走（第二十次优化）
@@ -680,6 +689,7 @@ sat2300-web/
 │   ├── sat1000.js       真题1000：5 个单元、1000 个词（第四十九次优化，i 30001–31000、u 5001–5005）
 │   ├── sat1000_rich.js  真题1000 的例句、第二句、译文、构词、搭配、辨析
 │   ├── cet4.js          四级词汇：35 个单元、2751 个词（第五十三次优化，i 40001–42751、u 6001–6035）
+│   ├── cet4d.js         四级词汇海豚版：35 个单元、2661 个词（第五十五次优化，i 43001–45661、u 6101–6135）；例句在 cet4d_rich.js
 │   ├── cet4_rich.js     四级词汇的例句、译文（按词条编号 i 并进 IELTS_RICH）
 │   └── ielts_rich.js    雅思 639 个词条自己的例句 / 翻译（第十九次优化，按词条编号 i 存，单独的 IELTS_RICH，不并进 SAT_RICH）
 └── src/
@@ -700,7 +710,9 @@ sat2300-web/
     ├── sat1000/           真题1000（第四十九次优化）：raw.json（HTML 拆的）、U01–U20.tsv（例句正本）、PROMPT.md（给子代理的说明）、in/（子代理的输入）
     ├── extract_sat1000.py / build_sat1000.py  HTML → raw.json → data/sat1000*.js
     ├── cet4/              四级词汇（第五十三次优化）：raw.json（xls 取的）、L01–L35.tsv（整理好的正本）、PROMPT.md（给子代理的说明）、in/（子代理的输入）
+    ├── cet4d/             四级词汇海豚版（第五十五次优化）：raw.json（xlsx 取的）、L01–L35.tsv（整理好的正本）、PROMPT.md、in/（子代理的输入，带四级2022版的参考）
     ├── extract_cet4.py / prep_cet4.js / build_cet4.py  xls → raw.json → in/（配现成音标、候选例句）→ data/cet4*.js
+    ├── extract_cet4d.py / prep_cet4d.js / build_cet4d.py  海豚版 xlsx → raw.json → in/（配四级2022版的参考）→ data/cet4d*.js
     ├── ielts_zh/L01–L08.tsv  雅思例句的正本，一个 List 一个文件，每行：编号§单词§例句§译文（第十九次优化）
     ├── build_ielts.py     从 ../雅思核心词汇.xlsx + ielts_zh/*.tsv 生成 data/ielts.js 和 data/ielts_rich.js（第十八、十九次优化）
     ├── build_shuffle.py   从 ../2300 高密度便携版.pdf 生成 data/shuffle.js（第二十一次优化）

@@ -1183,7 +1183,8 @@ function defaultGroups() {
           { id: 'ielts', name: IELTS_NAME, us: pick(2001, 2008) },
           { id: 'iroot', name: IROOT_NAME, us: pick(4001, 4050) },
           { id: 't1000', name: T1000_NAME, us: pick(5001, 5005) },
-          { id: 'cet4', name: CET4_NAME, us: pick(6001, 6035) }];
+          { id: 'cet4', name: CET4_NAME, us: pick(6001, 6035) },
+          { id: 'cet4d', name: CET4D_NAME, us: pick(6101, 6135) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
    开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
@@ -1200,7 +1201,9 @@ var T1000_NAME = 'SAT冲刺终极1000真题词';
 /* 第五十三次优化：《四级词汇2022版》35 个 List（u 6001–6035）。老用户打开时补一次这个组，放在最后；
    跟 tg2 一样只在数据真的载进来时才补、才记 store.cg，已经在别的组里的单元不挪 */
 var CET4_NAME = '四级词汇2022版';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; store.cg = 1; save(); }
+/* 第五十五次优化：《四级词汇教师-海豚版》35 个 List（u 6101–6135）。跟 store.cg 一样只在数据载到时补一次、放在最后，记 store.cdg */
+var CET4D_NAME = '四级词汇海豚版';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; store.cg = 1; store.cdg = 1; save(); }
 var CET4_US = UNITS.filter(function (x) { return x.u >= 6001 && x.u <= 6035 && !x.imported; });
 if (store.cg !== 1 && CET4_US.length) {
   try {
@@ -1212,6 +1215,18 @@ if (store.cg !== 1 && CET4_US.length) {
     else if (cUs.length) store.groups.push({ id: 'cet4', name: CET4_NAME, us: cUs });
   } catch (e) {}
   store.cg = 1; save();
+}
+var CET4D_US = UNITS.filter(function (x) { return x.u >= 6101 && x.u <= 6135 && !x.imported; });
+if (store.cdg !== 1 && CET4D_US.length) {
+  try {
+    var inG5 = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG5[u] = 1; }); });
+    var dUs = CET4D_US.filter(function (x) { return !inG5[x.u]; }).map(function (x) { return x.u; });
+    var dG = store.groups.filter(function (g) { return g.id === 'cet4d'; })[0];
+    if (dG) dG.us = dG.us.concat(dUs);
+    else if (dUs.length) store.groups.push({ id: 'cet4d', name: CET4D_NAME, us: dUs });
+  } catch (e) {}
+  store.cdg = 1; save();
 }
 /* 只在真题1000 的数据真的载进来时才补组、才记 store.tg2。原来（store.tg）没载到也记上：浏览器缓存着旧 index.html
    （没有 sat1000.js 那行）却拿到新 app.js 时，组没补上就被记成补过了，以后永远补不回来。tg2 让这些人再补一次；
