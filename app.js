@@ -429,10 +429,9 @@ function ydPrefetch() {
     var w = arguments[i];
     if (!w || !ydOk(w.w)) continue;
     probeNew(w);
-    var l = prons(w.w), c = phraseOf(w.w);
+    var l = prons(w.w);
     if (l.length && !oxOff()) l.forEach(function (p) { clipGet(p.url); });
-    else if (c && !oxOff()) c.forEach(function (p) { clipGet(p.url); });
-    else clipGet(ydUrl(w.w));
+    else if (!isMultiWord(w.w)) clipGet(ydUrl(w.w));   // 短语用本机声音读，不用先取
   }
 }
 /* 有道的录音有的响有的轻，前后能差 10 dB（第二十四次优化）。它不带跨域头，网页里拿不到采样，
@@ -468,16 +467,10 @@ function speakClip(url, gain, mine, vol, rate, fallback, done2, wait) {
   var p = a.play();
   if (p && p.catch) p.catch(fail);
 }
-function speakChain(c, n, mine, vol, rate, fallback) {   // 短语：一个词放完接下一个
-  var a = clipGet(c[n].url);
-  a.onended = null;
-  speakClip(c[n].url, c[n].gain, mine, vol, rate, fallback, function (ok) {
-    if (ok && n + 1 < c.length) a.onended = function () {
-      a.onended = null;
-      if (mine === sayToken) speakChain(c, n + 1, mine, vol, rate, fallback);
-    };
-  }, 6000);
-}
+/* 短语的读音（第五十三次优化，用户报的：短语读得还不如本机声音）：原来词典没有整条录音的短语
+   拆成单词一个个放牛津录音，词和词之间断开、各读各的重音，听着像念单词表；含 a / the 的交给有道，
+   多半是机器合成。现在词典有整条真人录音的照旧放录音，其余短语一律用本机声音连起来读（speakSys）。 */
+function isMultiWord(text) { return /\s/.test(String(text).trim()); }
 var sayToken = 0, sayText = '';
 /* 自动朗读什么时候读（第二十四次优化）：store.set.autoAt 'reveal' = 显示释义（空格）时读，
    'enter' = 一换到新词就读。只管学习卡和整理错词，拼写检测照旧答完才读。 */
@@ -496,7 +489,7 @@ function speak(text, btn, pi) {              // pi：多音词读第几个读音
     };
     /* 牛津在国内要绕到洛杉矶机房，第一次取要 1–3 秒。这里宁可多等一会儿，也别退回可能读错的有道 */
     if (p && !oxOff()) speakClip(p.url, p.gain, mine, v, r, viaYd, oxResult, 6000);
-    else if (!p && phraseOf(text) && !oxOff()) speakChain(phraseOf(text), 0, mine, v, r, viaYd);
+    else if (!p && isMultiWord(text)) speakSys(text, mine);
     /* 新词还没查完就点了喇叭：先照牛津的地址规律试一下，没有这个录音是常事，所以不记牛津连不上 */
     else if (!p && window.PRON && !oxOff() && !store.pronx[String(text).trim()])
       speakClip(pronGuesses(String(text).trim(), accentGb())[0], defGain(), mine, v, r, viaYd);
@@ -513,8 +506,9 @@ function speakSys(text, mine) {
   var v = currentVoice(), base = +store.set.rate || 1, vol = +store.set.vol;
   if (isNaN(vol)) vol = 1;
   vol = Math.max(0, Math.min(1, vol));
-  var single = !/\s/.test(String(text).trim());
-  var groups = single ? [String(text).trim()] : breathGroups(text);
+  var single = !isMultiWord(text);
+  var term = !single && !/[.!?,;:]/.test(text) && String(text).trim().split(/\s+/).length <= 6;   // 短语：当一个词读，稍慢、不降调
+  var groups = single || term ? [String(text).trim()] : breathGroups(text);
   var span = Math.max(1, groups.length - 1);
   /* Queue every group in one go rather than chaining on timers: speechSynthesis plays
      the queue back to back, and background tabs clamp setTimeout to ~1s, which would
@@ -528,6 +522,7 @@ function speakSys(text, mine) {
       var u = new SpeechSynthesisUtterance(g);
       u.volume = vol;
       if (single) { u.rate = base * 0.82; u.pitch = 1; }
+      else if (term) { u.rate = base * 0.86; u.pitch = 1; }
       else if (groups.length === 1) { u.rate = base * 0.95; u.pitch = 1; }
       else {
         u.rate = base * (last ? 0.9 : 1);                       // final lengthening
@@ -853,7 +848,47 @@ function wireSelBar(from) {
    只改这几行的样子和底部那条横幅，不整页重画（免得列表跳回顶部）。 */
 var dragVal = null, anchor = -1;
 var railDrag = null, railAnchor = -1, railRO = null;
-document.addEventListener('mouseup', function () { dragVal = null; railDrag = null; });
+document.addEventListener('mouseup', function () { dragVal = null; railDrag = null; dragAuto.over = null; });
+/* 拖着勾词拖到边上自己滚（第五十三次优化，用户要的）：原来拖到屏幕底下就停住，得松手滑屏再接着拖。
+   按下时 dragAutoStart(滚哪个框, 碰到哪个元素就勾它)；指针进了上下边缘那一条就每帧滚一点，
+   离边越近（或拖出框外越远）滚得越快；每滚一下量一次指针底下是哪一行／哪个点，交给 over 去勾。
+   box 是能滚的点阵框，否则滚整页。跳过去的那几个由各自的 over 把中间整段补上。 */
+var dragAuto = { box: null, over: null, x: 0, y: 0, raf: 0, t: 0 };
+var DRAG_EDGE = 48;
+function dragAutoStart(box, over, e) {
+  dragAuto.box = box && box.scrollHeight > box.clientHeight + 1 ? box : null;
+  dragAuto.over = over; dragAuto.x = e.clientX; dragAuto.y = e.clientY;
+}
+function dragAutoTick(now) {
+  dragAuto.raf = 0;
+  var a = dragAuto, box = a.box;
+  if (!a.over) { a.t = 0; return; }
+  var dt = a.t ? Math.min(0.05, (now - a.t) / 1000) : 1 / 60;   // 按时间算，60 帧、120 帧的屏幕一样快
+  a.t = now;
+  var top, bot;
+  if (box) { var r = box.getBoundingClientRect(); top = r.top; bot = r.bottom; }
+  else {
+    var so = view.querySelector('.sortbar');                   // 顶栏和吸顶的排序条底下才算列表
+    top = Math.max(topbarEl ? topbarEl.getBoundingClientRect().bottom : 0, so ? so.getBoundingClientRect().bottom : 0);
+    var sb = document.querySelector('.selbar');               // 底部那条横幅盖着的地方不算
+    bot = sb && sb.getBoundingClientRect().top > 0 ? Math.min(window.innerHeight, sb.getBoundingClientRect().top) : window.innerHeight;
+  }
+  var edge = Math.min(DRAG_EDGE, (bot - top) / 4), d = 0;
+  if (a.y < top + edge) d = a.y - top - edge;
+  else if (a.y > bot - edge) d = a.y - bot + edge;
+  if (!d) { a.t = 0; return; }
+  var v = Math.round((d < 0 ? -1 : 1) * Math.min(1800, 10 * Math.abs(d)) * dt);   // 每秒：边上约 480 像素，越往外越快
+  if (!v) v = d < 0 ? -1 : 1;
+  if (box) box.scrollTop += v; else window.scrollBy(0, v);
+  var el = document.elementFromPoint(a.x, Math.max(top + 2, Math.min(a.y, bot - 2)));
+  if (el) a.over(el);
+  a.raf = requestAnimationFrame(dragAutoTick);
+}
+document.addEventListener('mousemove', function (e) {
+  if (!dragAuto.over) return;
+  dragAuto.x = e.clientX; dragAuto.y = e.clientY;
+  if (!dragAuto.raf) dragAuto.raf = requestAnimationFrame(dragAutoTick);
+});
 function wirePick(from) {
   var rows = Array.prototype.slice.call(view.querySelectorAll('.row'));
   function paint(r, on) {
@@ -867,6 +902,14 @@ function wirePick(from) {
     if (slot) { slot.innerHTML = selBarHtml(); wireSelBar(from); }
   }
   anchor = -1;
+  var last = -1;
+  function dragTo(n) {                          // 拖到第 n 行：从上次那行到这行整段都勾上（拖得快、自己滚时不漏）
+    if (!picking || dragVal === null || n === last) return;
+    var a = Math.min(last, n), b = Math.max(last, n);
+    for (var k = a; k <= b; k++) paint(rows[k], dragVal);
+    last = n; refresh();
+  }
+  function over(el) { var r = el.closest('.row'); if (r) { var n = rows.indexOf(r); if (n >= 0) dragTo(n); } }
   rows.forEach(function (r, n) {
     r.addEventListener('mousedown', function (e) {
       if (!picking || e.button) return;
@@ -879,14 +922,12 @@ function wirePick(from) {
         dragVal = null; refresh(); return;
       }
       dragVal = !store.sel[+r.dataset.i];
-      anchor = n;
+      anchor = n; last = n;
       paint(r, dragVal);
       refresh();
+      dragAutoStart(null, over, e);
     });
-    r.addEventListener('mouseenter', function () {
-      if (!picking || dragVal === null) return;
-      paint(r, dragVal); refresh();
-    });
+    r.addEventListener('mouseenter', function () { dragTo(n); });
   });
 }
 function pickBarHtml() {
@@ -1113,11 +1154,12 @@ function go(r) {
   if (r.name !== route.name || r.id !== route.id) unitRenaming = null;   // 离开这一页就退出批量改名
   var k = scrollKey(route);
   if (k) scrollMem[k] = window.scrollY || window.pageYOffset || 0;
+  var aim = r.focus != null || r.near != null;   // 要滚到某个词的，别拿记住的位置盖掉它
   route = r; render();
   var nk = scrollKey(r), y = nk ? (scrollMem[nk] || 0) : 0;
   scrollTo0(y);
   /* 首屏字体、图片落位之后高度会再变一次，下一帧再对一次位 */
-  if (y) requestAnimationFrame(function () {
+  if (y && !aim) requestAnimationFrame(function () {
     if (Math.abs((window.scrollY || window.pageYOffset || 0) - y) > 2) scrollTo0(y);
   });
 }
@@ -1140,7 +1182,8 @@ function defaultGroups() {
           { id: 'toefl', name: '托福绿宝书', us: pick(1001, 1048) },
           { id: 'ielts', name: IELTS_NAME, us: pick(2001, 2008) },
           { id: 'iroot', name: IROOT_NAME, us: pick(4001, 4050) },
-          { id: 't1000', name: T1000_NAME, us: pick(5001, 5005) }];
+          { id: 't1000', name: T1000_NAME, us: pick(5001, 5005) },
+          { id: 'cet4', name: CET4_NAME, us: pick(6001, 6035) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
    开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
@@ -1154,7 +1197,22 @@ var IROOT_NAME = '雅思词根+联想记忆（乱序版）';
 var IELTS_NAME = '雅思核心词汇AI自编';
 /* 第四十九次优化：《SAT 冲刺终极词汇 1000》5 个单元、每个 200 词（u 5001–5005）。老用户打开时补一次这个组，放在最后；记上 store.tg */
 var T1000_NAME = 'SAT冲刺终极1000真题词';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; save(); }
+/* 第五十三次优化：《四级词汇2022版》35 个 List（u 6001–6035）。老用户打开时补一次这个组，放在最后；
+   跟 tg2 一样只在数据真的载进来时才补、才记 store.cg，已经在别的组里的单元不挪 */
+var CET4_NAME = '四级词汇2022版';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; store.cg = 1; save(); }
+var CET4_US = UNITS.filter(function (x) { return x.u >= 6001 && x.u <= 6035 && !x.imported; });
+if (store.cg !== 1 && CET4_US.length) {
+  try {
+    var inG4 = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG4[u] = 1; }); });
+    var cUs = CET4_US.filter(function (x) { return !inG4[x.u]; }).map(function (x) { return x.u; });
+    var cG = store.groups.filter(function (g) { return g.id === 'cet4'; })[0];
+    if (cG) cG.us = cG.us.concat(cUs);
+    else if (cUs.length) store.groups.push({ id: 'cet4', name: CET4_NAME, us: cUs });
+  } catch (e) {}
+  store.cg = 1; save();
+}
 /* 只在真题1000 的数据真的载进来时才补组、才记 store.tg2。原来（store.tg）没载到也记上：浏览器缓存着旧 index.html
    （没有 sat1000.js 那行）却拿到新 app.js 时，组没补上就被记成补过了，以后永远补不回来。tg2 让这些人再补一次；
    已经有这个组的，单元都在组里，不会重复补 */
@@ -1566,7 +1624,15 @@ function wireHeader(u) {
     save(); mountCustom(); dropOrder(); go({ name: 'home' });
   };
   Array.prototype.forEach.call(view.querySelectorAll('.tabs button'), function (t) {
-    t.onclick = function () { go({ name: 'unit', u: u, tab: t.dataset.tab }); };
+    t.onclick = function () {
+      var to = { name: 'unit', u: u, tab: t.dataset.tab };
+      /* 学习里看到第几个词，点回浏览就把列表滚到那个词附近（第五十三次优化，用户要的），不用从头往下找 */
+      if (route.tab === 'study' && to.tab === 'browse') {
+        var sw = ordered(u), sn = Math.min(route.n || 0, sw.length - 1);
+        if (sn >= 0 && sw[sn]) to.near = sw[sn].i;
+      }
+      go(to);
+    };
   });
 }
 /* 答题卡本来是照着原书一页 68 个词设计的。导入的词表动辄上千，
@@ -1748,20 +1814,21 @@ function railWirePick(grid, ws, u, refresh, ctl) {
       railDrag = null; ctl.repaint(); refresh(); return;
     }
     railDrag = !store.sel[i];
-    railAnchor = n;
+    railAnchor = n; hoverN = n;
     setSel(i, railDrag);
     b.classList.toggle('sel', railDrag);
     refresh();
+    dragAutoStart(grid, over, e);
   });
-  grid.addEventListener('mouseover', function (e) {
-    if (!picking || railDrag === null) return;
-    var b = e.target.closest('.rail-b');
-    if (!b || +b.dataset.n === hoverN) return;
-    hoverN = +b.dataset.n;
-    setSel(+b.dataset.i, railDrag);
-    b.classList.toggle('sel', railDrag);
-    refresh();
-  });
+  function over(el) {                    // 拖到哪个点：从上一个点到它整段都勾上（拖得快、自己滚时不漏）
+    var b = el.closest('.rail-b');
+    if (!picking || railDrag === null || !b || !grid.contains(b) || +b.dataset.n === hoverN) return;
+    var n = +b.dataset.n, a = Math.min(hoverN, n), z = Math.max(hoverN, n);
+    for (var k = a; k <= z; k++) setSel(ws[k].i, railDrag);
+    hoverN = n;
+    ctl.repaint(); refresh();
+  }
+  grid.addEventListener('mouseover', function (e) { over(e.target); });
   grid.addEventListener('click', function (e) {
     if (picking) return;
     var b = e.target.closest('.rail-b');
@@ -1917,6 +1984,14 @@ function renderBrowse(u) {
         if (row) row.classList.toggle('sel', on);
       }
       railAnchor = -1;
+      var railLast = -1, railGrid = view.querySelector('.rail-grid');
+      function railTo(n) {               // 拖到第 n 个点：从上一个点到它整段都勾上
+        if (!picking || railDrag === null || n === railLast) return;
+        var a = Math.min(railLast, n), z = Math.max(railLast, n);
+        for (var k = a; k <= z; k++) railPaint(railBs[k], railDrag);
+        railLast = n; railRefresh();
+      }
+      function railOver(el) { var b = el.closest('.rail-b'), n = railBs.indexOf(b); if (n >= 0) railTo(n); }
       railBs.forEach(function (b, n) {
         b.addEventListener('mousedown', function (e) {
           if (!picking || e.button) return;
@@ -1927,14 +2002,12 @@ function renderBrowse(u) {
             railDrag = null; railRefresh(); return;
           }
           railDrag = !store.sel[+b.dataset.i];
-          railAnchor = n;
+          railAnchor = n; railLast = n;
           railPaint(b, railDrag);
           railRefresh();
+          dragAutoStart(railGrid, railOver, e);
         });
-        b.addEventListener('mouseenter', function () {
-          if (!picking || railDrag === null) return;
-          railPaint(b, railDrag); railRefresh();
-        });
+        b.addEventListener('mouseenter', function () { railTo(n); });
         b.onclick = function () {
           if (picking) return;
           go({ name: 'unit', u: u, tab: 'study', n: +b.dataset.n });
@@ -1944,9 +2017,9 @@ function renderBrowse(u) {
   }
   /* 从搜索结果跳过来的：把那一行送到眼前，闪一下告诉你在哪（第七次优化 1）。
      go() 渲染完会把页面拉回顶部，所以得排到它后面再滚。 */
-  if (route.focus != null) {
-    var fi = route.focus;
-    route.focus = null;
+  if (route.focus != null || route.near != null) {   // near：从学习点回浏览，不撤颜色筛选，被筛掉了就不滚
+    var fi = route.focus != null ? route.focus : route.near;
+    route.focus = null; route.near = null;
     setTimeout(function () {
       var row = view.querySelector('.row[data-i="' + fi + '"]');
       if (!row) return;
@@ -2002,7 +2075,7 @@ function sayHtml(w) {
     return '<span class="w-ipa">' + (ipa ? '/' + ipaHtml(ipa) + '/' : '') + '</span>' +
       '<button class="speak" data-say="' + esc(w.w) + '" data-key="P" type="button" aria-label="朗读单词（快捷键 P）">' +
         SPK + '<kbd>P</kbd></button>' +
-      (l.length || phraseOf(w.w) ? '' : '<span class="w-src" data-w="' + esc(w.w) + '" title="词典里没找到这个词的录音，读音来自有道，可能是机器合成">未核对读音</span>');
+      (l.length || isMultiWord(w.w) ? '' : '<span class="w-src" data-w="' + esc(w.w) + '" title="词典里没找到这个词的录音，读音来自有道，可能是机器合成">未核对读音</span>');
   }
   return l.map(function (p, n) {
     return '<span class="w-sound">' + (p.pos ? '<span class="w-pos">' + esc(p.pos) + '</span>' : '') +
