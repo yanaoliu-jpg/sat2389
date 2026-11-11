@@ -129,6 +129,14 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - 自己导入／加的词真删；**内置书的词删不掉原书，改成「隐藏」**，随时能恢复，进度原样回来。删之前弹确认框写清删几个、是哪些；删完 15 秒内能撤销。
 - 代码：`pure.js` 的 `deleteWords` / `undoDelete` / `restoreHidden` / `applyHidden` / `hiddenIn`，测试 `test/delete.test.js`；界面在 `app.js` 的「批量删词（第五十次优化）」那段（`askDelete`、`doDelete`、`showUndo`、`openHidden`），隐藏的词在 `mountCustom()` 里从词表去掉。新字段 `store.hide`。
 
+第五十八次优化（2026-11-11）：**「SAT冲刺终极1000真题词」再换成 11-11 的 (5) 版，重新核对，勘误表重出**（`../SAT冲刺终极词汇1000(5).html`，用户说「再次核验校对 更新网站里的group 并且检查和更新勘误表」）。
+- (5) 和 (3) 比只换了 4 个位置：91 forestall（重复）→ **serene**、408 enumerate → **reconcile**、691 mantle → **characterize**、692 furnace → **onerous**；1000 个词不再重复，网站 91 号原来留的 anecdote 也换成 serene。4 个新词照 `src/sat1000/PROMPT.md` 整理，原书译文里误留的出处、「（非词汇题：…题语境）」删了，characterize 第二句「刻画为」改「视为」（备注里写着）。
+- (5) 基本照我们的勘误表改了：305 句译文、95 句例句、90 句例句2、61 句译文2 和网站一字不差，义项、搭配、音标也照「原书错」改了。protagonist 例句 (5) 补上了 F.（F. Scott Fitzgerald），网站跟着补。别的 996 个词网站内容不变。
+- `src/extract_sat1000.py` 的 SRC 改成 (5)，`raw.json`、`in/*.jsonl` 重新生成（`in/` 是 raw.json 换个格式，每单元 50 条）。`build_sat1000.py --check` 通过。
+- 4 个编号换了词，老用户打开时一次性清掉这 4 个编号上的进度、星标等（`pure.js` 的 `T1000_V3_DROP`，`store.tv` 记成 2；没打开过第五十七次的会先跑第一次再跑这次）。测试 115 条。
+- 勘误表（`../SAT冲刺1000勘误表.html`）：489 个词 → **61 个词**。`../勘误表脚本/collect.py` 改成直接和 (5) 比：备注标签那一栏 (5) 已和网站一样就算改对了；原书错、删搭配是文字说明比不出来，(5) 改好的按词列在 `FIXED_BOOK`；一条备注管两栏、只改了一栏的列在 `STILL`（vernacular、obscure 译文仍留着混入那句、ripple 译文仍是 Sazami、astronomical／dwell／brink 例句2 等）；espouse 只剩构词那半（`PARTIAL`）。另外自动查出 (5) 的**新毛病**：29 个词的补充例句译文照抄了第一句的译文（网站用的 7 个自己译过，另 22 句网站没收），10 个网站用到的补充例句 (5) 仍没译文；sage 的例句 (5) 换成了我们的自编句，译文却还是原来 SAGE 研究那句（备注加了改译文）。`make.py` 的 EXTRA 只剩 woolly mammoth（真猛犸象）。`勘误表脚本/旧版in/` 不再用到。
+- (5) 另有 61 句补充语境没中文、14 句带「______」空格：网站每个词只放一句核对过的，照旧不收。
+
 第五十七次优化（2026-11-10）：**「SAT冲刺终极1000真题词」换成 11-10 新版**（`../SAT冲刺终极词汇1000(3).html`，用户说「同步新版」）。新旧版对照见 `../SAT1000新旧版差异.md`。
 - 新版删了 26 个词、加了 25 个，新词基本占了被删词原来的编号（curate 从 52 号挪到 5 号）。别的 974 个词编号、例句都没变；periodical 的补充语境新版换了一句（原来那句是 periodically），跟着换了。
 - **91 号新版重复放了一个 forestall**（396 号也是），网站上 91 号留原来的 anecdote，所以仍是 1000 个不同的词。`src/sat1000/raw.json` 是新版拆出来的，只有 91 号用的是旧版那一条。

@@ -101,11 +101,16 @@ if (store.sv !== 1) {
   } catch (e) {}
 }
 /* 第五十七次优化：真题1000 换成新版，被删词的进度、星标、颜色、选中、藏起来的记录不留给占了它编号的新词，
-   curate 的那份跟着它从 30052 挪到 30005（见 pure.js 的 reslotIds）。记上 store.tv */
+   curate 的那份跟着它从 30052 挪到 30005（见 pure.js 的 reslotIds）。记上 store.tv。
+   第五十八次优化又换成 (5) 版，4 个编号换了词（T1000_V3_DROP），store.tv 记成 2 */
 var t1kSwap = false;
-if (store.tv !== 1) {
+if (!(store.tv >= 1)) {
   try { reslotIds(store, T1000_V2_DROP, T1000_V2_MOVE); } catch (e) {}
   store.tv = 1; t1kSwap = true;
+}
+if (store.tv < 2) {
+  try { reslotIds(store, T1000_V3_DROP, {}); } catch (e) {}
+  store.tv = 2; t1kSwap = true;
 }
 var save = (function () {
   var t = null;

@@ -4,9 +4,9 @@ kin 搭配说明 [文本]、note 例句旁的易误读警示、ex [{src, en, mar
 import html, json, re, sys
 from pathlib import Path
 
-# 第五十七次优化起 raw.json 用的是新版 SAT冲刺终极词汇1000(3).html，只有 91 号（新版重复的 forestall）换回旧版的 anecdote；
-# 直接重跑这个脚本会退回旧版，要重拆就把 SRC 换成新版、再把 91 号换回 anecdote（见 README 第五十七次）
-SRC = Path(__file__).resolve().parents[2] / 'SAT冲刺终极1000真题词[博思SAT教研](2).html'
+# 第五十八次优化起用 2026-11-11 的新版 SAT冲刺终极词汇1000(5).html（1000 个词不再有重复，91 serene、408 reconcile、691 characterize、692 onerous 是新换的词）；
+# 拆完要再生成 src/sat1000/in/*.jsonl（见 README 第五十八次）
+SRC = Path(__file__).resolve().parents[2] / 'SAT冲刺终极词汇1000(5).html'
 OUT = Path(__file__).resolve().parent / 'sat1000' / 'raw.json'
 
 def txt(s):

@@ -638,6 +638,9 @@ function restoreHidden(store, ids, builtin) {
 var T1000_V2_DROP = [5, 52, 85, 98, 100, 149, 168, 190, 214, 229, 238, 242, 267, 268, 272,
   352, 359, 365, 370, 404, 408, 417, 435, 443, 625, 628].map(function (n) { return 30000 + n; });
 var T1000_V2_MOVE = { 30052: 30005 };
+/* 第五十八次优化：再换成 11-11 的 (5) 版，91 anecdote→serene、408 enumerate→reconcile、691 mantle→characterize、
+   692 furnace→onerous，这 4 个编号的旧记录也清掉，没有要挪的 */
+var T1000_V3_DROP = [91, 408, 691, 692].map(function (n) { return 30000 + n; });
 function reslotIds(store, drop, move) {
   var n = 0;
   ['prog', 'hist', 'sel', 'star', 'col', 'hide'].forEach(function (t) {
@@ -695,6 +698,6 @@ if (typeof module !== 'undefined' && module.exports) {
     dsModel: dsModel, dsBody: dsBody,
     applyHidden: applyHidden, hiddenIn: hiddenIn, deleteWords: deleteWords,
     restoreHidden: restoreHidden, undoDelete: undoDelete,
-    T1000_V2_DROP: T1000_V2_DROP, T1000_V2_MOVE: T1000_V2_MOVE, reslotIds: reslotIds
+    T1000_V2_DROP: T1000_V2_DROP, T1000_V2_MOVE: T1000_V2_MOVE, T1000_V3_DROP: T1000_V3_DROP, reslotIds: reslotIds
   };
 }

@@ -58,7 +58,7 @@ test('真题1000 新版：新词在被删词的编号上，没有重复的词', 
   WORDS.forEach(function (w) { at[w.i] = w.w; });
   assert.strictEqual(at[30005], 'curate');
   assert.strictEqual(at[30052], 'counteract');
-  assert.strictEqual(at[30091], 'anecdote');   // 新版 91 号重复放了 forestall，网站上留原来的 anecdote
+  assert.strictEqual(at[30091], 'serene');     // 第五十八次换成 (5) 版，91 号是 serene（之前留的是 anecdote）
   assert.strictEqual(at[30628], 'indelible');
   assert.strictEqual(new Set(WORDS.map(function (w) { return w.w; })).size, 1000);
   ['highwayman', 'quay', 'ponder', 'breadth'].forEach(function (w) {
@@ -84,4 +84,27 @@ test('真题1000 新版：reslotIds 清掉被删词的记录，curate 的跟着�
   assert.deepStrictEqual(st.hide, {});
   assert.strictEqual(n, 7);   // highwayman 的 prog、star，30628、30085、30625、30098、30443 各一条
   assert.strictEqual(P.T1000_V2_DROP.length, 26);
+});
+
+test('真题1000 (5) 版：第二次 reslot 只清 91/408/691/692 四个换了词的编号', function () {
+  const st = {
+    prog: { 30091: 3, 30408: 1, 30090: 2, 30693: 1 },
+    star: { 30691: 1, 30692: 1, 30011: 1 },
+    hist: { 30408: 4 }
+  };
+  const n = P.reslotIds(st, P.T1000_V3_DROP, {});
+  assert.deepStrictEqual(st.prog, { 30090: 2, 30693: 1 });
+  assert.deepStrictEqual(st.star, { 30011: 1 });
+  assert.deepStrictEqual(st.hist, {});
+  assert.strictEqual(n, 5);
+  assert.deepStrictEqual(P.T1000_V3_DROP, [30091, 30408, 30691, 30692]);
+});
+
+test('真题1000 (5) 版：四个新词在数据里', function () {
+  const words = {};
+  WORDS.forEach(function (w) { words[w.i] = w.w; });
+  assert.strictEqual(words[30091], 'serene');
+  assert.strictEqual(words[30408], 'reconcile');
+  assert.strictEqual(words[30691], 'characterize');
+  assert.strictEqual(words[30692], 'onerous');
 });
