@@ -46,7 +46,7 @@ parts = ["<title>SAT 2389 背单词</title>", FONTS,
          "<style>\n" + read("app.css") + "</style>",
          body.strip(),
          "<script>\n" + "".join(read("data", f) for f in
-             ("units.js", "words.js", "extra.js", "shuffle.js", "toefl.js", "ielts.js", "ielts_root.js", "sat1000.js", "cet4.js", "cet4d.js", "gz.js", "rich.js", "toefl_rich.js", "ielts_rich.js", "ielts_root_rich.js", "sat1000_rich.js", "cet4_rich.js", "cet4d_rich.js", "gz_rich.js", "sense.js", "ydgain.js", "pron.js")) + read("pure.js") + read("app.js") + "</script>"]
+             ("units.js", "words.js", "extra.js", "shuffle.js", "toefl.js", "ielts.js", "ielts_root.js", "sat1000.js", "cet4.js", "cet4d.js", "gz.js", "gzb.js", "rich.js", "toefl_rich.js", "ielts_rich.js", "ielts_root_rich.js", "sat1000_rich.js", "cet4_rich.js", "cet4d_rich.js", "gz_rich.js", "gzb_rich.js", "sense.js", "ydgain.js", "pron.js")) + read("pure.js") + read("app.js") + "</script>"]
 doc = "\n".join(parts)
 
 if not fragment:

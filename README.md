@@ -137,6 +137,14 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - 正本：`src/gz/raw.json`（`src/extract_gz.py` 从 xlsx 取）→ `src/prep_gz.js` 找两本四级书里同一个词、配好参考音标／释义／例句写进 `src/gz/in/`（不做模糊匹配，这份原表拼写干净）→ 子代理照 `src/gz/PROMPT.md` 逐个 List 整理成 `src/gz/L01–L40.tsv`（每行 `编号§单词§音标§释义§例句§译文§备注`，`=` 表示沿用参考那栏）→ `python3 src/build_gz.py`（核对不过就报错、不写文件；`--check`、`--partial` 同 build_cet4d.py；释义还有旧缩写／半角标点／尖括号、单词和原表不同却没写「改词形」都会报错）→ `node --test` → 重建单文件版。
 - 测试：`test/gz.test.js`（40 个单元、2265 个词条、编号连续、每个词条有音标、释义、例句和恰好一处加粗的译文，高亮和填空找得到词；单词和原表一致，不一致的都登记了「改词形」）。测试 119 条。
 
+第六十次优化（2026-11-11）：**加了《高中英语词汇 念念不忘 便携版》**（`../高中英语词汇 念念不忘 便携版.xlsx`，用户给的），做法和第五十九次《新版高中词汇》一样。
+- 首页最后多一个分组「高中词汇念念不忘便携版」，**原表一课（Lesson）一个单元**，共 23 个单元、1469 个词条，顺序照原表；单元标题「高中便携版 · Lesson 01」到「Lesson 23」，i 49001–50469、u 6301–6323，进度各记各的。老用户打开时一次性补上这个组（`app.js` 的 `store.gbg`，同 `store.gzg`），放在最后。
+- 原表只有一张 Sheet，「Lesson 1」那种行是课的标题。词卡**释义照原表**，只统一词性（a.→adj.、ad.→adv.）、标点（全角；把「；」打成「:」的改回）、`【pl.】`→`[pl.]`、`【the】`→`[the ~]`；这本书的**同义 / 反义注照留**，统一写成 `【同 only】` `【反 dead】`。音标、例句先拿《新版高中词汇》、再拿两本四级书里同一个词的（1369 个对得上），其余新写（牛津英音）。
+- 原表 26 个词写成「英式;美式」（apologise;apologize）：单词取前一个（这本书的写法），释义前注「（美 apologize）」；examination;exam 这类注「（也作 exam）」，inquiry;enquiry 注「（英 enquiry）」。
+- 改了的都在 `src/gzb/Lxx.tsv` 备注栏登记：改词形 27 处（上面 26 个 + Lesson 8 第二个 preference，释义是「更喜欢」，改成 prefer）、改释义 41 处（错字：「形式」→「形势」、「锲约」→「契约」、「傅牢」→「缚牢」、「今人」→「令人」、「室息」→「窒息」、「衣衫楼的」→「衣衫褴褛的」、「多人」→「代理人」、「旅行」→「履行」……；串行：simple 后面串了 least 的意思、eyesight 抄了 sight 整条、preserve「胭脂」、commit「拔出」、social「决定的」删了；同义注 terri-ble、【反clam】、former【同precious】改对；darkness 补「黑暗」、funny「稀有的」→「奇怪的」）、换例句 45 句、改音标 9 处。
+- 正本：`src/gzb/raw.json`（`src/extract_gzb.py` 从 xlsx 取）→ `src/prep_gzb.js` 配参考写进 `src/gzb/in/` → 子代理照 `src/gzb/PROMPT.md` 每 4 课一批整理成 `src/gzb/L01–L23.tsv` → `python3 src/build_gzb.py`（同 build_gz.py，另外释义里有半角冒号也报错）→ `node --test` → 重建单文件版。
+- 测试：`test/gzb.test.js`（同 gz.test.js：23 个单元、1469 个词条、编号连续、音标释义例句齐、译文恰好一处加粗、高亮填空找得到词、改了单词的都登记了）。测试 123 条。
+
 第五十八次优化（2026-11-11）：**「SAT冲刺终极1000真题词」再换成 11-11 的 (5) 版，重新核对，勘误表重出**（`../SAT冲刺终极词汇1000(5).html`，用户说「再次核验校对 更新网站里的group 并且检查和更新勘误表」）。
 - (5) 和 (3) 比只换了 4 个位置：91 forestall（重复）→ **serene**、408 enumerate → **reconcile**、691 mantle → **characterize**、692 furnace → **onerous**；1000 个词不再重复，网站 91 号原来留的 anecdote 也换成 serene。4 个新词照 `src/sat1000/PROMPT.md` 整理，原书译文里误留的出处、「（非词汇题：…题语境）」删了，characterize 第二句「刻画为」改「视为」（备注里写着）。
 - (5) 基本照我们的勘误表改了：305 句译文、95 句例句、90 句例句2、61 句译文2 和网站一字不差，义项、搭配、音标也照「原书错」改了。protagonist 例句 (5) 补上了 F.（F. Scott Fitzgerald），网站跟着补。别的 996 个词网站内容不变。
@@ -701,6 +709,7 @@ sat2300-web/
 │   ├── cet4.test.js     四级词汇的数据回归：35 个单元、编号连续、音标、例句和加粗译文、例句里找得到词（第五十三次优化）
 │   ├── cet4d.test.js    四级词汇海豚版的数据回归，同上（第五十五次优化）
 │   ├── gz.test.js       新版高中词汇的数据回归，同上，另查单词和原表一致（第五十九次优化）
+│   ├── gzb.test.js      高中便携版的数据回归，同上（第六十次优化）
 │   ├── ielts.test.js   雅思词表的数据回归：每 90 词一个单元、639 条例句、例句里找得到词（第十九次优化）
 │   ├── delete.test.js  批量删词：自建词真删、内置词隐藏、记录跟着走、撤销后 store 原样（第五十次优化）
 │   ├── customid.test.js 自建词编号：新词从 100000 起排、撞号的老数据换号且记录跟着走（第二十次优化）
@@ -721,6 +730,7 @@ sat2300-web/
 │   ├── cet4.js          四级词汇：35 个单元、2751 个词（第五十三次优化，i 40001–42751、u 6001–6035）
 │   ├── cet4d.js         四级词汇海豚版：35 个单元、2661 个词（第五十五次优化，i 43001–45661、u 6101–6135）；例句在 cet4d_rich.js
 │   ├── gz.js            新版高中词汇：40 个单元、2265 个词（第五十九次优化，i 46001–48265、u 6201–6240）；例句在 gz_rich.js
+│   ├── gzb.js           高中念念不忘便携版：23 个单元、1469 个词（第六十次优化，i 49001–50469、u 6301–6323）；例句在 gzb_rich.js
 │   ├── cet4_rich.js     四级词汇的例句、译文（按词条编号 i 并进 IELTS_RICH）
 │   └── ielts_rich.js    雅思 639 个词条自己的例句 / 翻译（第十九次优化，按词条编号 i 存，单独的 IELTS_RICH，不并进 SAT_RICH）
 └── src/
@@ -743,9 +753,11 @@ sat2300-web/
     ├── cet4/              四级词汇（第五十三次优化）：raw.json（xls 取的）、L01–L35.tsv（整理好的正本）、PROMPT.md（给子代理的说明）、in/（子代理的输入）
     ├── cet4d/             四级词汇海豚版（第五十五次优化）：raw.json（xlsx 取的）、L01–L35.tsv（整理好的正本）、PROMPT.md、in/（子代理的输入，带四级2022版的参考）
     ├── gz/                新版高中词汇（第五十九次优化）：raw.json（xlsx 取的）、L01–L40.tsv（整理好的正本）、PROMPT.md、in/（子代理的输入，带两本四级书的参考）
+    ├── gzb/               高中念念不忘便携版（第六十次优化）：raw.json、L01–L23.tsv（正本）、PROMPT.md、in/（带新版高中词汇和两本四级书的参考）
     ├── extract_cet4.py / prep_cet4.js / build_cet4.py  xls → raw.json → in/（配现成音标、候选例句）→ data/cet4*.js
     ├── extract_cet4d.py / prep_cet4d.js / build_cet4d.py  海豚版 xlsx → raw.json → in/（配四级2022版的参考）→ data/cet4d*.js
     ├── extract_gz.py / prep_gz.js / build_gz.py  高中词汇 xlsx → raw.json → in/（配两本四级书的参考）→ data/gz*.js
+    ├── extract_gzb.py / prep_gzb.js / build_gzb.py  高中便携版 xlsx → raw.json → in/ → data/gzb*.js
     ├── ielts_zh/L01–L08.tsv  雅思例句的正本，一个 List 一个文件，每行：编号§单词§例句§译文（第十九次优化）
     ├── build_ielts.py     从 ../雅思核心词汇.xlsx + ielts_zh/*.tsv 生成 data/ielts.js 和 data/ielts_rich.js（第十八、十九次优化）
     ├── build_shuffle.py   从 ../2300 高密度便携版.pdf 生成 data/shuffle.js（第二十一次优化）

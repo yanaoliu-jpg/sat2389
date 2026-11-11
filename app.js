@@ -1227,7 +1227,8 @@ function defaultGroups() {
           { id: 't1000', name: T1000_NAME, us: pick(5001, 5005) },
           { id: 'cet4', name: CET4_NAME, us: pick(6001, 6035) },
           { id: 'cet4d', name: CET4D_NAME, us: pick(6101, 6135) },
-          { id: 'gz', name: GZ_NAME, us: pick(6201, 6240) }];
+          { id: 'gz', name: GZ_NAME, us: pick(6201, 6240) },
+          { id: 'gzb', name: GZB_NAME, us: pick(6301, 6323) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
    开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
@@ -1248,7 +1249,9 @@ var CET4_NAME = '四级词汇2022版';
 var CET4D_NAME = '四级词汇海豚版';
 /* 第五十九次优化：《新版高中词汇》40 个 List（u 6201–6240）。跟 store.cdg 一样只在数据载到时补一次、放在最后，记 store.gzg */
 var GZ_NAME = '新版高中词汇';
-if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; store.cg = 1; store.cdg = 1; store.gzg = 1; save(); }
+/* 第六十次优化：《高中英语词汇 念念不忘 便携版》23 课（u 6301–6323）。跟 store.gzg 一样只在数据载到时补一次、放在最后，记 store.gbg */
+var GZB_NAME = '高中词汇念念不忘便携版';
+if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; store.cg = 1; store.cdg = 1; store.gzg = 1; store.gbg = 1; save(); }
 var CET4_US = UNITS.filter(function (x) { return x.u >= 6001 && x.u <= 6035 && !x.imported; });
 if (store.cg !== 1 && CET4_US.length) {
   try {
@@ -1284,6 +1287,18 @@ if (store.gzg !== 1 && GZ_US.length) {
     else if (zUs.length) store.groups.push({ id: 'gz', name: GZ_NAME, us: zUs });
   } catch (e) {}
   store.gzg = 1; save();
+}
+var GZB_US = UNITS.filter(function (x) { return x.u >= 6301 && x.u <= 6323 && !x.imported; });
+if (store.gbg !== 1 && GZB_US.length) {
+  try {
+    var inG7 = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG7[u] = 1; }); });
+    var bUs = GZB_US.filter(function (x) { return !inG7[x.u]; }).map(function (x) { return x.u; });
+    var bG = store.groups.filter(function (g) { return g.id === 'gzb'; })[0];
+    if (bG) bG.us = bG.us.concat(bUs);
+    else if (bUs.length) store.groups.push({ id: 'gzb', name: GZB_NAME, us: bUs });
+  } catch (e) {}
+  store.gbg = 1; save();
 }
 /* 只在真题1000 的数据真的载进来时才补组、才记 store.tg2。原来（store.tg）没载到也记上：浏览器缓存着旧 index.html
    （没有 sat1000.js 那行）却拿到新 app.js 时，组没补上就被记成补过了，以后永远补不回来。tg2 让这些人再补一次；
