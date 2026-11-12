@@ -25,6 +25,9 @@ def tidy(s):
     return re.sub(r'\s+', ' ', s).strip()
 
 
+# 第六十一次：(6) 版删了这两个词的补充语境，网站照旧用 (5) 版那句（真题原句，第五十八次前核对过、译文也改过）
+KEEP_EX2 = {'agency', 'periodical'}
+
 def main():
     raw = json.load(open(os.path.join(SRC, 'raw.json'), encoding='utf-8'))
     errs, words, units, rich = [], [], [], {}
@@ -49,7 +52,7 @@ def main():
             ex1 = [x for x in src['ex'] if not x['more']]
             ex2 = [x for x in src['ex'] if x['more']]
             if e != tidy(ex1[0]['en']) and '改例句' not in memo: errs.append('%s %s 例句和原书不一样' % (where, w))
-            if e2 and (not ex2 or e2 != tidy(ex2[0]['en'])) and '改例句' not in memo:
+            if e2 and (not ex2 or e2 != tidy(ex2[0]['en'])) and '改例句' not in memo and w not in KEEP_EX2:
                 errs.append('%s %s 例句2 和原书不一样' % (where, w))
             if bool(e2) != bool(t2): errs.append('%s %s 例句2/译文2 只有一个' % (where, w))
             for tt, lab in ((t, '译文'), (t2, '译文2')):

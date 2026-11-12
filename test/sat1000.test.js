@@ -108,3 +108,16 @@ test('真题1000 (5) 版：四个新词在数据里', function () {
   assert.strictEqual(words[30691], 'characterize');
   assert.strictEqual(words[30692], 'onerous');
 });
+
+test('真题1000 (6) 版：313、336 换了词，旧记录清掉', function () {
+  const st = { prog: { 30313: 2, 30314: 1 }, star: { 30336: 1 }, hist: {}, sel: {}, col: {}, hide: {} };
+  const n = P.reslotIds(st, P.T1000_V4_DROP, {});
+  assert.deepStrictEqual(P.T1000_V4_DROP, [30313, 30336]);
+  assert.deepStrictEqual(st.prog, { 30314: 1 });
+  assert.deepStrictEqual(st.star, {});
+  assert.strictEqual(n, 2);
+  const words = {};
+  WORDS.forEach(function (w) { words[w.i] = w.w; });
+  assert.strictEqual(words[30313], 'lieu');
+  assert.strictEqual(words[30336], 'vice');
+});

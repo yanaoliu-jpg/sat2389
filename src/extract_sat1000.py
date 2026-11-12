@@ -4,9 +4,9 @@ kin 搭配说明 [文本]、note 例句旁的易误读警示、ex [{src, en, mar
 import html, json, re, sys
 from pathlib import Path
 
-# 第五十八次优化起用 2026-11-11 的新版 SAT冲刺终极词汇1000(5).html（1000 个词不再有重复，91 serene、408 reconcile、691 characterize、692 onerous 是新换的词）；
-# 拆完要再生成 src/sat1000/in/*.jsonl（见 README 第五十八次）
-SRC = Path(__file__).resolve().parents[2] / 'SAT冲刺终极词汇1000(5).html'
+# 第六十一次优化起用 2026-11-12 的 SAT冲刺终极词汇1000(6).html（313 lieu、336 vice 是新换的词；之前第五十八次用 (5)：91 serene、408 reconcile、691 characterize、692 onerous）；
+# 拆完要再生成 src/sat1000/in/*.jsonl：python3 ../勘误表脚本/raw转in.py src/sat1000/raw.json src/sat1000/in
+SRC = Path(__file__).resolve().parents[2] / 'SAT冲刺终极词汇1000(6).html'
 OUT = Path(__file__).resolve().parent / 'sat1000' / 'raw.json'
 
 def txt(s):

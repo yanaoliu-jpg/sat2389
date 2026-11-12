@@ -145,6 +145,13 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - 正本：`src/gzb/raw.json`（`src/extract_gzb.py` 从 xlsx 取）→ `src/prep_gzb.js` 配参考写进 `src/gzb/in/` → 子代理照 `src/gzb/PROMPT.md` 每 4 课一批整理成 `src/gzb/L01–L23.tsv` → `python3 src/build_gzb.py`（同 build_gz.py，另外释义里有半角冒号也报错）→ `node --test` → 重建单文件版。
 - 测试：`test/gzb.test.js`（同 gz.test.js：23 个单元、1469 个词条、编号连续、音标释义例句齐、译文恰好一处加粗、高亮填空找得到词、改了单词的都登记了）。测试 123 条。
 
+第六十一次优化（2026-11-12）：**「SAT冲刺终极1000真题词」跟到 11-12 的 (6) 版，勘误表重出、并查了原书一方为什么「不认」**（`../SAT冲刺终极词汇1000(6).html`，用户说另一个 agent 改的 (6)，觉得勘误表大部分不成立）。
+- (6) 和 (5) 比：换了 2 个词——**313 suggestive → lieu、336 aquifer → vice**，网站跟着换（用户说「换成新词」），两词照 `src/sat1000/PROMPT.md` 写好放进 `U07.tsv`，备注登记 lieu 改译文、vice 改译文 + 原书错（辨析把 vice president、vice versa 说成 vice 的拉丁借义，其实来自 vicis）。另外 (6) 删了 74 句补充语境（1575→1500 句）、改了 26 句译文、espouse 构词改对、cast 把 casting 单列成分词；别的 998 个词网站内容不变。
+- (6) 删了 agency、periodical 的补充语境，网站照旧用 (5) 那句（`build_sat1000.py` 的 `KEEP_EX2`，不记成「改例句2」，免得勘误表多出假条目）。
+- 2 个编号换了词，老用户打开时一次性清掉 30313、30336 上的进度、星标等（`pure.js` 的 `T1000_V4_DROP`，`store.tv` 记成 3）。测试 124 条。
+- `src/extract_sat1000.py` 的 SRC 改成 (6)，`raw.json`、`in/*.jsonl` 重新生成；`in/` 现在用 `../勘误表脚本/raw转in.py` 从 raw.json 转（`python3 ../勘误表脚本/raw转in.py src/sat1000/raw.json src/sat1000/in`），`勘误表脚本/新版in/` 是同一份。
+- 勘误表（`../SAT冲刺1000勘误表.html`）：61 个词 → **15 个词**。(6) 实际改对了勘误表 61 个词里的 47 个，还剩 13 个真错（逐条在原书 HTML 里看过），加 lieu、vice。对方「不认」的原因查出来几条，都改了：①卡片写「原书 Unit 03」，原书没有单元、只有 001–1000 号 → 改成「原书第 NNN 号 · 网站 Unit NN」；②`collect.py` 的 `STILL` 写死「还没改」，concentric、theorist、tranquil、obscure 原书改好了还列着 → `STILL` 也比对那一栏；③woolly mammoth「真猛犸象」是我们错了（就是 Mammuthus primigenius 的正式中文名），删掉；④「改为」一行是网站措辞，原书换了别的对的措辞（sage）也被算没改 → 手工列进 `HAND`；⑤「（非词汇题：…语境）」括注全书只剩 4 处（lieu、vice、reconcile、characterize），(6) 自己删了 serene 那处，说明里写上这一句。重出：`cd ../勘误表脚本 && python3 collect.py 临时.json && python3 make.py 临时.json ../SAT冲刺1000勘误表.html tpl.html`。
+
 第五十八次优化（2026-11-11）：**「SAT冲刺终极1000真题词」再换成 11-11 的 (5) 版，重新核对，勘误表重出**（`../SAT冲刺终极词汇1000(5).html`，用户说「再次核验校对 更新网站里的group 并且检查和更新勘误表」）。
 - (5) 和 (3) 比只换了 4 个位置：91 forestall（重复）→ **serene**、408 enumerate → **reconcile**、691 mantle → **characterize**、692 furnace → **onerous**；1000 个词不再重复，网站 91 号原来留的 anecdote 也换成 serene。4 个新词照 `src/sat1000/PROMPT.md` 整理，原书译文里误留的出处、「（非词汇题：…题语境）」删了，characterize 第二句「刻画为」改「视为」（备注里写着）。
 - (5) 基本照我们的勘误表改了：305 句译文、95 句例句、90 句例句2、61 句译文2 和网站一字不差，义项、搭配、音标也照「原书错」改了。protagonist 例句 (5) 补上了 F.（F. Scott Fitzgerald），网站跟着补。别的 996 个词网站内容不变。

@@ -641,6 +641,8 @@ var T1000_V2_MOVE = { 30052: 30005 };
 /* 第五十八次优化：再换成 11-11 的 (5) 版，91 anecdote→serene、408 enumerate→reconcile、691 mantle→characterize、
    692 furnace→onerous，这 4 个编号的旧记录也清掉，没有要挪的 */
 var T1000_V3_DROP = [91, 408, 691, 692].map(function (n) { return 30000 + n; });
+/* 第六十一次优化：再换成 11-12 的 (6) 版，313 suggestive→lieu、336 aquifer→vice */
+var T1000_V4_DROP = [313, 336].map(function (n) { return 30000 + n; });
 function reslotIds(store, drop, move) {
   var n = 0;
   ['prog', 'hist', 'sel', 'star', 'col', 'hide'].forEach(function (t) {
@@ -698,6 +700,6 @@ if (typeof module !== 'undefined' && module.exports) {
     dsModel: dsModel, dsBody: dsBody,
     applyHidden: applyHidden, hiddenIn: hiddenIn, deleteWords: deleteWords,
     restoreHidden: restoreHidden, undoDelete: undoDelete,
-    T1000_V2_DROP: T1000_V2_DROP, T1000_V2_MOVE: T1000_V2_MOVE, T1000_V3_DROP: T1000_V3_DROP, reslotIds: reslotIds
+    T1000_V2_DROP: T1000_V2_DROP, T1000_V2_MOVE: T1000_V2_MOVE, T1000_V3_DROP: T1000_V3_DROP, T1000_V4_DROP: T1000_V4_DROP, reslotIds: reslotIds
   };
 }
