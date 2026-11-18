@@ -1131,9 +1131,13 @@ function zhEx(t) {   // translations mark the matching Chinese with **…**
   return esc(t || '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 }
 function bold(sent, word) {
-  var s = esc(sent), out = s.replace(new RegExp('\\b(' + wordPat(word) + ')', 'ig'), '<b>$1</b>');
-  // 前缀式接不住 sought、knelt 这类不规则变化（第四十七次优化）时，退回 wordRe（里面有不规则变化表）
-  return out !== s ? out : s.replace(new RegExp(wordRe(word).source, 'ig'), '<b>$&</b>');
+  var source = String(sent);
+  /* 先按整词和常见变形匹配，避免 company 高亮到 computer，或只标出短语的一部分。 */
+  var parts = source.split(new RegExp('(' + wordRe(word).source + ')', 'ig'));
+  if (parts.length === 1) parts = source.split(new RegExp('\\b(' + wordPat(word) + ')', 'ig'));
+  return parts.map(function (part, i) {
+    return i % 2 ? '<b>' + esc(part) + '</b>' : esc(part);
+  }).join('');
 }
 /* 雅思词根联想（第四十七次优化）书上的搭配、派生、同义、反义，有哪栏显示哪栏 */
 function isRootBook(w) { return w.i >= 20001 && w.i < 30000; }
@@ -1233,7 +1237,8 @@ function defaultGroups() {
           { id: 'cet4', name: CET4_NAME, us: pick(6001, 6035) },
           { id: 'cet4d', name: CET4D_NAME, us: pick(6101, 6135) },
           { id: 'gz', name: GZ_NAME, us: pick(6201, 6240) },
-          { id: 'gzb', name: GZB_NAME, us: pick(6301, 6323) }];
+          { id: 'gzb', name: GZB_NAME, us: pick(6301, 6323) },
+          { id: 'cz', name: CZ_NAME, us: pick(6401, 6433) }];
 }
 /* 乱序版原来是首页标题下面「原版 / 乱序版」开关的另一套（第二十一次优化），第四十六次优化改成首页的一个分组，
    开关删了。老用户已经有自己的分组，打开时补一次，插在「SAT 词汇」后面；记上 store.sg，
@@ -1256,6 +1261,8 @@ var CET4D_NAME = '四级词汇海豚版';
 var GZ_NAME = '新版高中词汇';
 /* 第六十次优化：《高中英语词汇 念念不忘 便携版》23 课（u 6301–6323）。跟 store.gzg 一样只在数据载到时补一次、放在最后，记 store.gbg */
 var GZB_NAME = '高中词汇念念不忘便携版';
+/* 第六十二次优化：《初中英语词汇 乱序版》（浙江教育）33 个 List（u 6401–6433）。同 store.gbg，记 store.czg */
+var CZ_NAME = '初中英语词汇';
 if (!store.groups) { store.groups = defaultGroups(); store.sg = 1; store.ig = 1; store.ag = 1; store.tg = 1; store.tg2 = 1; store.tg3 = 1; store.cg = 1; store.cdg = 1; store.gzg = 1; store.gbg = 1; save(); }
 var CET4_US = UNITS.filter(function (x) { return x.u >= 6001 && x.u <= 6035 && !x.imported; });
 if (store.cg !== 1 && CET4_US.length) {
@@ -1304,6 +1311,19 @@ if (store.gbg !== 1 && GZB_US.length) {
     else if (bUs.length) store.groups.push({ id: 'gzb', name: GZB_NAME, us: bUs });
   } catch (e) {}
   store.gbg = 1; save();
+}
+/* 等词库加载后再记补组，首次打开时词库加载失败也可以在刷新后补齐。 */
+var CZ_US = UNITS.filter(function (x) { return x.u >= 6401 && x.u <= 6433 && !x.imported; });
+if (store.czg !== 1 && CZ_US.length) {
+  try {
+    var inG8 = {};
+    store.groups.forEach(function (g) { g.us.forEach(function (u) { inG8[u] = 1; }); });
+    var cUs = CZ_US.filter(function (x) { return !inG8[x.u]; }).map(function (x) { return x.u; });
+    var cG = store.groups.filter(function (g) { return g.id === 'cz'; })[0];
+    if (cG) cG.us = cG.us.concat(cUs);
+    else if (cUs.length) store.groups.push({ id: 'cz', name: CZ_NAME, us: cUs });
+  } catch (e) {}
+  store.czg = 1; save();
 }
 /* 只在真题1000 的数据真的载进来时才补组、才记 store.tg2。原来（store.tg）没载到也记上：浏览器缓存着旧 index.html
    （没有 sat1000.js 那行）却拿到新 app.js 时，组没补上就被记成补过了，以后永远补不回来。tg2 让这些人再补一次；

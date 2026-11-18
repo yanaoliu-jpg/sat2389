@@ -152,6 +152,13 @@ read -s "DEEPSEEK_API_KEY?粘贴 DeepSeek Key 后回车：" && DEEPSEEK_API_KEY=
 - `src/extract_sat1000.py` 的 SRC 改成 (6)，`raw.json`、`in/*.jsonl` 重新生成；`in/` 现在用 `../勘误表脚本/raw转in.py` 从 raw.json 转（`python3 ../勘误表脚本/raw转in.py src/sat1000/raw.json src/sat1000/in`），`勘误表脚本/新版in/` 是同一份。
 - 勘误表（`../SAT冲刺1000勘误表.html`）：61 个词 → **15 个词**。(6) 实际改对了勘误表 61 个词里的 47 个，还剩 13 个真错（逐条在原书 HTML 里看过），加 lieu、vice。对方「不认」的原因查出来几条，都改了：①卡片写「原书 Unit 03」，原书没有单元、只有 001–1000 号 → 改成「原书第 NNN 号 · 网站 Unit NN」；②`collect.py` 的 `STILL` 写死「还没改」，concentric、theorist、tranquil、obscure 原书改好了还列着 → `STILL` 也比对那一栏；③woolly mammoth「真猛犸象」是我们错了（就是 Mammuthus primigenius 的正式中文名），删掉；④「改为」一行是网站措辞，原书换了别的对的措辞（sage）也被算没改 → 手工列进 `HAND`；⑤「（非词汇题：…语境）」括注全书只剩 4 处（lieu、vice、reconcile、characterize），(6) 自己删了 serene 那处，说明里写上这一句。重出：`cd ../勘误表脚本 && python3 collect.py 临时.json && python3 make.py 临时.json ../SAT冲刺1000勘误表.html tpl.html`。
 
+第六十二次优化（2026-11-18）：**加了《初中英语词汇 乱序版》（浙江教育）**（`../初中英语词汇乱序版（浙江教育）.xlsx`）。
+
+- 首页新增「初中英语词汇」，按原表顺序排列为 33 个 List、1997 个词条。词条编号 51001–52997，单元编号 6401–6433。原表里的重复词条分别保留。已有存档在加载到词库后补入分组（`store.czg`）。
+- 释义按 `src/cz/PROMPT.md` 精简到初中常用，统一词性和标点，保留英音音标。例句采用义项相符、难度适合初中生的参考句，或另写短句。每句都有中文译文，目标词义用粗体标出。
+- 词表源文件由 `src/extract_cz.py` 生成，再用 `node src/prep_cz.js` 配出参考栏。整理后的正本是 `src/cz/L01.tsv` 到 `L33.tsv`，词形、释义、音标和例句的更改见备注栏。List 17 的 `latern` 更正为 `lantern`，经确认采用初中常用义「灯笼」。
+- 重建词库运行 `python3 src/build_cz.py`，再用 `python3 src/build_single.py SAT2389-单文件版.html` 打包。回归测试用 `node --test`，含初中词库的编号、分单元、释义、加粗译文和填空例句检查。
+
 第五十八次优化（2026-11-11）：**「SAT冲刺终极1000真题词」再换成 11-11 的 (5) 版，重新核对，勘误表重出**（`../SAT冲刺终极词汇1000(5).html`，用户说「再次核验校对 更新网站里的group 并且检查和更新勘误表」）。
 - (5) 和 (3) 比只换了 4 个位置：91 forestall（重复）→ **serene**、408 enumerate → **reconcile**、691 mantle → **characterize**、692 furnace → **onerous**；1000 个词不再重复，网站 91 号原来留的 anecdote 也换成 serene。4 个新词照 `src/sat1000/PROMPT.md` 整理，原书译文里误留的出处、「（非词汇题：…题语境）」删了，characterize 第二句「刻画为」改「视为」（备注里写着）。
 - (5) 基本照我们的勘误表改了：305 句译文、95 句例句、90 句例句2、61 句译文2 和网站一字不差，义项、搭配、音标也照「原书错」改了。protagonist 例句 (5) 补上了 F.（F. Scott Fitzgerald），网站跟着补。别的 996 个词网站内容不变。
@@ -768,6 +775,7 @@ sat2300-web/
     ├── ielts_zh/L01–L08.tsv  雅思例句的正本，一个 List 一个文件，每行：编号§单词§例句§译文（第十九次优化）
     ├── build_ielts.py     从 ../雅思核心词汇.xlsx + ielts_zh/*.tsv 生成 data/ielts.js 和 data/ielts_rich.js（第十八、十九次优化）
     ├── build_shuffle.py   从 ../2300 高密度便携版.pdf 生成 data/shuffle.js（第二十一次优化）
+    ├── build_cz.py        由初中词汇整理稿生成词表和例句
     ├── build_single.py    打包成单文件 HTML
     └── devserver.py       本地预览服务器
 ```
